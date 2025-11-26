@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 15%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 15%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 15%;
+  --primary: 357 100% 40%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 95%;
+  --secondary-foreground: 0 0% 15%;
+  --muted: 0 0% 90%;
+  --muted-foreground: 0 0% 45%;
+  --accent: 357 100% 40%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 90%;
+  --input: 0 0% 95%;
+  --ring: 357 100% 40%;
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --font-sans: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-white text-slate-900 overflow-x-hidden;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply font-black;
+}
+
+/* Gym Passport crimson red button */
+.btn-gym {
+  @apply bg-red-600 text-white px-6 py-3 rounded font-black hover:bg-red-700 transition-all duration-300;
+}
+
+.btn-gym:hover {
+  @apply shadow-xl;
+}
+
+.btn-outline-gym {
+  @apply border-2 border-red-600 text-red-600 px-6 py-3 rounded font-black hover:bg-red-50 transition-colors duration-300;
+}
+
+/* Section decorative line */
+.section-divider {
+  @apply w-16 h-1 bg-red-600 rounded-full;
+}
+
+/* Fade and slide animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* Card styles */
+.card-gym {
+  @apply bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden;
+}
+
+/* Slider/Carousel */
+.carousel-container {
+  @apply overflow-x-auto scrollbar-hide;
+}
+
+.carousel-item {
+  @apply flex-shrink-0;
+}
+
+/* Hide scrollbar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Gym section backgrounds */
+.section-light {
+  @apply bg-white;
+}
+
+.section-dark {
+  @apply bg-slate-900 text-white;
+}
+
+.section-gray {
+  @apply bg-gray-50;
+}
+
+/* Image overlay */
+.image-overlay {
+  @apply absolute inset-0 bg-black/30 opacity-0 hover:opacity-100 transition-opacity duration-300;
+}
+
+/* Text stroke effect for headings */
+.text-stroke {
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.1);
+}
