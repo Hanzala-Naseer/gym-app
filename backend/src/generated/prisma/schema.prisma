@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+///////////////////////////////////////////////////////
+// USER
+///////////////////////////////////////////////////////
+
+model User {
+  id             String         @id @default(uuid())
+  name           String
+  email          String         @unique
+  passwordHash   String
+  role           String         @default("user")
+  createdAt      DateTime       @default(now())
+
+  // OTP fields for signup/verification
+  otpHash        String?        // hashed otp
+  otpExpiresAt   DateTime?      // when OTP expires
+  otpAttempts    Int?           @default(0)
+
+  subscriptions  Subscription[]
+  payments       Payment[]
+  checkIns       CheckIn[]
+  gymsOwned      Gym[]          @relation("GymOwner")
+}
+
+// -----------------------------------------------------
+// SUBSCRIPTIONS + TIERS
+// -----------------------------------------------------
+
+model SubscriptionTier {
+  id           String   @id @default(uuid())
+  name         String
+  accessTier   Int
+  createdAt    DateTime @default(now())
+
+  prices       SubscriptionPrice[]
+  subscriptions Subscription[]
+}
+model SubscriptionPrice {
+  id             String   @id @default(uuid())
+  tierId         String
+  stripePriceId  String   @unique
+  interval       String   // monthly | yearly
+  priceCents     Int
+  createdAt      DateTime @default(now())
+
+  tier           SubscriptionTier @relation(fields: [tierId], references: [id])
+}
+
+
+model Subscription {
+  id                   String   @id @default(uuid())
+  userId               String
+  tierId               String
+  stripeSubscriptionId String   @unique
+  stripePriceId        String
+  status               String
+  startAt              DateTime?
+  endAt                DateTime?
+  createdAt            DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  tier SubscriptionTier @relation(fields: [tierId], references: [id])
+  payments   Payment[]        // ✅ REQUIRED
+
+}
+
+
+// -----------------------------------------------------
+// PAYMENTS
+// -----------------------------------------------------
+
+model Payment {
+  id                   String           @id @default(uuid())
+  userId               String
+  subscriptionId       String?
+  amountCents          Int
+  currency             String
+  stripePaymentIntent  String?
+  status               String
+  metadata             Json?
+  createdAt            DateTime         @default(now())
+
+  user                 User             @relation(fields: [userId], references: [id])
+  subscription         Subscription?    @relation(fields: [subscriptionId], references: [id])
+}
+
+// -----------------------------------------------------
+// GYMS
+// -----------------------------------------------------
+model Gym {
+  id              String    @id @default(uuid())
+  name            String
+  addressLine     String     // full address text
+  city            String
+
+  latitude        Float
+  longitude       Float
+
+  openingTime     String?    // "06:00"
+  closingTime     String?    // "23:00"
+  is24Hours       Boolean    @default(false)
+
+  tier            Int
+  coverImageUrl   String?
+  status          String     @default("pending") // pending | approved | rejected
+  ownerId         String?
+  createdAt       DateTime   @default(now())
+
+  owner           User?      @relation("GymOwner", fields: [ownerId], references: [id])
+  checkIns        CheckIn[]
+  photos          GymPhoto[]
+}
+
+
+model GymPhoto {
+  id        String   @id @default(uuid())
+  gymId     String
+  url       String
+  createdAt DateTime @default(now())
+
+  gym Gym @relation(fields: [gymId], references: [id])
+}
+
+// -----------------------------------------------------
+// CHECK-IN SYSTEM (QR BASED)
+// -----------------------------------------------------
+
+model CheckIn {
+  id          String   @id @default(uuid())
+  userId      String
+  gymId       String
+  checkedInAt DateTime @default(now())
+  
+  // Stores the JWT ID to trace which specific token was used for this check-in
+  qrJti       String? 
+  
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  gym  Gym  @relation(fields: [gymId], references: [id])
+
+  @@index([userId, gymId])
+}
+
+
+// -----------------------------------------------------
+// QR JTI USAGE — prevents reuse of QR tokens
+// -----------------------------------------------------
+
+model QrJtiUsage {
+  id        String   @id @default(uuid())
+  jti       String   @unique // MUST be unique to enforce single-use
+  createdAt DateTime @default(now())
+  expiresAt DateTime // When the token's validity window ends
+}
