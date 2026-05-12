@@ -28,8 +28,8 @@
 // };
 // File: ../middleware/subscriptionCheck.js (Updated)
 
-const prisma = require("../prismaClient");
-
+const { PrismaClient } = require("../generated/prisma");
+const prisma = new PrismaClient();
 module.exports = async function subscriptionCheck(req, res, next) {
   try {
     // 1. Find the user's single, highest tier active subscription

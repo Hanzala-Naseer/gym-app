@@ -1,4 +1,5 @@
-const prisma = require("../prismaClient");
+const { PrismaClient } = require("../generated/prisma");
+const prisma = new PrismaClient();
 const pendingOwners = require("../temp/pendingUsers");
 
 const bcrypt = require("bcrypt");

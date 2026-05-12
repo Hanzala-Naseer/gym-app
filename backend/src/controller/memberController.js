@@ -170,7 +170,8 @@
 //   getAllGymsForMember,
 //   getGymDetailsForMember,
 // };
-const prisma = require("../prismaClient");
+const { PrismaClient } = require("../generated/prisma");
+const prisma = new PrismaClient();
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 const { generateOtp, hashOtp } = require("../utils/otpUtils");

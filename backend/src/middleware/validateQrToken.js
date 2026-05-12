@@ -1,6 +1,6 @@
 const { verifyQrToken } = require("../utils/jwtUtils");
-const prisma = require("../prismaClient");
-
+const { PrismaClient } = require("../generated/prisma");
+const prisma = new PrismaClient();
 module.exports = async function validateQrToken(req, res, next) {
   const { qrToken, gymId } = req.body;
   if (!qrToken) return res.status(400).json({ message: "QR token required" });

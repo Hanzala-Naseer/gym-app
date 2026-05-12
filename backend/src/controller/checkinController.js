@@ -1,6 +1,5 @@
-
-const prisma = require("../prismaClient");
-
+const { PrismaClient } = require("../generated/prisma");
+const prisma = new PrismaClient();
 module.exports = {
   checkIn: async (req, res) => {
     try {
@@ -116,10 +115,6 @@ module.exports = {
   },
 };
 
-
-
-
-
 // const prisma = require("../prismaClient");
 
 // module.exports = {
@@ -224,4 +219,3 @@ module.exports = {
 //     }
 //   },
 // };
-

@@ -1,5 +1,6 @@
 require("dotenv").config();
-const prisma = require("./src/prismaClient");
+const { PrismaClient } = require("./src/generated/prisma");
+const prisma = new PrismaClient();
 const bcrypt = require("bcrypt");
 
 async function main() {

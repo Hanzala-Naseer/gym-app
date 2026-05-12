@@ -19,6 +19,7 @@ export type UserPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultAr
     payments: PaymentPayload<ExtArgs>[]
     checkIns: CheckInPayload<ExtArgs>[]
     gymsOwned: GymPayload<ExtArgs>[]
+    adminAuditLogs: AdminAuditLogPayload<ExtArgs>[]
   }
   scalars: $Extensions.GetResult<{
     id: string
@@ -26,7 +27,10 @@ export type UserPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultAr
     email: string
     passwordHash: string
     role: string
+    isSuspended: boolean
+    suspendedAt: Date | null
     createdAt: Date
+    updatedAt: Date
     otpHash: string | null
     otpExpiresAt: Date | null
     otpAttempts: number | null
@@ -39,6 +43,24 @@ export type UserPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultAr
  * 
  */
 export type User = runtime.Types.DefaultSelection<UserPayload>
+export type PasswordResetTokenPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+  name: "PasswordResetToken"
+  objects: {}
+  scalars: $Extensions.GetResult<{
+    id: string
+    email: string
+    tokenHash: string
+    expiresAt: Date
+    createdAt: Date
+  }, ExtArgs["result"]["passwordResetToken"]>
+  composites: {}
+}
+
+/**
+ * Model PasswordResetToken
+ * 
+ */
+export type PasswordResetToken = runtime.Types.DefaultSelection<PasswordResetTokenPayload>
 export type SubscriptionTierPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
   name: "SubscriptionTier"
   objects: {
@@ -48,8 +70,13 @@ export type SubscriptionTierPayload<ExtArgs extends $Extensions.Args = $Extensio
   scalars: $Extensions.GetResult<{
     id: string
     name: string
+    slug: string
+    description: string | null
     accessTier: number
+    isActive: boolean
+    isFeatured: boolean
     createdAt: Date
+    updatedAt: Date
   }, ExtArgs["result"]["subscriptionTier"]>
   composites: {}
 }
@@ -67,10 +94,14 @@ export type SubscriptionPricePayload<ExtArgs extends $Extensions.Args = $Extensi
   scalars: $Extensions.GetResult<{
     id: string
     tierId: string
+    stripeProductId: string
     stripePriceId: string
     interval: string
     priceCents: number
+    currency: string
+    isActive: boolean
     createdAt: Date
+    updatedAt: Date
   }, ExtArgs["result"]["subscriptionPrice"]>
   composites: {}
 }
@@ -97,6 +128,7 @@ export type SubscriptionPayload<ExtArgs extends $Extensions.Args = $Extensions.D
     startAt: Date | null
     endAt: Date | null
     createdAt: Date
+    updatedAt: Date
   }, ExtArgs["result"]["subscription"]>
   composites: {}
 }
@@ -118,6 +150,7 @@ export type PaymentPayload<ExtArgs extends $Extensions.Args = $Extensions.Defaul
     subscriptionId: string | null
     amountCents: number
     currency: string
+    paymentProvider: string | null
     stripePaymentIntent: string | null
     status: string
     metadata: Prisma.JsonValue | null
@@ -137,22 +170,44 @@ export type GymPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArg
     owner: UserPayload<ExtArgs> | null
     checkIns: CheckInPayload<ExtArgs>[]
     photos: GymPhotoPayload<ExtArgs>[]
+    verificationDocuments: GymVerificationDocumentPayload<ExtArgs>[]
   }
   scalars: $Extensions.GetResult<{
     id: string
     name: string
+    description: string | null
     addressLine: string
     city: string
+    province: string | null
+    postalCode: string | null
     latitude: number
     longitude: number
+    phoneNumber: string | null
+    whatsappNumber: string | null
+    instagramHandle: string | null
+    websiteUrl: string | null
+    googleMapsLink: string | null
+    cnicNumber: string | null
+    businessName: string | null
     openingTime: string | null
     closingTime: string | null
     is24Hours: boolean
     tier: number
     coverImageUrl: string | null
     status: string
+    submittedAt: Date | null
+    reviewedAt: Date | null
+    reviewedByAdminId: string | null
+    rejectionReason: string | null
+    approvalNotes: string | null
+    resubmissionCount: number
+    isFeatured: boolean
+    isArchived: boolean
+    isBlocked: boolean
+    blockedReason: string | null
     ownerId: string | null
     createdAt: Date
+    updatedAt: Date
   }, ExtArgs["result"]["gym"]>
   composites: {}
 }
@@ -162,6 +217,31 @@ export type GymPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArg
  * 
  */
 export type Gym = runtime.Types.DefaultSelection<GymPayload>
+export type GymVerificationDocumentPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+  name: "GymVerificationDocument"
+  objects: {
+    gym: GymPayload<ExtArgs>
+  }
+  scalars: $Extensions.GetResult<{
+    id: string
+    gymId: string
+    type: string
+    fileUrl: string
+    status: string
+    rejectedReason: string | null
+    reviewedAt: Date | null
+    reviewNotes: string | null
+    createdAt: Date
+  }, ExtArgs["result"]["gymVerificationDocument"]>
+  composites: {}
+}
+
+/**
+ * Model GymVerificationDocument
+ * ////////////////////////////////////////////////////
+ * ////////////////////////////////////////////////////
+ */
+export type GymVerificationDocument = runtime.Types.DefaultSelection<GymVerificationDocumentPayload>
 export type GymPhotoPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
   name: "GymPhoto"
   objects: {
@@ -220,6 +300,47 @@ export type QrJtiUsagePayload<ExtArgs extends $Extensions.Args = $Extensions.Def
  * 
  */
 export type QrJtiUsage = runtime.Types.DefaultSelection<QrJtiUsagePayload>
+export type AdminAuditLogPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+  name: "AdminAuditLog"
+  objects: {
+    admin: UserPayload<ExtArgs>
+  }
+  scalars: $Extensions.GetResult<{
+    id: string
+    adminId: string
+    action: string
+    entityType: string
+    entityId: string | null
+    metadata: Prisma.JsonValue | null
+    createdAt: Date
+  }, ExtArgs["result"]["adminAuditLog"]>
+  composites: {}
+}
+
+/**
+ * Model AdminAuditLog
+ * 
+ */
+export type AdminAuditLog = runtime.Types.DefaultSelection<AdminAuditLogPayload>
+export type AdminNotificationPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+  name: "AdminNotification"
+  objects: {}
+  scalars: $Extensions.GetResult<{
+    id: string
+    title: string
+    message: string
+    type: string
+    isRead: boolean
+    createdAt: Date
+  }, ExtArgs["result"]["adminNotification"]>
+  composites: {}
+}
+
+/**
+ * Model AdminNotification
+ * 
+ */
+export type AdminNotification = runtime.Types.DefaultSelection<AdminNotificationPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -357,6 +478,16 @@ export class PrismaClient<
   get user(): Prisma.UserDelegate<GlobalReject, ExtArgs>;
 
   /**
+   * `prisma.passwordResetToken`: Exposes CRUD operations for the **PasswordResetToken** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PasswordResetTokens
+    * const passwordResetTokens = await prisma.passwordResetToken.findMany()
+    * ```
+    */
+  get passwordResetToken(): Prisma.PasswordResetTokenDelegate<GlobalReject, ExtArgs>;
+
+  /**
    * `prisma.subscriptionTier`: Exposes CRUD operations for the **SubscriptionTier** model.
     * Example usage:
     * ```ts
@@ -407,6 +538,16 @@ export class PrismaClient<
   get gym(): Prisma.GymDelegate<GlobalReject, ExtArgs>;
 
   /**
+   * `prisma.gymVerificationDocument`: Exposes CRUD operations for the **GymVerificationDocument** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GymVerificationDocuments
+    * const gymVerificationDocuments = await prisma.gymVerificationDocument.findMany()
+    * ```
+    */
+  get gymVerificationDocument(): Prisma.GymVerificationDocumentDelegate<GlobalReject, ExtArgs>;
+
+  /**
    * `prisma.gymPhoto`: Exposes CRUD operations for the **GymPhoto** model.
     * Example usage:
     * ```ts
@@ -435,6 +576,26 @@ export class PrismaClient<
     * ```
     */
   get qrJtiUsage(): Prisma.QrJtiUsageDelegate<GlobalReject, ExtArgs>;
+
+  /**
+   * `prisma.adminAuditLog`: Exposes CRUD operations for the **AdminAuditLog** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AdminAuditLogs
+    * const adminAuditLogs = await prisma.adminAuditLog.findMany()
+    * ```
+    */
+  get adminAuditLog(): Prisma.AdminAuditLogDelegate<GlobalReject, ExtArgs>;
+
+  /**
+   * `prisma.adminNotification`: Exposes CRUD operations for the **AdminNotification** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AdminNotifications
+    * const adminNotifications = await prisma.adminNotification.findMany()
+    * ```
+    */
+  get adminNotification(): Prisma.AdminNotificationDelegate<GlobalReject, ExtArgs>;
 }
 
 export namespace Prisma {
@@ -919,14 +1080,18 @@ export namespace Prisma {
 
   export const ModelName: {
     User: 'User',
+    PasswordResetToken: 'PasswordResetToken',
     SubscriptionTier: 'SubscriptionTier',
     SubscriptionPrice: 'SubscriptionPrice',
     Subscription: 'Subscription',
     Payment: 'Payment',
     Gym: 'Gym',
+    GymVerificationDocument: 'GymVerificationDocument',
     GymPhoto: 'GymPhoto',
     CheckIn: 'CheckIn',
-    QrJtiUsage: 'QrJtiUsage'
+    QrJtiUsage: 'QrJtiUsage',
+    AdminAuditLog: 'AdminAuditLog',
+    AdminNotification: 'AdminNotification'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -943,7 +1108,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
     meta: {
-      modelProps: 'user' | 'subscriptionTier' | 'subscriptionPrice' | 'subscription' | 'payment' | 'gym' | 'gymPhoto' | 'checkIn' | 'qrJtiUsage'
+      modelProps: 'user' | 'passwordResetToken' | 'subscriptionTier' | 'subscriptionPrice' | 'subscription' | 'payment' | 'gym' | 'gymVerificationDocument' | 'gymPhoto' | 'checkIn' | 'qrJtiUsage' | 'adminAuditLog' | 'adminNotification'
       txIsolationLevel: Prisma.TransactionIsolationLevel
     },
     model: {
@@ -1009,6 +1174,71 @@ export namespace Prisma {
           count: {
             args: Prisma.UserCountArgs<ExtArgs>,
             result: $Utils.Optional<UserCountAggregateOutputType> | number
+          }
+        }
+      }
+      PasswordResetToken: {
+        payload: PasswordResetTokenPayload<ExtArgs>
+        operations: {
+          findUnique: {
+            args: Prisma.PasswordResetTokenFindUniqueArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PasswordResetTokenPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PasswordResetTokenFindUniqueOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PasswordResetTokenPayload>
+          }
+          findFirst: {
+            args: Prisma.PasswordResetTokenFindFirstArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PasswordResetTokenPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PasswordResetTokenFindFirstOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PasswordResetTokenPayload>
+          }
+          findMany: {
+            args: Prisma.PasswordResetTokenFindManyArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PasswordResetTokenPayload>[]
+          }
+          create: {
+            args: Prisma.PasswordResetTokenCreateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PasswordResetTokenPayload>
+          }
+          createMany: {
+            args: Prisma.PasswordResetTokenCreateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          delete: {
+            args: Prisma.PasswordResetTokenDeleteArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PasswordResetTokenPayload>
+          }
+          update: {
+            args: Prisma.PasswordResetTokenUpdateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PasswordResetTokenPayload>
+          }
+          deleteMany: {
+            args: Prisma.PasswordResetTokenDeleteManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PasswordResetTokenUpdateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          upsert: {
+            args: Prisma.PasswordResetTokenUpsertArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PasswordResetTokenPayload>
+          }
+          aggregate: {
+            args: Prisma.PasswordResetTokenAggregateArgs<ExtArgs>,
+            result: $Utils.Optional<AggregatePasswordResetToken>
+          }
+          groupBy: {
+            args: Prisma.PasswordResetTokenGroupByArgs<ExtArgs>,
+            result: $Utils.Optional<PasswordResetTokenGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PasswordResetTokenCountArgs<ExtArgs>,
+            result: $Utils.Optional<PasswordResetTokenCountAggregateOutputType> | number
           }
         }
       }
@@ -1337,6 +1567,71 @@ export namespace Prisma {
           }
         }
       }
+      GymVerificationDocument: {
+        payload: GymVerificationDocumentPayload<ExtArgs>
+        operations: {
+          findUnique: {
+            args: Prisma.GymVerificationDocumentFindUniqueArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymVerificationDocumentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GymVerificationDocumentFindUniqueOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymVerificationDocumentPayload>
+          }
+          findFirst: {
+            args: Prisma.GymVerificationDocumentFindFirstArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymVerificationDocumentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GymVerificationDocumentFindFirstOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymVerificationDocumentPayload>
+          }
+          findMany: {
+            args: Prisma.GymVerificationDocumentFindManyArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymVerificationDocumentPayload>[]
+          }
+          create: {
+            args: Prisma.GymVerificationDocumentCreateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymVerificationDocumentPayload>
+          }
+          createMany: {
+            args: Prisma.GymVerificationDocumentCreateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          delete: {
+            args: Prisma.GymVerificationDocumentDeleteArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymVerificationDocumentPayload>
+          }
+          update: {
+            args: Prisma.GymVerificationDocumentUpdateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymVerificationDocumentPayload>
+          }
+          deleteMany: {
+            args: Prisma.GymVerificationDocumentDeleteManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GymVerificationDocumentUpdateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          upsert: {
+            args: Prisma.GymVerificationDocumentUpsertArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymVerificationDocumentPayload>
+          }
+          aggregate: {
+            args: Prisma.GymVerificationDocumentAggregateArgs<ExtArgs>,
+            result: $Utils.Optional<AggregateGymVerificationDocument>
+          }
+          groupBy: {
+            args: Prisma.GymVerificationDocumentGroupByArgs<ExtArgs>,
+            result: $Utils.Optional<GymVerificationDocumentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.GymVerificationDocumentCountArgs<ExtArgs>,
+            result: $Utils.Optional<GymVerificationDocumentCountAggregateOutputType> | number
+          }
+        }
+      }
       GymPhoto: {
         payload: GymPhotoPayload<ExtArgs>
         operations: {
@@ -1532,6 +1827,136 @@ export namespace Prisma {
           }
         }
       }
+      AdminAuditLog: {
+        payload: AdminAuditLogPayload<ExtArgs>
+        operations: {
+          findUnique: {
+            args: Prisma.AdminAuditLogFindUniqueArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminAuditLogPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AdminAuditLogFindUniqueOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminAuditLogPayload>
+          }
+          findFirst: {
+            args: Prisma.AdminAuditLogFindFirstArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminAuditLogPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AdminAuditLogFindFirstOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminAuditLogPayload>
+          }
+          findMany: {
+            args: Prisma.AdminAuditLogFindManyArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminAuditLogPayload>[]
+          }
+          create: {
+            args: Prisma.AdminAuditLogCreateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminAuditLogPayload>
+          }
+          createMany: {
+            args: Prisma.AdminAuditLogCreateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          delete: {
+            args: Prisma.AdminAuditLogDeleteArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminAuditLogPayload>
+          }
+          update: {
+            args: Prisma.AdminAuditLogUpdateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminAuditLogPayload>
+          }
+          deleteMany: {
+            args: Prisma.AdminAuditLogDeleteManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AdminAuditLogUpdateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          upsert: {
+            args: Prisma.AdminAuditLogUpsertArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminAuditLogPayload>
+          }
+          aggregate: {
+            args: Prisma.AdminAuditLogAggregateArgs<ExtArgs>,
+            result: $Utils.Optional<AggregateAdminAuditLog>
+          }
+          groupBy: {
+            args: Prisma.AdminAuditLogGroupByArgs<ExtArgs>,
+            result: $Utils.Optional<AdminAuditLogGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AdminAuditLogCountArgs<ExtArgs>,
+            result: $Utils.Optional<AdminAuditLogCountAggregateOutputType> | number
+          }
+        }
+      }
+      AdminNotification: {
+        payload: AdminNotificationPayload<ExtArgs>
+        operations: {
+          findUnique: {
+            args: Prisma.AdminNotificationFindUniqueArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminNotificationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AdminNotificationFindUniqueOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminNotificationPayload>
+          }
+          findFirst: {
+            args: Prisma.AdminNotificationFindFirstArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminNotificationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AdminNotificationFindFirstOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminNotificationPayload>
+          }
+          findMany: {
+            args: Prisma.AdminNotificationFindManyArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminNotificationPayload>[]
+          }
+          create: {
+            args: Prisma.AdminNotificationCreateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminNotificationPayload>
+          }
+          createMany: {
+            args: Prisma.AdminNotificationCreateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          delete: {
+            args: Prisma.AdminNotificationDeleteArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminNotificationPayload>
+          }
+          update: {
+            args: Prisma.AdminNotificationUpdateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminNotificationPayload>
+          }
+          deleteMany: {
+            args: Prisma.AdminNotificationDeleteManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AdminNotificationUpdateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          upsert: {
+            args: Prisma.AdminNotificationUpsertArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<AdminNotificationPayload>
+          }
+          aggregate: {
+            args: Prisma.AdminNotificationAggregateArgs<ExtArgs>,
+            result: $Utils.Optional<AggregateAdminNotification>
+          }
+          groupBy: {
+            args: Prisma.AdminNotificationGroupByArgs<ExtArgs>,
+            result: $Utils.Optional<AdminNotificationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AdminNotificationCountArgs<ExtArgs>,
+            result: $Utils.Optional<AdminNotificationCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1718,6 +2143,7 @@ export namespace Prisma {
     payments: number
     checkIns: number
     gymsOwned: number
+    adminAuditLogs: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
@@ -1725,6 +2151,7 @@ export namespace Prisma {
     payments?: boolean | UserCountOutputTypeCountPaymentsArgs
     checkIns?: boolean | UserCountOutputTypeCountCheckInsArgs
     gymsOwned?: boolean | UserCountOutputTypeCountGymsOwnedArgs
+    adminAuditLogs?: boolean | UserCountOutputTypeCountAdminAuditLogsArgs
   }
 
   // Custom InputTypes
@@ -1769,6 +2196,14 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountGymsOwnedArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
     where?: GymWhereInput
+  }
+
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAdminAuditLogsArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    where?: AdminAuditLogWhereInput
   }
 
 
@@ -1861,11 +2296,13 @@ export namespace Prisma {
   export type GymCountOutputType = {
     checkIns: number
     photos: number
+    verificationDocuments: number
   }
 
   export type GymCountOutputTypeSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
     checkIns?: boolean | GymCountOutputTypeCountCheckInsArgs
     photos?: boolean | GymCountOutputTypeCountPhotosArgs
+    verificationDocuments?: boolean | GymCountOutputTypeCountVerificationDocumentsArgs
   }
 
   // Custom InputTypes
@@ -1894,6 +2331,14 @@ export namespace Prisma {
    */
   export type GymCountOutputTypeCountPhotosArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
     where?: GymPhotoWhereInput
+  }
+
+
+  /**
+   * GymCountOutputType without action
+   */
+  export type GymCountOutputTypeCountVerificationDocumentsArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    where?: GymVerificationDocumentWhereInput
   }
 
 
@@ -1929,7 +2374,10 @@ export namespace Prisma {
     email: string | null
     passwordHash: string | null
     role: string | null
+    isSuspended: boolean | null
+    suspendedAt: Date | null
     createdAt: Date | null
+    updatedAt: Date | null
     otpHash: string | null
     otpExpiresAt: Date | null
     otpAttempts: number | null
@@ -1941,7 +2389,10 @@ export namespace Prisma {
     email: string | null
     passwordHash: string | null
     role: string | null
+    isSuspended: boolean | null
+    suspendedAt: Date | null
     createdAt: Date | null
+    updatedAt: Date | null
     otpHash: string | null
     otpExpiresAt: Date | null
     otpAttempts: number | null
@@ -1953,7 +2404,10 @@ export namespace Prisma {
     email: number
     passwordHash: number
     role: number
+    isSuspended: number
+    suspendedAt: number
     createdAt: number
+    updatedAt: number
     otpHash: number
     otpExpiresAt: number
     otpAttempts: number
@@ -1975,7 +2429,10 @@ export namespace Prisma {
     email?: true
     passwordHash?: true
     role?: true
+    isSuspended?: true
+    suspendedAt?: true
     createdAt?: true
+    updatedAt?: true
     otpHash?: true
     otpExpiresAt?: true
     otpAttempts?: true
@@ -1987,7 +2444,10 @@ export namespace Prisma {
     email?: true
     passwordHash?: true
     role?: true
+    isSuspended?: true
+    suspendedAt?: true
     createdAt?: true
+    updatedAt?: true
     otpHash?: true
     otpExpiresAt?: true
     otpAttempts?: true
@@ -1999,7 +2459,10 @@ export namespace Prisma {
     email?: true
     passwordHash?: true
     role?: true
+    isSuspended?: true
+    suspendedAt?: true
     createdAt?: true
+    updatedAt?: true
     otpHash?: true
     otpExpiresAt?: true
     otpAttempts?: true
@@ -2099,7 +2562,10 @@ export namespace Prisma {
     email: string
     passwordHash: string
     role: string
+    isSuspended: boolean
+    suspendedAt: Date | null
     createdAt: Date
+    updatedAt: Date
     otpHash: string | null
     otpExpiresAt: Date | null
     otpAttempts: number | null
@@ -2130,7 +2596,10 @@ export namespace Prisma {
     email?: boolean
     passwordHash?: boolean
     role?: boolean
+    isSuspended?: boolean
+    suspendedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     otpHash?: boolean
     otpExpiresAt?: boolean
     otpAttempts?: boolean
@@ -2138,6 +2607,7 @@ export namespace Prisma {
     payments?: boolean | User$paymentsArgs<ExtArgs>
     checkIns?: boolean | User$checkInsArgs<ExtArgs>
     gymsOwned?: boolean | User$gymsOwnedArgs<ExtArgs>
+    adminAuditLogs?: boolean | User$adminAuditLogsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2147,7 +2617,10 @@ export namespace Prisma {
     email?: boolean
     passwordHash?: boolean
     role?: boolean
+    isSuspended?: boolean
+    suspendedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     otpHash?: boolean
     otpExpiresAt?: boolean
     otpAttempts?: boolean
@@ -2158,6 +2631,7 @@ export namespace Prisma {
     payments?: boolean | User$paymentsArgs<ExtArgs>
     checkIns?: boolean | User$checkInsArgs<ExtArgs>
     gymsOwned?: boolean | User$gymsOwnedArgs<ExtArgs>
+    adminAuditLogs?: boolean | User$adminAuditLogsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeArgs<ExtArgs>
   }
 
@@ -2538,6 +3012,8 @@ export namespace Prisma {
     checkIns<T extends User$checkInsArgs<ExtArgs> = {}>(args?: Subset<T, User$checkInsArgs<ExtArgs>>): Prisma.PrismaPromise<$Types.GetResult<CheckInPayload<ExtArgs>, T, 'findMany', never>| Null>;
 
     gymsOwned<T extends User$gymsOwnedArgs<ExtArgs> = {}>(args?: Subset<T, User$gymsOwnedArgs<ExtArgs>>): Prisma.PrismaPromise<$Types.GetResult<GymPayload<ExtArgs>, T, 'findMany', never>| Null>;
+
+    adminAuditLogs<T extends User$adminAuditLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$adminAuditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Types.GetResult<AdminAuditLogPayload<ExtArgs>, T, 'findMany', never>| Null>;
 
     private get _document();
     /**
@@ -2979,6 +3455,27 @@ export namespace Prisma {
 
 
   /**
+   * User.adminAuditLogs
+   */
+  export type User$adminAuditLogsArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminAuditLogInclude<ExtArgs> | null
+    where?: AdminAuditLogWhereInput
+    orderBy?: Enumerable<AdminAuditLogOrderByWithRelationInput>
+    cursor?: AdminAuditLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: Enumerable<AdminAuditLogScalarFieldEnum>
+  }
+
+
+  /**
    * User without action
    */
   export type UserArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
@@ -2990,6 +3487,884 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well.
      */
     include?: UserInclude<ExtArgs> | null
+  }
+
+
+
+  /**
+   * Model PasswordResetToken
+   */
+
+
+  export type AggregatePasswordResetToken = {
+    _count: PasswordResetTokenCountAggregateOutputType | null
+    _min: PasswordResetTokenMinAggregateOutputType | null
+    _max: PasswordResetTokenMaxAggregateOutputType | null
+  }
+
+  export type PasswordResetTokenMinAggregateOutputType = {
+    id: string | null
+    email: string | null
+    tokenHash: string | null
+    expiresAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type PasswordResetTokenMaxAggregateOutputType = {
+    id: string | null
+    email: string | null
+    tokenHash: string | null
+    expiresAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type PasswordResetTokenCountAggregateOutputType = {
+    id: number
+    email: number
+    tokenHash: number
+    expiresAt: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type PasswordResetTokenMinAggregateInputType = {
+    id?: true
+    email?: true
+    tokenHash?: true
+    expiresAt?: true
+    createdAt?: true
+  }
+
+  export type PasswordResetTokenMaxAggregateInputType = {
+    id?: true
+    email?: true
+    tokenHash?: true
+    expiresAt?: true
+    createdAt?: true
+  }
+
+  export type PasswordResetTokenCountAggregateInputType = {
+    id?: true
+    email?: true
+    tokenHash?: true
+    expiresAt?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type PasswordResetTokenAggregateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PasswordResetToken to aggregate.
+     */
+    where?: PasswordResetTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PasswordResetTokens to fetch.
+     */
+    orderBy?: Enumerable<PasswordResetTokenOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PasswordResetTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PasswordResetTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PasswordResetTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PasswordResetTokens
+    **/
+    _count?: true | PasswordResetTokenCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PasswordResetTokenMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PasswordResetTokenMaxAggregateInputType
+  }
+
+  export type GetPasswordResetTokenAggregateType<T extends PasswordResetTokenAggregateArgs> = {
+        [P in keyof T & keyof AggregatePasswordResetToken]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePasswordResetToken[P]>
+      : GetScalarType<T[P], AggregatePasswordResetToken[P]>
+  }
+
+
+
+
+  export type PasswordResetTokenGroupByArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    where?: PasswordResetTokenWhereInput
+    orderBy?: Enumerable<PasswordResetTokenOrderByWithAggregationInput>
+    by: PasswordResetTokenScalarFieldEnum[]
+    having?: PasswordResetTokenScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PasswordResetTokenCountAggregateInputType | true
+    _min?: PasswordResetTokenMinAggregateInputType
+    _max?: PasswordResetTokenMaxAggregateInputType
+  }
+
+
+  export type PasswordResetTokenGroupByOutputType = {
+    id: string
+    email: string
+    tokenHash: string
+    expiresAt: Date
+    createdAt: Date
+    _count: PasswordResetTokenCountAggregateOutputType | null
+    _min: PasswordResetTokenMinAggregateOutputType | null
+    _max: PasswordResetTokenMaxAggregateOutputType | null
+  }
+
+  type GetPasswordResetTokenGroupByPayload<T extends PasswordResetTokenGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickArray<PasswordResetTokenGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PasswordResetTokenGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PasswordResetTokenGroupByOutputType[P]>
+            : GetScalarType<T[P], PasswordResetTokenGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PasswordResetTokenSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    email?: boolean
+    tokenHash?: boolean
+    expiresAt?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["passwordResetToken"]>
+
+  export type PasswordResetTokenSelectScalar = {
+    id?: boolean
+    email?: boolean
+    tokenHash?: boolean
+    expiresAt?: boolean
+    createdAt?: boolean
+  }
+
+
+  type PasswordResetTokenGetPayload<S extends boolean | null | undefined | PasswordResetTokenArgs> = $Types.GetResult<PasswordResetTokenPayload, S>
+
+  type PasswordResetTokenCountArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = 
+    Omit<PasswordResetTokenFindManyArgs, 'select' | 'include'> & {
+      select?: PasswordResetTokenCountAggregateInputType | true
+    }
+
+  export interface PasswordResetTokenDelegate<GlobalRejectSettings extends Prisma.RejectOnNotFound | Prisma.RejectPerOperation | false | undefined, ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PasswordResetToken'], meta: { name: 'PasswordResetToken' } }
+    /**
+     * Find zero or one PasswordResetToken that matches the filter.
+     * @param {PasswordResetTokenFindUniqueArgs} args - Arguments to find a PasswordResetToken
+     * @example
+     * // Get one PasswordResetToken
+     * const passwordResetToken = await prisma.passwordResetToken.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findUnique<T extends PasswordResetTokenFindUniqueArgs<ExtArgs>, LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
+      args: SelectSubset<T, PasswordResetTokenFindUniqueArgs<ExtArgs>>
+    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findUnique', 'PasswordResetToken'> extends True ? Prisma__PasswordResetTokenClient<$Types.GetResult<PasswordResetTokenPayload<ExtArgs>, T, 'findUnique', never>, never, ExtArgs> : Prisma__PasswordResetTokenClient<$Types.GetResult<PasswordResetTokenPayload<ExtArgs>, T, 'findUnique', never> | null, null, ExtArgs>
+
+    /**
+     * Find one PasswordResetToken that matches the filter or throw an error  with `error.code='P2025'` 
+     *     if no matches were found.
+     * @param {PasswordResetTokenFindUniqueOrThrowArgs} args - Arguments to find a PasswordResetToken
+     * @example
+     * // Get one PasswordResetToken
+     * const passwordResetToken = await prisma.passwordResetToken.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findUniqueOrThrow<T extends PasswordResetTokenFindUniqueOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, PasswordResetTokenFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__PasswordResetTokenClient<$Types.GetResult<PasswordResetTokenPayload<ExtArgs>, T, 'findUniqueOrThrow', never>, never, ExtArgs>
+
+    /**
+     * Find the first PasswordResetToken that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PasswordResetTokenFindFirstArgs} args - Arguments to find a PasswordResetToken
+     * @example
+     * // Get one PasswordResetToken
+     * const passwordResetToken = await prisma.passwordResetToken.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findFirst<T extends PasswordResetTokenFindFirstArgs<ExtArgs>, LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
+      args?: SelectSubset<T, PasswordResetTokenFindFirstArgs<ExtArgs>>
+    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findFirst', 'PasswordResetToken'> extends True ? Prisma__PasswordResetTokenClient<$Types.GetResult<PasswordResetTokenPayload<ExtArgs>, T, 'findFirst', never>, never, ExtArgs> : Prisma__PasswordResetTokenClient<$Types.GetResult<PasswordResetTokenPayload<ExtArgs>, T, 'findFirst', never> | null, null, ExtArgs>
+
+    /**
+     * Find the first PasswordResetToken that matches the filter or
+     * throw `NotFoundError` if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PasswordResetTokenFindFirstOrThrowArgs} args - Arguments to find a PasswordResetToken
+     * @example
+     * // Get one PasswordResetToken
+     * const passwordResetToken = await prisma.passwordResetToken.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findFirstOrThrow<T extends PasswordResetTokenFindFirstOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, PasswordResetTokenFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__PasswordResetTokenClient<$Types.GetResult<PasswordResetTokenPayload<ExtArgs>, T, 'findFirstOrThrow', never>, never, ExtArgs>
+
+    /**
+     * Find zero or more PasswordResetTokens that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PasswordResetTokenFindManyArgs=} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PasswordResetTokens
+     * const passwordResetTokens = await prisma.passwordResetToken.findMany()
+     * 
+     * // Get first 10 PasswordResetTokens
+     * const passwordResetTokens = await prisma.passwordResetToken.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const passwordResetTokenWithIdOnly = await prisma.passwordResetToken.findMany({ select: { id: true } })
+     * 
+    **/
+    findMany<T extends PasswordResetTokenFindManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, PasswordResetTokenFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<$Types.GetResult<PasswordResetTokenPayload<ExtArgs>, T, 'findMany', never>>
+
+    /**
+     * Create a PasswordResetToken.
+     * @param {PasswordResetTokenCreateArgs} args - Arguments to create a PasswordResetToken.
+     * @example
+     * // Create one PasswordResetToken
+     * const PasswordResetToken = await prisma.passwordResetToken.create({
+     *   data: {
+     *     // ... data to create a PasswordResetToken
+     *   }
+     * })
+     * 
+    **/
+    create<T extends PasswordResetTokenCreateArgs<ExtArgs>>(
+      args: SelectSubset<T, PasswordResetTokenCreateArgs<ExtArgs>>
+    ): Prisma__PasswordResetTokenClient<$Types.GetResult<PasswordResetTokenPayload<ExtArgs>, T, 'create', never>, never, ExtArgs>
+
+    /**
+     * Create many PasswordResetTokens.
+     *     @param {PasswordResetTokenCreateManyArgs} args - Arguments to create many PasswordResetTokens.
+     *     @example
+     *     // Create many PasswordResetTokens
+     *     const passwordResetToken = await prisma.passwordResetToken.createMany({
+     *       data: {
+     *         // ... provide data here
+     *       }
+     *     })
+     *     
+    **/
+    createMany<T extends PasswordResetTokenCreateManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, PasswordResetTokenCreateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a PasswordResetToken.
+     * @param {PasswordResetTokenDeleteArgs} args - Arguments to delete one PasswordResetToken.
+     * @example
+     * // Delete one PasswordResetToken
+     * const PasswordResetToken = await prisma.passwordResetToken.delete({
+     *   where: {
+     *     // ... filter to delete one PasswordResetToken
+     *   }
+     * })
+     * 
+    **/
+    delete<T extends PasswordResetTokenDeleteArgs<ExtArgs>>(
+      args: SelectSubset<T, PasswordResetTokenDeleteArgs<ExtArgs>>
+    ): Prisma__PasswordResetTokenClient<$Types.GetResult<PasswordResetTokenPayload<ExtArgs>, T, 'delete', never>, never, ExtArgs>
+
+    /**
+     * Update one PasswordResetToken.
+     * @param {PasswordResetTokenUpdateArgs} args - Arguments to update one PasswordResetToken.
+     * @example
+     * // Update one PasswordResetToken
+     * const passwordResetToken = await prisma.passwordResetToken.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+    **/
+    update<T extends PasswordResetTokenUpdateArgs<ExtArgs>>(
+      args: SelectSubset<T, PasswordResetTokenUpdateArgs<ExtArgs>>
+    ): Prisma__PasswordResetTokenClient<$Types.GetResult<PasswordResetTokenPayload<ExtArgs>, T, 'update', never>, never, ExtArgs>
+
+    /**
+     * Delete zero or more PasswordResetTokens.
+     * @param {PasswordResetTokenDeleteManyArgs} args - Arguments to filter PasswordResetTokens to delete.
+     * @example
+     * // Delete a few PasswordResetTokens
+     * const { count } = await prisma.passwordResetToken.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+    **/
+    deleteMany<T extends PasswordResetTokenDeleteManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, PasswordResetTokenDeleteManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PasswordResetTokens.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PasswordResetTokenUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PasswordResetTokens
+     * const passwordResetToken = await prisma.passwordResetToken.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+    **/
+    updateMany<T extends PasswordResetTokenUpdateManyArgs<ExtArgs>>(
+      args: SelectSubset<T, PasswordResetTokenUpdateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PasswordResetToken.
+     * @param {PasswordResetTokenUpsertArgs} args - Arguments to update or create a PasswordResetToken.
+     * @example
+     * // Update or create a PasswordResetToken
+     * const passwordResetToken = await prisma.passwordResetToken.upsert({
+     *   create: {
+     *     // ... data to create a PasswordResetToken
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PasswordResetToken we want to update
+     *   }
+     * })
+    **/
+    upsert<T extends PasswordResetTokenUpsertArgs<ExtArgs>>(
+      args: SelectSubset<T, PasswordResetTokenUpsertArgs<ExtArgs>>
+    ): Prisma__PasswordResetTokenClient<$Types.GetResult<PasswordResetTokenPayload<ExtArgs>, T, 'upsert', never>, never, ExtArgs>
+
+    /**
+     * Count the number of PasswordResetTokens.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PasswordResetTokenCountArgs} args - Arguments to filter PasswordResetTokens to count.
+     * @example
+     * // Count the number of PasswordResetTokens
+     * const count = await prisma.passwordResetToken.count({
+     *   where: {
+     *     // ... the filter for the PasswordResetTokens we want to count
+     *   }
+     * })
+    **/
+    count<T extends PasswordResetTokenCountArgs>(
+      args?: Subset<T, PasswordResetTokenCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PasswordResetTokenCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PasswordResetToken.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PasswordResetTokenAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PasswordResetTokenAggregateArgs>(args: Subset<T, PasswordResetTokenAggregateArgs>): Prisma.PrismaPromise<GetPasswordResetTokenAggregateType<T>>
+
+    /**
+     * Group by PasswordResetToken.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PasswordResetTokenGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PasswordResetTokenGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PasswordResetTokenGroupByArgs['orderBy'] }
+        : { orderBy?: PasswordResetTokenGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends TupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PasswordResetTokenGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPasswordResetTokenGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PasswordResetToken.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export class Prisma__PasswordResetTokenClient<T, Null = never, ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> implements Prisma.PrismaPromise<T> {
+    private readonly _dmmf;
+    private readonly _queryType;
+    private readonly _rootField;
+    private readonly _clientMethod;
+    private readonly _args;
+    private readonly _dataPath;
+    private readonly _errorFormat;
+    private readonly _measurePerformance?;
+    private _isList;
+    private _callsite;
+    private _requestPromise?;
+    readonly [Symbol.toStringTag]: 'PrismaPromise';
+    constructor(_dmmf: runtime.DMMFClass, _queryType: 'query' | 'mutation', _rootField: string, _clientMethod: string, _args: any, _dataPath: string[], _errorFormat: ErrorFormat, _measurePerformance?: boolean | undefined, _isList?: boolean);
+
+
+    private get _document();
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): Promise<T>;
+  }
+
+
+
+  // Custom InputTypes
+
+  /**
+   * PasswordResetToken base type for findUnique actions
+   */
+  export type PasswordResetTokenFindUniqueArgsBase<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PasswordResetToken
+     */
+    select?: PasswordResetTokenSelect<ExtArgs> | null
+    /**
+     * Filter, which PasswordResetToken to fetch.
+     */
+    where: PasswordResetTokenWhereUniqueInput
+  }
+
+  /**
+   * PasswordResetToken findUnique
+   */
+  export interface PasswordResetTokenFindUniqueArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> extends PasswordResetTokenFindUniqueArgsBase<ExtArgs> {
+   /**
+    * Throw an Error if query returns no results
+    * @deprecated since 4.0.0: use `findUniqueOrThrow` method instead
+    */
+    rejectOnNotFound?: RejectOnNotFound
+  }
+      
+
+  /**
+   * PasswordResetToken findUniqueOrThrow
+   */
+  export type PasswordResetTokenFindUniqueOrThrowArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PasswordResetToken
+     */
+    select?: PasswordResetTokenSelect<ExtArgs> | null
+    /**
+     * Filter, which PasswordResetToken to fetch.
+     */
+    where: PasswordResetTokenWhereUniqueInput
+  }
+
+
+  /**
+   * PasswordResetToken base type for findFirst actions
+   */
+  export type PasswordResetTokenFindFirstArgsBase<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PasswordResetToken
+     */
+    select?: PasswordResetTokenSelect<ExtArgs> | null
+    /**
+     * Filter, which PasswordResetToken to fetch.
+     */
+    where?: PasswordResetTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PasswordResetTokens to fetch.
+     */
+    orderBy?: Enumerable<PasswordResetTokenOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PasswordResetTokens.
+     */
+    cursor?: PasswordResetTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PasswordResetTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PasswordResetTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PasswordResetTokens.
+     */
+    distinct?: Enumerable<PasswordResetTokenScalarFieldEnum>
+  }
+
+  /**
+   * PasswordResetToken findFirst
+   */
+  export interface PasswordResetTokenFindFirstArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> extends PasswordResetTokenFindFirstArgsBase<ExtArgs> {
+   /**
+    * Throw an Error if query returns no results
+    * @deprecated since 4.0.0: use `findFirstOrThrow` method instead
+    */
+    rejectOnNotFound?: RejectOnNotFound
+  }
+      
+
+  /**
+   * PasswordResetToken findFirstOrThrow
+   */
+  export type PasswordResetTokenFindFirstOrThrowArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PasswordResetToken
+     */
+    select?: PasswordResetTokenSelect<ExtArgs> | null
+    /**
+     * Filter, which PasswordResetToken to fetch.
+     */
+    where?: PasswordResetTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PasswordResetTokens to fetch.
+     */
+    orderBy?: Enumerable<PasswordResetTokenOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PasswordResetTokens.
+     */
+    cursor?: PasswordResetTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PasswordResetTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PasswordResetTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PasswordResetTokens.
+     */
+    distinct?: Enumerable<PasswordResetTokenScalarFieldEnum>
+  }
+
+
+  /**
+   * PasswordResetToken findMany
+   */
+  export type PasswordResetTokenFindManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PasswordResetToken
+     */
+    select?: PasswordResetTokenSelect<ExtArgs> | null
+    /**
+     * Filter, which PasswordResetTokens to fetch.
+     */
+    where?: PasswordResetTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PasswordResetTokens to fetch.
+     */
+    orderBy?: Enumerable<PasswordResetTokenOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PasswordResetTokens.
+     */
+    cursor?: PasswordResetTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PasswordResetTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PasswordResetTokens.
+     */
+    skip?: number
+    distinct?: Enumerable<PasswordResetTokenScalarFieldEnum>
+  }
+
+
+  /**
+   * PasswordResetToken create
+   */
+  export type PasswordResetTokenCreateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PasswordResetToken
+     */
+    select?: PasswordResetTokenSelect<ExtArgs> | null
+    /**
+     * The data needed to create a PasswordResetToken.
+     */
+    data: XOR<PasswordResetTokenCreateInput, PasswordResetTokenUncheckedCreateInput>
+  }
+
+
+  /**
+   * PasswordResetToken createMany
+   */
+  export type PasswordResetTokenCreateManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PasswordResetTokens.
+     */
+    data: Enumerable<PasswordResetTokenCreateManyInput>
+    skipDuplicates?: boolean
+  }
+
+
+  /**
+   * PasswordResetToken update
+   */
+  export type PasswordResetTokenUpdateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PasswordResetToken
+     */
+    select?: PasswordResetTokenSelect<ExtArgs> | null
+    /**
+     * The data needed to update a PasswordResetToken.
+     */
+    data: XOR<PasswordResetTokenUpdateInput, PasswordResetTokenUncheckedUpdateInput>
+    /**
+     * Choose, which PasswordResetToken to update.
+     */
+    where: PasswordResetTokenWhereUniqueInput
+  }
+
+
+  /**
+   * PasswordResetToken updateMany
+   */
+  export type PasswordResetTokenUpdateManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PasswordResetTokens.
+     */
+    data: XOR<PasswordResetTokenUpdateManyMutationInput, PasswordResetTokenUncheckedUpdateManyInput>
+    /**
+     * Filter which PasswordResetTokens to update
+     */
+    where?: PasswordResetTokenWhereInput
+  }
+
+
+  /**
+   * PasswordResetToken upsert
+   */
+  export type PasswordResetTokenUpsertArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PasswordResetToken
+     */
+    select?: PasswordResetTokenSelect<ExtArgs> | null
+    /**
+     * The filter to search for the PasswordResetToken to update in case it exists.
+     */
+    where: PasswordResetTokenWhereUniqueInput
+    /**
+     * In case the PasswordResetToken found by the `where` argument doesn't exist, create a new PasswordResetToken with this data.
+     */
+    create: XOR<PasswordResetTokenCreateInput, PasswordResetTokenUncheckedCreateInput>
+    /**
+     * In case the PasswordResetToken was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PasswordResetTokenUpdateInput, PasswordResetTokenUncheckedUpdateInput>
+  }
+
+
+  /**
+   * PasswordResetToken delete
+   */
+  export type PasswordResetTokenDeleteArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PasswordResetToken
+     */
+    select?: PasswordResetTokenSelect<ExtArgs> | null
+    /**
+     * Filter which PasswordResetToken to delete.
+     */
+    where: PasswordResetTokenWhereUniqueInput
+  }
+
+
+  /**
+   * PasswordResetToken deleteMany
+   */
+  export type PasswordResetTokenDeleteManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PasswordResetTokens to delete
+     */
+    where?: PasswordResetTokenWhereInput
+  }
+
+
+  /**
+   * PasswordResetToken without action
+   */
+  export type PasswordResetTokenArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PasswordResetToken
+     */
+    select?: PasswordResetTokenSelect<ExtArgs> | null
   }
 
 
@@ -3018,22 +4393,37 @@ export namespace Prisma {
   export type SubscriptionTierMinAggregateOutputType = {
     id: string | null
     name: string | null
+    slug: string | null
+    description: string | null
     accessTier: number | null
+    isActive: boolean | null
+    isFeatured: boolean | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type SubscriptionTierMaxAggregateOutputType = {
     id: string | null
     name: string | null
+    slug: string | null
+    description: string | null
     accessTier: number | null
+    isActive: boolean | null
+    isFeatured: boolean | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type SubscriptionTierCountAggregateOutputType = {
     id: number
     name: number
+    slug: number
+    description: number
     accessTier: number
+    isActive: number
+    isFeatured: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -3049,22 +4439,37 @@ export namespace Prisma {
   export type SubscriptionTierMinAggregateInputType = {
     id?: true
     name?: true
+    slug?: true
+    description?: true
     accessTier?: true
+    isActive?: true
+    isFeatured?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type SubscriptionTierMaxAggregateInputType = {
     id?: true
     name?: true
+    slug?: true
+    description?: true
     accessTier?: true
+    isActive?: true
+    isFeatured?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type SubscriptionTierCountAggregateInputType = {
     id?: true
     name?: true
+    slug?: true
+    description?: true
     accessTier?: true
+    isActive?: true
+    isFeatured?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -3158,8 +4563,13 @@ export namespace Prisma {
   export type SubscriptionTierGroupByOutputType = {
     id: string
     name: string
+    slug: string
+    description: string | null
     accessTier: number
+    isActive: boolean
+    isFeatured: boolean
     createdAt: Date
+    updatedAt: Date
     _count: SubscriptionTierCountAggregateOutputType | null
     _avg: SubscriptionTierAvgAggregateOutputType | null
     _sum: SubscriptionTierSumAggregateOutputType | null
@@ -3184,8 +4594,13 @@ export namespace Prisma {
   export type SubscriptionTierSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    slug?: boolean
+    description?: boolean
     accessTier?: boolean
+    isActive?: boolean
+    isFeatured?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     prices?: boolean | SubscriptionTier$pricesArgs<ExtArgs>
     subscriptions?: boolean | SubscriptionTier$subscriptionsArgs<ExtArgs>
     _count?: boolean | SubscriptionTierCountOutputTypeArgs<ExtArgs>
@@ -3194,8 +4609,13 @@ export namespace Prisma {
   export type SubscriptionTierSelectScalar = {
     id?: boolean
     name?: boolean
+    slug?: boolean
+    description?: boolean
     accessTier?: boolean
+    isActive?: boolean
+    isFeatured?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
   export type SubscriptionTierInclude<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
@@ -4015,28 +5435,40 @@ export namespace Prisma {
   export type SubscriptionPriceMinAggregateOutputType = {
     id: string | null
     tierId: string | null
+    stripeProductId: string | null
     stripePriceId: string | null
     interval: string | null
     priceCents: number | null
+    currency: string | null
+    isActive: boolean | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type SubscriptionPriceMaxAggregateOutputType = {
     id: string | null
     tierId: string | null
+    stripeProductId: string | null
     stripePriceId: string | null
     interval: string | null
     priceCents: number | null
+    currency: string | null
+    isActive: boolean | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type SubscriptionPriceCountAggregateOutputType = {
     id: number
     tierId: number
+    stripeProductId: number
     stripePriceId: number
     interval: number
     priceCents: number
+    currency: number
+    isActive: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -4052,28 +5484,40 @@ export namespace Prisma {
   export type SubscriptionPriceMinAggregateInputType = {
     id?: true
     tierId?: true
+    stripeProductId?: true
     stripePriceId?: true
     interval?: true
     priceCents?: true
+    currency?: true
+    isActive?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type SubscriptionPriceMaxAggregateInputType = {
     id?: true
     tierId?: true
+    stripeProductId?: true
     stripePriceId?: true
     interval?: true
     priceCents?: true
+    currency?: true
+    isActive?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type SubscriptionPriceCountAggregateInputType = {
     id?: true
     tierId?: true
+    stripeProductId?: true
     stripePriceId?: true
     interval?: true
     priceCents?: true
+    currency?: true
+    isActive?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -4167,10 +5611,14 @@ export namespace Prisma {
   export type SubscriptionPriceGroupByOutputType = {
     id: string
     tierId: string
+    stripeProductId: string
     stripePriceId: string
     interval: string
     priceCents: number
+    currency: string
+    isActive: boolean
     createdAt: Date
+    updatedAt: Date
     _count: SubscriptionPriceCountAggregateOutputType | null
     _avg: SubscriptionPriceAvgAggregateOutputType | null
     _sum: SubscriptionPriceSumAggregateOutputType | null
@@ -4195,20 +5643,28 @@ export namespace Prisma {
   export type SubscriptionPriceSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     tierId?: boolean
+    stripeProductId?: boolean
     stripePriceId?: boolean
     interval?: boolean
     priceCents?: boolean
+    currency?: boolean
+    isActive?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     tier?: boolean | SubscriptionTierArgs<ExtArgs>
   }, ExtArgs["result"]["subscriptionPrice"]>
 
   export type SubscriptionPriceSelectScalar = {
     id?: boolean
     tierId?: boolean
+    stripeProductId?: boolean
     stripePriceId?: boolean
     interval?: boolean
     priceCents?: boolean
+    currency?: boolean
+    isActive?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
   export type SubscriptionPriceInclude<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
@@ -4979,6 +6435,7 @@ export namespace Prisma {
     startAt: Date | null
     endAt: Date | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type SubscriptionMaxAggregateOutputType = {
@@ -4991,6 +6448,7 @@ export namespace Prisma {
     startAt: Date | null
     endAt: Date | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type SubscriptionCountAggregateOutputType = {
@@ -5003,6 +6461,7 @@ export namespace Prisma {
     startAt: number
     endAt: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -5017,6 +6476,7 @@ export namespace Prisma {
     startAt?: true
     endAt?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type SubscriptionMaxAggregateInputType = {
@@ -5029,6 +6489,7 @@ export namespace Prisma {
     startAt?: true
     endAt?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type SubscriptionCountAggregateInputType = {
@@ -5041,6 +6502,7 @@ export namespace Prisma {
     startAt?: true
     endAt?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -5127,6 +6589,7 @@ export namespace Prisma {
     startAt: Date | null
     endAt: Date | null
     createdAt: Date
+    updatedAt: Date
     _count: SubscriptionCountAggregateOutputType | null
     _min: SubscriptionMinAggregateOutputType | null
     _max: SubscriptionMaxAggregateOutputType | null
@@ -5156,6 +6619,7 @@ export namespace Prisma {
     startAt?: boolean
     endAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     user?: boolean | UserArgs<ExtArgs>
     tier?: boolean | SubscriptionTierArgs<ExtArgs>
     payments?: boolean | Subscription$paymentsArgs<ExtArgs>
@@ -5172,6 +6636,7 @@ export namespace Prisma {
     startAt?: boolean
     endAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
   export type SubscriptionInclude<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
@@ -5976,6 +7441,7 @@ export namespace Prisma {
     subscriptionId: string | null
     amountCents: number | null
     currency: string | null
+    paymentProvider: string | null
     stripePaymentIntent: string | null
     status: string | null
     createdAt: Date | null
@@ -5987,6 +7453,7 @@ export namespace Prisma {
     subscriptionId: string | null
     amountCents: number | null
     currency: string | null
+    paymentProvider: string | null
     stripePaymentIntent: string | null
     status: string | null
     createdAt: Date | null
@@ -5998,6 +7465,7 @@ export namespace Prisma {
     subscriptionId: number
     amountCents: number
     currency: number
+    paymentProvider: number
     stripePaymentIntent: number
     status: number
     metadata: number
@@ -6020,6 +7488,7 @@ export namespace Prisma {
     subscriptionId?: true
     amountCents?: true
     currency?: true
+    paymentProvider?: true
     stripePaymentIntent?: true
     status?: true
     createdAt?: true
@@ -6031,6 +7500,7 @@ export namespace Prisma {
     subscriptionId?: true
     amountCents?: true
     currency?: true
+    paymentProvider?: true
     stripePaymentIntent?: true
     status?: true
     createdAt?: true
@@ -6042,6 +7512,7 @@ export namespace Prisma {
     subscriptionId?: true
     amountCents?: true
     currency?: true
+    paymentProvider?: true
     stripePaymentIntent?: true
     status?: true
     metadata?: true
@@ -6142,6 +7613,7 @@ export namespace Prisma {
     subscriptionId: string | null
     amountCents: number
     currency: string
+    paymentProvider: string | null
     stripePaymentIntent: string | null
     status: string
     metadata: JsonValue | null
@@ -6173,6 +7645,7 @@ export namespace Prisma {
     subscriptionId?: boolean
     amountCents?: boolean
     currency?: boolean
+    paymentProvider?: boolean
     stripePaymentIntent?: boolean
     status?: boolean
     metadata?: boolean
@@ -6187,6 +7660,7 @@ export namespace Prisma {
     subscriptionId?: boolean
     amountCents?: boolean
     currency?: boolean
+    paymentProvider?: boolean
     stripePaymentIntent?: boolean
     status?: boolean
     metadata?: boolean
@@ -6960,63 +8434,128 @@ export namespace Prisma {
     latitude: number | null
     longitude: number | null
     tier: number | null
+    resubmissionCount: number | null
   }
 
   export type GymSumAggregateOutputType = {
     latitude: number | null
     longitude: number | null
     tier: number | null
+    resubmissionCount: number | null
   }
 
   export type GymMinAggregateOutputType = {
     id: string | null
     name: string | null
+    description: string | null
     addressLine: string | null
     city: string | null
+    province: string | null
+    postalCode: string | null
     latitude: number | null
     longitude: number | null
+    phoneNumber: string | null
+    whatsappNumber: string | null
+    instagramHandle: string | null
+    websiteUrl: string | null
+    googleMapsLink: string | null
+    cnicNumber: string | null
+    businessName: string | null
     openingTime: string | null
     closingTime: string | null
     is24Hours: boolean | null
     tier: number | null
     coverImageUrl: string | null
     status: string | null
+    submittedAt: Date | null
+    reviewedAt: Date | null
+    reviewedByAdminId: string | null
+    rejectionReason: string | null
+    approvalNotes: string | null
+    resubmissionCount: number | null
+    isFeatured: boolean | null
+    isArchived: boolean | null
+    isBlocked: boolean | null
+    blockedReason: string | null
     ownerId: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type GymMaxAggregateOutputType = {
     id: string | null
     name: string | null
+    description: string | null
     addressLine: string | null
     city: string | null
+    province: string | null
+    postalCode: string | null
     latitude: number | null
     longitude: number | null
+    phoneNumber: string | null
+    whatsappNumber: string | null
+    instagramHandle: string | null
+    websiteUrl: string | null
+    googleMapsLink: string | null
+    cnicNumber: string | null
+    businessName: string | null
     openingTime: string | null
     closingTime: string | null
     is24Hours: boolean | null
     tier: number | null
     coverImageUrl: string | null
     status: string | null
+    submittedAt: Date | null
+    reviewedAt: Date | null
+    reviewedByAdminId: string | null
+    rejectionReason: string | null
+    approvalNotes: string | null
+    resubmissionCount: number | null
+    isFeatured: boolean | null
+    isArchived: boolean | null
+    isBlocked: boolean | null
+    blockedReason: string | null
     ownerId: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type GymCountAggregateOutputType = {
     id: number
     name: number
+    description: number
     addressLine: number
     city: number
+    province: number
+    postalCode: number
     latitude: number
     longitude: number
+    phoneNumber: number
+    whatsappNumber: number
+    instagramHandle: number
+    websiteUrl: number
+    googleMapsLink: number
+    cnicNumber: number
+    businessName: number
     openingTime: number
     closingTime: number
     is24Hours: number
     tier: number
     coverImageUrl: number
     status: number
+    submittedAt: number
+    reviewedAt: number
+    reviewedByAdminId: number
+    rejectionReason: number
+    approvalNotes: number
+    resubmissionCount: number
+    isFeatured: number
+    isArchived: number
+    isBlocked: number
+    blockedReason: number
     ownerId: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -7025,63 +8564,128 @@ export namespace Prisma {
     latitude?: true
     longitude?: true
     tier?: true
+    resubmissionCount?: true
   }
 
   export type GymSumAggregateInputType = {
     latitude?: true
     longitude?: true
     tier?: true
+    resubmissionCount?: true
   }
 
   export type GymMinAggregateInputType = {
     id?: true
     name?: true
+    description?: true
     addressLine?: true
     city?: true
+    province?: true
+    postalCode?: true
     latitude?: true
     longitude?: true
+    phoneNumber?: true
+    whatsappNumber?: true
+    instagramHandle?: true
+    websiteUrl?: true
+    googleMapsLink?: true
+    cnicNumber?: true
+    businessName?: true
     openingTime?: true
     closingTime?: true
     is24Hours?: true
     tier?: true
     coverImageUrl?: true
     status?: true
+    submittedAt?: true
+    reviewedAt?: true
+    reviewedByAdminId?: true
+    rejectionReason?: true
+    approvalNotes?: true
+    resubmissionCount?: true
+    isFeatured?: true
+    isArchived?: true
+    isBlocked?: true
+    blockedReason?: true
     ownerId?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type GymMaxAggregateInputType = {
     id?: true
     name?: true
+    description?: true
     addressLine?: true
     city?: true
+    province?: true
+    postalCode?: true
     latitude?: true
     longitude?: true
+    phoneNumber?: true
+    whatsappNumber?: true
+    instagramHandle?: true
+    websiteUrl?: true
+    googleMapsLink?: true
+    cnicNumber?: true
+    businessName?: true
     openingTime?: true
     closingTime?: true
     is24Hours?: true
     tier?: true
     coverImageUrl?: true
     status?: true
+    submittedAt?: true
+    reviewedAt?: true
+    reviewedByAdminId?: true
+    rejectionReason?: true
+    approvalNotes?: true
+    resubmissionCount?: true
+    isFeatured?: true
+    isArchived?: true
+    isBlocked?: true
+    blockedReason?: true
     ownerId?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type GymCountAggregateInputType = {
     id?: true
     name?: true
+    description?: true
     addressLine?: true
     city?: true
+    province?: true
+    postalCode?: true
     latitude?: true
     longitude?: true
+    phoneNumber?: true
+    whatsappNumber?: true
+    instagramHandle?: true
+    websiteUrl?: true
+    googleMapsLink?: true
+    cnicNumber?: true
+    businessName?: true
     openingTime?: true
     closingTime?: true
     is24Hours?: true
     tier?: true
     coverImageUrl?: true
     status?: true
+    submittedAt?: true
+    reviewedAt?: true
+    reviewedByAdminId?: true
+    rejectionReason?: true
+    approvalNotes?: true
+    resubmissionCount?: true
+    isFeatured?: true
+    isArchived?: true
+    isBlocked?: true
+    blockedReason?: true
     ownerId?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -7175,18 +8779,39 @@ export namespace Prisma {
   export type GymGroupByOutputType = {
     id: string
     name: string
+    description: string | null
     addressLine: string
     city: string
+    province: string | null
+    postalCode: string | null
     latitude: number
     longitude: number
+    phoneNumber: string | null
+    whatsappNumber: string | null
+    instagramHandle: string | null
+    websiteUrl: string | null
+    googleMapsLink: string | null
+    cnicNumber: string | null
+    businessName: string | null
     openingTime: string | null
     closingTime: string | null
     is24Hours: boolean
     tier: number
     coverImageUrl: string | null
     status: string
+    submittedAt: Date | null
+    reviewedAt: Date | null
+    reviewedByAdminId: string | null
+    rejectionReason: string | null
+    approvalNotes: string | null
+    resubmissionCount: number
+    isFeatured: boolean
+    isArchived: boolean
+    isBlocked: boolean
+    blockedReason: string | null
     ownerId: string | null
     createdAt: Date
+    updatedAt: Date
     _count: GymCountAggregateOutputType | null
     _avg: GymAvgAggregateOutputType | null
     _sum: GymSumAggregateOutputType | null
@@ -7211,45 +8836,89 @@ export namespace Prisma {
   export type GymSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    description?: boolean
     addressLine?: boolean
     city?: boolean
+    province?: boolean
+    postalCode?: boolean
     latitude?: boolean
     longitude?: boolean
+    phoneNumber?: boolean
+    whatsappNumber?: boolean
+    instagramHandle?: boolean
+    websiteUrl?: boolean
+    googleMapsLink?: boolean
+    cnicNumber?: boolean
+    businessName?: boolean
     openingTime?: boolean
     closingTime?: boolean
     is24Hours?: boolean
     tier?: boolean
     coverImageUrl?: boolean
     status?: boolean
+    submittedAt?: boolean
+    reviewedAt?: boolean
+    reviewedByAdminId?: boolean
+    rejectionReason?: boolean
+    approvalNotes?: boolean
+    resubmissionCount?: boolean
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: boolean
     ownerId?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     owner?: boolean | UserArgs<ExtArgs>
     checkIns?: boolean | Gym$checkInsArgs<ExtArgs>
     photos?: boolean | Gym$photosArgs<ExtArgs>
+    verificationDocuments?: boolean | Gym$verificationDocumentsArgs<ExtArgs>
     _count?: boolean | GymCountOutputTypeArgs<ExtArgs>
   }, ExtArgs["result"]["gym"]>
 
   export type GymSelectScalar = {
     id?: boolean
     name?: boolean
+    description?: boolean
     addressLine?: boolean
     city?: boolean
+    province?: boolean
+    postalCode?: boolean
     latitude?: boolean
     longitude?: boolean
+    phoneNumber?: boolean
+    whatsappNumber?: boolean
+    instagramHandle?: boolean
+    websiteUrl?: boolean
+    googleMapsLink?: boolean
+    cnicNumber?: boolean
+    businessName?: boolean
     openingTime?: boolean
     closingTime?: boolean
     is24Hours?: boolean
     tier?: boolean
     coverImageUrl?: boolean
     status?: boolean
+    submittedAt?: boolean
+    reviewedAt?: boolean
+    reviewedByAdminId?: boolean
+    rejectionReason?: boolean
+    approvalNotes?: boolean
+    resubmissionCount?: boolean
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: boolean
     ownerId?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
   export type GymInclude<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
     owner?: boolean | UserArgs<ExtArgs>
     checkIns?: boolean | Gym$checkInsArgs<ExtArgs>
     photos?: boolean | Gym$photosArgs<ExtArgs>
+    verificationDocuments?: boolean | Gym$verificationDocumentsArgs<ExtArgs>
     _count?: boolean | GymCountOutputTypeArgs<ExtArgs>
   }
 
@@ -7628,6 +9297,8 @@ export namespace Prisma {
     checkIns<T extends Gym$checkInsArgs<ExtArgs> = {}>(args?: Subset<T, Gym$checkInsArgs<ExtArgs>>): Prisma.PrismaPromise<$Types.GetResult<CheckInPayload<ExtArgs>, T, 'findMany', never>| Null>;
 
     photos<T extends Gym$photosArgs<ExtArgs> = {}>(args?: Subset<T, Gym$photosArgs<ExtArgs>>): Prisma.PrismaPromise<$Types.GetResult<GymPhotoPayload<ExtArgs>, T, 'findMany', never>| Null>;
+
+    verificationDocuments<T extends Gym$verificationDocumentsArgs<ExtArgs> = {}>(args?: Subset<T, Gym$verificationDocumentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Types.GetResult<GymVerificationDocumentPayload<ExtArgs>, T, 'findMany', never>| Null>;
 
     private get _document();
     /**
@@ -8027,6 +9698,27 @@ export namespace Prisma {
 
 
   /**
+   * Gym.verificationDocuments
+   */
+  export type Gym$verificationDocumentsArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymVerificationDocument
+     */
+    select?: GymVerificationDocumentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymVerificationDocumentInclude<ExtArgs> | null
+    where?: GymVerificationDocumentWhereInput
+    orderBy?: Enumerable<GymVerificationDocumentOrderByWithRelationInput>
+    cursor?: GymVerificationDocumentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: Enumerable<GymVerificationDocumentScalarFieldEnum>
+  }
+
+
+  /**
    * Gym without action
    */
   export type GymArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
@@ -8038,6 +9730,966 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well.
      */
     include?: GymInclude<ExtArgs> | null
+  }
+
+
+
+  /**
+   * Model GymVerificationDocument
+   */
+
+
+  export type AggregateGymVerificationDocument = {
+    _count: GymVerificationDocumentCountAggregateOutputType | null
+    _min: GymVerificationDocumentMinAggregateOutputType | null
+    _max: GymVerificationDocumentMaxAggregateOutputType | null
+  }
+
+  export type GymVerificationDocumentMinAggregateOutputType = {
+    id: string | null
+    gymId: string | null
+    type: string | null
+    fileUrl: string | null
+    status: string | null
+    rejectedReason: string | null
+    reviewedAt: Date | null
+    reviewNotes: string | null
+    createdAt: Date | null
+  }
+
+  export type GymVerificationDocumentMaxAggregateOutputType = {
+    id: string | null
+    gymId: string | null
+    type: string | null
+    fileUrl: string | null
+    status: string | null
+    rejectedReason: string | null
+    reviewedAt: Date | null
+    reviewNotes: string | null
+    createdAt: Date | null
+  }
+
+  export type GymVerificationDocumentCountAggregateOutputType = {
+    id: number
+    gymId: number
+    type: number
+    fileUrl: number
+    status: number
+    rejectedReason: number
+    reviewedAt: number
+    reviewNotes: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type GymVerificationDocumentMinAggregateInputType = {
+    id?: true
+    gymId?: true
+    type?: true
+    fileUrl?: true
+    status?: true
+    rejectedReason?: true
+    reviewedAt?: true
+    reviewNotes?: true
+    createdAt?: true
+  }
+
+  export type GymVerificationDocumentMaxAggregateInputType = {
+    id?: true
+    gymId?: true
+    type?: true
+    fileUrl?: true
+    status?: true
+    rejectedReason?: true
+    reviewedAt?: true
+    reviewNotes?: true
+    createdAt?: true
+  }
+
+  export type GymVerificationDocumentCountAggregateInputType = {
+    id?: true
+    gymId?: true
+    type?: true
+    fileUrl?: true
+    status?: true
+    rejectedReason?: true
+    reviewedAt?: true
+    reviewNotes?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type GymVerificationDocumentAggregateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GymVerificationDocument to aggregate.
+     */
+    where?: GymVerificationDocumentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GymVerificationDocuments to fetch.
+     */
+    orderBy?: Enumerable<GymVerificationDocumentOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: GymVerificationDocumentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GymVerificationDocuments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GymVerificationDocuments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned GymVerificationDocuments
+    **/
+    _count?: true | GymVerificationDocumentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GymVerificationDocumentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GymVerificationDocumentMaxAggregateInputType
+  }
+
+  export type GetGymVerificationDocumentAggregateType<T extends GymVerificationDocumentAggregateArgs> = {
+        [P in keyof T & keyof AggregateGymVerificationDocument]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGymVerificationDocument[P]>
+      : GetScalarType<T[P], AggregateGymVerificationDocument[P]>
+  }
+
+
+
+
+  export type GymVerificationDocumentGroupByArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    where?: GymVerificationDocumentWhereInput
+    orderBy?: Enumerable<GymVerificationDocumentOrderByWithAggregationInput>
+    by: GymVerificationDocumentScalarFieldEnum[]
+    having?: GymVerificationDocumentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GymVerificationDocumentCountAggregateInputType | true
+    _min?: GymVerificationDocumentMinAggregateInputType
+    _max?: GymVerificationDocumentMaxAggregateInputType
+  }
+
+
+  export type GymVerificationDocumentGroupByOutputType = {
+    id: string
+    gymId: string
+    type: string
+    fileUrl: string
+    status: string
+    rejectedReason: string | null
+    reviewedAt: Date | null
+    reviewNotes: string | null
+    createdAt: Date
+    _count: GymVerificationDocumentCountAggregateOutputType | null
+    _min: GymVerificationDocumentMinAggregateOutputType | null
+    _max: GymVerificationDocumentMaxAggregateOutputType | null
+  }
+
+  type GetGymVerificationDocumentGroupByPayload<T extends GymVerificationDocumentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickArray<GymVerificationDocumentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GymVerificationDocumentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GymVerificationDocumentGroupByOutputType[P]>
+            : GetScalarType<T[P], GymVerificationDocumentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GymVerificationDocumentSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    gymId?: boolean
+    type?: boolean
+    fileUrl?: boolean
+    status?: boolean
+    rejectedReason?: boolean
+    reviewedAt?: boolean
+    reviewNotes?: boolean
+    createdAt?: boolean
+    gym?: boolean | GymArgs<ExtArgs>
+  }, ExtArgs["result"]["gymVerificationDocument"]>
+
+  export type GymVerificationDocumentSelectScalar = {
+    id?: boolean
+    gymId?: boolean
+    type?: boolean
+    fileUrl?: boolean
+    status?: boolean
+    rejectedReason?: boolean
+    reviewedAt?: boolean
+    reviewNotes?: boolean
+    createdAt?: boolean
+  }
+
+  export type GymVerificationDocumentInclude<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    gym?: boolean | GymArgs<ExtArgs>
+  }
+
+
+  type GymVerificationDocumentGetPayload<S extends boolean | null | undefined | GymVerificationDocumentArgs> = $Types.GetResult<GymVerificationDocumentPayload, S>
+
+  type GymVerificationDocumentCountArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = 
+    Omit<GymVerificationDocumentFindManyArgs, 'select' | 'include'> & {
+      select?: GymVerificationDocumentCountAggregateInputType | true
+    }
+
+  export interface GymVerificationDocumentDelegate<GlobalRejectSettings extends Prisma.RejectOnNotFound | Prisma.RejectPerOperation | false | undefined, ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GymVerificationDocument'], meta: { name: 'GymVerificationDocument' } }
+    /**
+     * Find zero or one GymVerificationDocument that matches the filter.
+     * @param {GymVerificationDocumentFindUniqueArgs} args - Arguments to find a GymVerificationDocument
+     * @example
+     * // Get one GymVerificationDocument
+     * const gymVerificationDocument = await prisma.gymVerificationDocument.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findUnique<T extends GymVerificationDocumentFindUniqueArgs<ExtArgs>, LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
+      args: SelectSubset<T, GymVerificationDocumentFindUniqueArgs<ExtArgs>>
+    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findUnique', 'GymVerificationDocument'> extends True ? Prisma__GymVerificationDocumentClient<$Types.GetResult<GymVerificationDocumentPayload<ExtArgs>, T, 'findUnique', never>, never, ExtArgs> : Prisma__GymVerificationDocumentClient<$Types.GetResult<GymVerificationDocumentPayload<ExtArgs>, T, 'findUnique', never> | null, null, ExtArgs>
+
+    /**
+     * Find one GymVerificationDocument that matches the filter or throw an error  with `error.code='P2025'` 
+     *     if no matches were found.
+     * @param {GymVerificationDocumentFindUniqueOrThrowArgs} args - Arguments to find a GymVerificationDocument
+     * @example
+     * // Get one GymVerificationDocument
+     * const gymVerificationDocument = await prisma.gymVerificationDocument.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findUniqueOrThrow<T extends GymVerificationDocumentFindUniqueOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, GymVerificationDocumentFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__GymVerificationDocumentClient<$Types.GetResult<GymVerificationDocumentPayload<ExtArgs>, T, 'findUniqueOrThrow', never>, never, ExtArgs>
+
+    /**
+     * Find the first GymVerificationDocument that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GymVerificationDocumentFindFirstArgs} args - Arguments to find a GymVerificationDocument
+     * @example
+     * // Get one GymVerificationDocument
+     * const gymVerificationDocument = await prisma.gymVerificationDocument.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findFirst<T extends GymVerificationDocumentFindFirstArgs<ExtArgs>, LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
+      args?: SelectSubset<T, GymVerificationDocumentFindFirstArgs<ExtArgs>>
+    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findFirst', 'GymVerificationDocument'> extends True ? Prisma__GymVerificationDocumentClient<$Types.GetResult<GymVerificationDocumentPayload<ExtArgs>, T, 'findFirst', never>, never, ExtArgs> : Prisma__GymVerificationDocumentClient<$Types.GetResult<GymVerificationDocumentPayload<ExtArgs>, T, 'findFirst', never> | null, null, ExtArgs>
+
+    /**
+     * Find the first GymVerificationDocument that matches the filter or
+     * throw `NotFoundError` if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GymVerificationDocumentFindFirstOrThrowArgs} args - Arguments to find a GymVerificationDocument
+     * @example
+     * // Get one GymVerificationDocument
+     * const gymVerificationDocument = await prisma.gymVerificationDocument.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findFirstOrThrow<T extends GymVerificationDocumentFindFirstOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, GymVerificationDocumentFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__GymVerificationDocumentClient<$Types.GetResult<GymVerificationDocumentPayload<ExtArgs>, T, 'findFirstOrThrow', never>, never, ExtArgs>
+
+    /**
+     * Find zero or more GymVerificationDocuments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GymVerificationDocumentFindManyArgs=} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GymVerificationDocuments
+     * const gymVerificationDocuments = await prisma.gymVerificationDocument.findMany()
+     * 
+     * // Get first 10 GymVerificationDocuments
+     * const gymVerificationDocuments = await prisma.gymVerificationDocument.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const gymVerificationDocumentWithIdOnly = await prisma.gymVerificationDocument.findMany({ select: { id: true } })
+     * 
+    **/
+    findMany<T extends GymVerificationDocumentFindManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, GymVerificationDocumentFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<$Types.GetResult<GymVerificationDocumentPayload<ExtArgs>, T, 'findMany', never>>
+
+    /**
+     * Create a GymVerificationDocument.
+     * @param {GymVerificationDocumentCreateArgs} args - Arguments to create a GymVerificationDocument.
+     * @example
+     * // Create one GymVerificationDocument
+     * const GymVerificationDocument = await prisma.gymVerificationDocument.create({
+     *   data: {
+     *     // ... data to create a GymVerificationDocument
+     *   }
+     * })
+     * 
+    **/
+    create<T extends GymVerificationDocumentCreateArgs<ExtArgs>>(
+      args: SelectSubset<T, GymVerificationDocumentCreateArgs<ExtArgs>>
+    ): Prisma__GymVerificationDocumentClient<$Types.GetResult<GymVerificationDocumentPayload<ExtArgs>, T, 'create', never>, never, ExtArgs>
+
+    /**
+     * Create many GymVerificationDocuments.
+     *     @param {GymVerificationDocumentCreateManyArgs} args - Arguments to create many GymVerificationDocuments.
+     *     @example
+     *     // Create many GymVerificationDocuments
+     *     const gymVerificationDocument = await prisma.gymVerificationDocument.createMany({
+     *       data: {
+     *         // ... provide data here
+     *       }
+     *     })
+     *     
+    **/
+    createMany<T extends GymVerificationDocumentCreateManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, GymVerificationDocumentCreateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a GymVerificationDocument.
+     * @param {GymVerificationDocumentDeleteArgs} args - Arguments to delete one GymVerificationDocument.
+     * @example
+     * // Delete one GymVerificationDocument
+     * const GymVerificationDocument = await prisma.gymVerificationDocument.delete({
+     *   where: {
+     *     // ... filter to delete one GymVerificationDocument
+     *   }
+     * })
+     * 
+    **/
+    delete<T extends GymVerificationDocumentDeleteArgs<ExtArgs>>(
+      args: SelectSubset<T, GymVerificationDocumentDeleteArgs<ExtArgs>>
+    ): Prisma__GymVerificationDocumentClient<$Types.GetResult<GymVerificationDocumentPayload<ExtArgs>, T, 'delete', never>, never, ExtArgs>
+
+    /**
+     * Update one GymVerificationDocument.
+     * @param {GymVerificationDocumentUpdateArgs} args - Arguments to update one GymVerificationDocument.
+     * @example
+     * // Update one GymVerificationDocument
+     * const gymVerificationDocument = await prisma.gymVerificationDocument.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+    **/
+    update<T extends GymVerificationDocumentUpdateArgs<ExtArgs>>(
+      args: SelectSubset<T, GymVerificationDocumentUpdateArgs<ExtArgs>>
+    ): Prisma__GymVerificationDocumentClient<$Types.GetResult<GymVerificationDocumentPayload<ExtArgs>, T, 'update', never>, never, ExtArgs>
+
+    /**
+     * Delete zero or more GymVerificationDocuments.
+     * @param {GymVerificationDocumentDeleteManyArgs} args - Arguments to filter GymVerificationDocuments to delete.
+     * @example
+     * // Delete a few GymVerificationDocuments
+     * const { count } = await prisma.gymVerificationDocument.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+    **/
+    deleteMany<T extends GymVerificationDocumentDeleteManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, GymVerificationDocumentDeleteManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GymVerificationDocuments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GymVerificationDocumentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GymVerificationDocuments
+     * const gymVerificationDocument = await prisma.gymVerificationDocument.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+    **/
+    updateMany<T extends GymVerificationDocumentUpdateManyArgs<ExtArgs>>(
+      args: SelectSubset<T, GymVerificationDocumentUpdateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one GymVerificationDocument.
+     * @param {GymVerificationDocumentUpsertArgs} args - Arguments to update or create a GymVerificationDocument.
+     * @example
+     * // Update or create a GymVerificationDocument
+     * const gymVerificationDocument = await prisma.gymVerificationDocument.upsert({
+     *   create: {
+     *     // ... data to create a GymVerificationDocument
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GymVerificationDocument we want to update
+     *   }
+     * })
+    **/
+    upsert<T extends GymVerificationDocumentUpsertArgs<ExtArgs>>(
+      args: SelectSubset<T, GymVerificationDocumentUpsertArgs<ExtArgs>>
+    ): Prisma__GymVerificationDocumentClient<$Types.GetResult<GymVerificationDocumentPayload<ExtArgs>, T, 'upsert', never>, never, ExtArgs>
+
+    /**
+     * Count the number of GymVerificationDocuments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GymVerificationDocumentCountArgs} args - Arguments to filter GymVerificationDocuments to count.
+     * @example
+     * // Count the number of GymVerificationDocuments
+     * const count = await prisma.gymVerificationDocument.count({
+     *   where: {
+     *     // ... the filter for the GymVerificationDocuments we want to count
+     *   }
+     * })
+    **/
+    count<T extends GymVerificationDocumentCountArgs>(
+      args?: Subset<T, GymVerificationDocumentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GymVerificationDocumentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a GymVerificationDocument.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GymVerificationDocumentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GymVerificationDocumentAggregateArgs>(args: Subset<T, GymVerificationDocumentAggregateArgs>): Prisma.PrismaPromise<GetGymVerificationDocumentAggregateType<T>>
+
+    /**
+     * Group by GymVerificationDocument.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GymVerificationDocumentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends GymVerificationDocumentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GymVerificationDocumentGroupByArgs['orderBy'] }
+        : { orderBy?: GymVerificationDocumentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends TupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GymVerificationDocumentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGymVerificationDocumentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GymVerificationDocument.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export class Prisma__GymVerificationDocumentClient<T, Null = never, ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> implements Prisma.PrismaPromise<T> {
+    private readonly _dmmf;
+    private readonly _queryType;
+    private readonly _rootField;
+    private readonly _clientMethod;
+    private readonly _args;
+    private readonly _dataPath;
+    private readonly _errorFormat;
+    private readonly _measurePerformance?;
+    private _isList;
+    private _callsite;
+    private _requestPromise?;
+    readonly [Symbol.toStringTag]: 'PrismaPromise';
+    constructor(_dmmf: runtime.DMMFClass, _queryType: 'query' | 'mutation', _rootField: string, _clientMethod: string, _args: any, _dataPath: string[], _errorFormat: ErrorFormat, _measurePerformance?: boolean | undefined, _isList?: boolean);
+
+    gym<T extends GymArgs<ExtArgs> = {}>(args?: Subset<T, GymArgs<ExtArgs>>): Prisma__GymClient<$Types.GetResult<GymPayload<ExtArgs>, T, 'findUnique', never> | Null, never, ExtArgs>;
+
+    private get _document();
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): Promise<T>;
+  }
+
+
+
+  // Custom InputTypes
+
+  /**
+   * GymVerificationDocument base type for findUnique actions
+   */
+  export type GymVerificationDocumentFindUniqueArgsBase<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymVerificationDocument
+     */
+    select?: GymVerificationDocumentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymVerificationDocumentInclude<ExtArgs> | null
+    /**
+     * Filter, which GymVerificationDocument to fetch.
+     */
+    where: GymVerificationDocumentWhereUniqueInput
+  }
+
+  /**
+   * GymVerificationDocument findUnique
+   */
+  export interface GymVerificationDocumentFindUniqueArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> extends GymVerificationDocumentFindUniqueArgsBase<ExtArgs> {
+   /**
+    * Throw an Error if query returns no results
+    * @deprecated since 4.0.0: use `findUniqueOrThrow` method instead
+    */
+    rejectOnNotFound?: RejectOnNotFound
+  }
+      
+
+  /**
+   * GymVerificationDocument findUniqueOrThrow
+   */
+  export type GymVerificationDocumentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymVerificationDocument
+     */
+    select?: GymVerificationDocumentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymVerificationDocumentInclude<ExtArgs> | null
+    /**
+     * Filter, which GymVerificationDocument to fetch.
+     */
+    where: GymVerificationDocumentWhereUniqueInput
+  }
+
+
+  /**
+   * GymVerificationDocument base type for findFirst actions
+   */
+  export type GymVerificationDocumentFindFirstArgsBase<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymVerificationDocument
+     */
+    select?: GymVerificationDocumentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymVerificationDocumentInclude<ExtArgs> | null
+    /**
+     * Filter, which GymVerificationDocument to fetch.
+     */
+    where?: GymVerificationDocumentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GymVerificationDocuments to fetch.
+     */
+    orderBy?: Enumerable<GymVerificationDocumentOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GymVerificationDocuments.
+     */
+    cursor?: GymVerificationDocumentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GymVerificationDocuments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GymVerificationDocuments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GymVerificationDocuments.
+     */
+    distinct?: Enumerable<GymVerificationDocumentScalarFieldEnum>
+  }
+
+  /**
+   * GymVerificationDocument findFirst
+   */
+  export interface GymVerificationDocumentFindFirstArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> extends GymVerificationDocumentFindFirstArgsBase<ExtArgs> {
+   /**
+    * Throw an Error if query returns no results
+    * @deprecated since 4.0.0: use `findFirstOrThrow` method instead
+    */
+    rejectOnNotFound?: RejectOnNotFound
+  }
+      
+
+  /**
+   * GymVerificationDocument findFirstOrThrow
+   */
+  export type GymVerificationDocumentFindFirstOrThrowArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymVerificationDocument
+     */
+    select?: GymVerificationDocumentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymVerificationDocumentInclude<ExtArgs> | null
+    /**
+     * Filter, which GymVerificationDocument to fetch.
+     */
+    where?: GymVerificationDocumentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GymVerificationDocuments to fetch.
+     */
+    orderBy?: Enumerable<GymVerificationDocumentOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GymVerificationDocuments.
+     */
+    cursor?: GymVerificationDocumentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GymVerificationDocuments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GymVerificationDocuments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GymVerificationDocuments.
+     */
+    distinct?: Enumerable<GymVerificationDocumentScalarFieldEnum>
+  }
+
+
+  /**
+   * GymVerificationDocument findMany
+   */
+  export type GymVerificationDocumentFindManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymVerificationDocument
+     */
+    select?: GymVerificationDocumentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymVerificationDocumentInclude<ExtArgs> | null
+    /**
+     * Filter, which GymVerificationDocuments to fetch.
+     */
+    where?: GymVerificationDocumentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GymVerificationDocuments to fetch.
+     */
+    orderBy?: Enumerable<GymVerificationDocumentOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing GymVerificationDocuments.
+     */
+    cursor?: GymVerificationDocumentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GymVerificationDocuments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GymVerificationDocuments.
+     */
+    skip?: number
+    distinct?: Enumerable<GymVerificationDocumentScalarFieldEnum>
+  }
+
+
+  /**
+   * GymVerificationDocument create
+   */
+  export type GymVerificationDocumentCreateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymVerificationDocument
+     */
+    select?: GymVerificationDocumentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymVerificationDocumentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a GymVerificationDocument.
+     */
+    data: XOR<GymVerificationDocumentCreateInput, GymVerificationDocumentUncheckedCreateInput>
+  }
+
+
+  /**
+   * GymVerificationDocument createMany
+   */
+  export type GymVerificationDocumentCreateManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many GymVerificationDocuments.
+     */
+    data: Enumerable<GymVerificationDocumentCreateManyInput>
+    skipDuplicates?: boolean
+  }
+
+
+  /**
+   * GymVerificationDocument update
+   */
+  export type GymVerificationDocumentUpdateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymVerificationDocument
+     */
+    select?: GymVerificationDocumentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymVerificationDocumentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a GymVerificationDocument.
+     */
+    data: XOR<GymVerificationDocumentUpdateInput, GymVerificationDocumentUncheckedUpdateInput>
+    /**
+     * Choose, which GymVerificationDocument to update.
+     */
+    where: GymVerificationDocumentWhereUniqueInput
+  }
+
+
+  /**
+   * GymVerificationDocument updateMany
+   */
+  export type GymVerificationDocumentUpdateManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update GymVerificationDocuments.
+     */
+    data: XOR<GymVerificationDocumentUpdateManyMutationInput, GymVerificationDocumentUncheckedUpdateManyInput>
+    /**
+     * Filter which GymVerificationDocuments to update
+     */
+    where?: GymVerificationDocumentWhereInput
+  }
+
+
+  /**
+   * GymVerificationDocument upsert
+   */
+  export type GymVerificationDocumentUpsertArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymVerificationDocument
+     */
+    select?: GymVerificationDocumentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymVerificationDocumentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the GymVerificationDocument to update in case it exists.
+     */
+    where: GymVerificationDocumentWhereUniqueInput
+    /**
+     * In case the GymVerificationDocument found by the `where` argument doesn't exist, create a new GymVerificationDocument with this data.
+     */
+    create: XOR<GymVerificationDocumentCreateInput, GymVerificationDocumentUncheckedCreateInput>
+    /**
+     * In case the GymVerificationDocument was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GymVerificationDocumentUpdateInput, GymVerificationDocumentUncheckedUpdateInput>
+  }
+
+
+  /**
+   * GymVerificationDocument delete
+   */
+  export type GymVerificationDocumentDeleteArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymVerificationDocument
+     */
+    select?: GymVerificationDocumentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymVerificationDocumentInclude<ExtArgs> | null
+    /**
+     * Filter which GymVerificationDocument to delete.
+     */
+    where: GymVerificationDocumentWhereUniqueInput
+  }
+
+
+  /**
+   * GymVerificationDocument deleteMany
+   */
+  export type GymVerificationDocumentDeleteManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GymVerificationDocuments to delete
+     */
+    where?: GymVerificationDocumentWhereInput
+  }
+
+
+  /**
+   * GymVerificationDocument without action
+   */
+  export type GymVerificationDocumentArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymVerificationDocument
+     */
+    select?: GymVerificationDocumentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymVerificationDocumentInclude<ExtArgs> | null
   }
 
 
@@ -10764,6 +13416,1831 @@ export namespace Prisma {
 
 
   /**
+   * Model AdminAuditLog
+   */
+
+
+  export type AggregateAdminAuditLog = {
+    _count: AdminAuditLogCountAggregateOutputType | null
+    _min: AdminAuditLogMinAggregateOutputType | null
+    _max: AdminAuditLogMaxAggregateOutputType | null
+  }
+
+  export type AdminAuditLogMinAggregateOutputType = {
+    id: string | null
+    adminId: string | null
+    action: string | null
+    entityType: string | null
+    entityId: string | null
+    createdAt: Date | null
+  }
+
+  export type AdminAuditLogMaxAggregateOutputType = {
+    id: string | null
+    adminId: string | null
+    action: string | null
+    entityType: string | null
+    entityId: string | null
+    createdAt: Date | null
+  }
+
+  export type AdminAuditLogCountAggregateOutputType = {
+    id: number
+    adminId: number
+    action: number
+    entityType: number
+    entityId: number
+    metadata: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type AdminAuditLogMinAggregateInputType = {
+    id?: true
+    adminId?: true
+    action?: true
+    entityType?: true
+    entityId?: true
+    createdAt?: true
+  }
+
+  export type AdminAuditLogMaxAggregateInputType = {
+    id?: true
+    adminId?: true
+    action?: true
+    entityType?: true
+    entityId?: true
+    createdAt?: true
+  }
+
+  export type AdminAuditLogCountAggregateInputType = {
+    id?: true
+    adminId?: true
+    action?: true
+    entityType?: true
+    entityId?: true
+    metadata?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type AdminAuditLogAggregateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AdminAuditLog to aggregate.
+     */
+    where?: AdminAuditLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminAuditLogs to fetch.
+     */
+    orderBy?: Enumerable<AdminAuditLogOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AdminAuditLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminAuditLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminAuditLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AdminAuditLogs
+    **/
+    _count?: true | AdminAuditLogCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AdminAuditLogMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AdminAuditLogMaxAggregateInputType
+  }
+
+  export type GetAdminAuditLogAggregateType<T extends AdminAuditLogAggregateArgs> = {
+        [P in keyof T & keyof AggregateAdminAuditLog]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAdminAuditLog[P]>
+      : GetScalarType<T[P], AggregateAdminAuditLog[P]>
+  }
+
+
+
+
+  export type AdminAuditLogGroupByArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    where?: AdminAuditLogWhereInput
+    orderBy?: Enumerable<AdminAuditLogOrderByWithAggregationInput>
+    by: AdminAuditLogScalarFieldEnum[]
+    having?: AdminAuditLogScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AdminAuditLogCountAggregateInputType | true
+    _min?: AdminAuditLogMinAggregateInputType
+    _max?: AdminAuditLogMaxAggregateInputType
+  }
+
+
+  export type AdminAuditLogGroupByOutputType = {
+    id: string
+    adminId: string
+    action: string
+    entityType: string
+    entityId: string | null
+    metadata: JsonValue | null
+    createdAt: Date
+    _count: AdminAuditLogCountAggregateOutputType | null
+    _min: AdminAuditLogMinAggregateOutputType | null
+    _max: AdminAuditLogMaxAggregateOutputType | null
+  }
+
+  type GetAdminAuditLogGroupByPayload<T extends AdminAuditLogGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickArray<AdminAuditLogGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AdminAuditLogGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AdminAuditLogGroupByOutputType[P]>
+            : GetScalarType<T[P], AdminAuditLogGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AdminAuditLogSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    adminId?: boolean
+    action?: boolean
+    entityType?: boolean
+    entityId?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    admin?: boolean | UserArgs<ExtArgs>
+  }, ExtArgs["result"]["adminAuditLog"]>
+
+  export type AdminAuditLogSelectScalar = {
+    id?: boolean
+    adminId?: boolean
+    action?: boolean
+    entityType?: boolean
+    entityId?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+  }
+
+  export type AdminAuditLogInclude<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    admin?: boolean | UserArgs<ExtArgs>
+  }
+
+
+  type AdminAuditLogGetPayload<S extends boolean | null | undefined | AdminAuditLogArgs> = $Types.GetResult<AdminAuditLogPayload, S>
+
+  type AdminAuditLogCountArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = 
+    Omit<AdminAuditLogFindManyArgs, 'select' | 'include'> & {
+      select?: AdminAuditLogCountAggregateInputType | true
+    }
+
+  export interface AdminAuditLogDelegate<GlobalRejectSettings extends Prisma.RejectOnNotFound | Prisma.RejectPerOperation | false | undefined, ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AdminAuditLog'], meta: { name: 'AdminAuditLog' } }
+    /**
+     * Find zero or one AdminAuditLog that matches the filter.
+     * @param {AdminAuditLogFindUniqueArgs} args - Arguments to find a AdminAuditLog
+     * @example
+     * // Get one AdminAuditLog
+     * const adminAuditLog = await prisma.adminAuditLog.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findUnique<T extends AdminAuditLogFindUniqueArgs<ExtArgs>, LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
+      args: SelectSubset<T, AdminAuditLogFindUniqueArgs<ExtArgs>>
+    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findUnique', 'AdminAuditLog'> extends True ? Prisma__AdminAuditLogClient<$Types.GetResult<AdminAuditLogPayload<ExtArgs>, T, 'findUnique', never>, never, ExtArgs> : Prisma__AdminAuditLogClient<$Types.GetResult<AdminAuditLogPayload<ExtArgs>, T, 'findUnique', never> | null, null, ExtArgs>
+
+    /**
+     * Find one AdminAuditLog that matches the filter or throw an error  with `error.code='P2025'` 
+     *     if no matches were found.
+     * @param {AdminAuditLogFindUniqueOrThrowArgs} args - Arguments to find a AdminAuditLog
+     * @example
+     * // Get one AdminAuditLog
+     * const adminAuditLog = await prisma.adminAuditLog.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findUniqueOrThrow<T extends AdminAuditLogFindUniqueOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, AdminAuditLogFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__AdminAuditLogClient<$Types.GetResult<AdminAuditLogPayload<ExtArgs>, T, 'findUniqueOrThrow', never>, never, ExtArgs>
+
+    /**
+     * Find the first AdminAuditLog that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminAuditLogFindFirstArgs} args - Arguments to find a AdminAuditLog
+     * @example
+     * // Get one AdminAuditLog
+     * const adminAuditLog = await prisma.adminAuditLog.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findFirst<T extends AdminAuditLogFindFirstArgs<ExtArgs>, LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
+      args?: SelectSubset<T, AdminAuditLogFindFirstArgs<ExtArgs>>
+    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findFirst', 'AdminAuditLog'> extends True ? Prisma__AdminAuditLogClient<$Types.GetResult<AdminAuditLogPayload<ExtArgs>, T, 'findFirst', never>, never, ExtArgs> : Prisma__AdminAuditLogClient<$Types.GetResult<AdminAuditLogPayload<ExtArgs>, T, 'findFirst', never> | null, null, ExtArgs>
+
+    /**
+     * Find the first AdminAuditLog that matches the filter or
+     * throw `NotFoundError` if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminAuditLogFindFirstOrThrowArgs} args - Arguments to find a AdminAuditLog
+     * @example
+     * // Get one AdminAuditLog
+     * const adminAuditLog = await prisma.adminAuditLog.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findFirstOrThrow<T extends AdminAuditLogFindFirstOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, AdminAuditLogFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__AdminAuditLogClient<$Types.GetResult<AdminAuditLogPayload<ExtArgs>, T, 'findFirstOrThrow', never>, never, ExtArgs>
+
+    /**
+     * Find zero or more AdminAuditLogs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminAuditLogFindManyArgs=} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AdminAuditLogs
+     * const adminAuditLogs = await prisma.adminAuditLog.findMany()
+     * 
+     * // Get first 10 AdminAuditLogs
+     * const adminAuditLogs = await prisma.adminAuditLog.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const adminAuditLogWithIdOnly = await prisma.adminAuditLog.findMany({ select: { id: true } })
+     * 
+    **/
+    findMany<T extends AdminAuditLogFindManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, AdminAuditLogFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<$Types.GetResult<AdminAuditLogPayload<ExtArgs>, T, 'findMany', never>>
+
+    /**
+     * Create a AdminAuditLog.
+     * @param {AdminAuditLogCreateArgs} args - Arguments to create a AdminAuditLog.
+     * @example
+     * // Create one AdminAuditLog
+     * const AdminAuditLog = await prisma.adminAuditLog.create({
+     *   data: {
+     *     // ... data to create a AdminAuditLog
+     *   }
+     * })
+     * 
+    **/
+    create<T extends AdminAuditLogCreateArgs<ExtArgs>>(
+      args: SelectSubset<T, AdminAuditLogCreateArgs<ExtArgs>>
+    ): Prisma__AdminAuditLogClient<$Types.GetResult<AdminAuditLogPayload<ExtArgs>, T, 'create', never>, never, ExtArgs>
+
+    /**
+     * Create many AdminAuditLogs.
+     *     @param {AdminAuditLogCreateManyArgs} args - Arguments to create many AdminAuditLogs.
+     *     @example
+     *     // Create many AdminAuditLogs
+     *     const adminAuditLog = await prisma.adminAuditLog.createMany({
+     *       data: {
+     *         // ... provide data here
+     *       }
+     *     })
+     *     
+    **/
+    createMany<T extends AdminAuditLogCreateManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, AdminAuditLogCreateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a AdminAuditLog.
+     * @param {AdminAuditLogDeleteArgs} args - Arguments to delete one AdminAuditLog.
+     * @example
+     * // Delete one AdminAuditLog
+     * const AdminAuditLog = await prisma.adminAuditLog.delete({
+     *   where: {
+     *     // ... filter to delete one AdminAuditLog
+     *   }
+     * })
+     * 
+    **/
+    delete<T extends AdminAuditLogDeleteArgs<ExtArgs>>(
+      args: SelectSubset<T, AdminAuditLogDeleteArgs<ExtArgs>>
+    ): Prisma__AdminAuditLogClient<$Types.GetResult<AdminAuditLogPayload<ExtArgs>, T, 'delete', never>, never, ExtArgs>
+
+    /**
+     * Update one AdminAuditLog.
+     * @param {AdminAuditLogUpdateArgs} args - Arguments to update one AdminAuditLog.
+     * @example
+     * // Update one AdminAuditLog
+     * const adminAuditLog = await prisma.adminAuditLog.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+    **/
+    update<T extends AdminAuditLogUpdateArgs<ExtArgs>>(
+      args: SelectSubset<T, AdminAuditLogUpdateArgs<ExtArgs>>
+    ): Prisma__AdminAuditLogClient<$Types.GetResult<AdminAuditLogPayload<ExtArgs>, T, 'update', never>, never, ExtArgs>
+
+    /**
+     * Delete zero or more AdminAuditLogs.
+     * @param {AdminAuditLogDeleteManyArgs} args - Arguments to filter AdminAuditLogs to delete.
+     * @example
+     * // Delete a few AdminAuditLogs
+     * const { count } = await prisma.adminAuditLog.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+    **/
+    deleteMany<T extends AdminAuditLogDeleteManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, AdminAuditLogDeleteManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AdminAuditLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminAuditLogUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AdminAuditLogs
+     * const adminAuditLog = await prisma.adminAuditLog.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+    **/
+    updateMany<T extends AdminAuditLogUpdateManyArgs<ExtArgs>>(
+      args: SelectSubset<T, AdminAuditLogUpdateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one AdminAuditLog.
+     * @param {AdminAuditLogUpsertArgs} args - Arguments to update or create a AdminAuditLog.
+     * @example
+     * // Update or create a AdminAuditLog
+     * const adminAuditLog = await prisma.adminAuditLog.upsert({
+     *   create: {
+     *     // ... data to create a AdminAuditLog
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AdminAuditLog we want to update
+     *   }
+     * })
+    **/
+    upsert<T extends AdminAuditLogUpsertArgs<ExtArgs>>(
+      args: SelectSubset<T, AdminAuditLogUpsertArgs<ExtArgs>>
+    ): Prisma__AdminAuditLogClient<$Types.GetResult<AdminAuditLogPayload<ExtArgs>, T, 'upsert', never>, never, ExtArgs>
+
+    /**
+     * Count the number of AdminAuditLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminAuditLogCountArgs} args - Arguments to filter AdminAuditLogs to count.
+     * @example
+     * // Count the number of AdminAuditLogs
+     * const count = await prisma.adminAuditLog.count({
+     *   where: {
+     *     // ... the filter for the AdminAuditLogs we want to count
+     *   }
+     * })
+    **/
+    count<T extends AdminAuditLogCountArgs>(
+      args?: Subset<T, AdminAuditLogCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AdminAuditLogCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AdminAuditLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminAuditLogAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AdminAuditLogAggregateArgs>(args: Subset<T, AdminAuditLogAggregateArgs>): Prisma.PrismaPromise<GetAdminAuditLogAggregateType<T>>
+
+    /**
+     * Group by AdminAuditLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminAuditLogGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AdminAuditLogGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AdminAuditLogGroupByArgs['orderBy'] }
+        : { orderBy?: AdminAuditLogGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends TupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AdminAuditLogGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAdminAuditLogGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AdminAuditLog.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export class Prisma__AdminAuditLogClient<T, Null = never, ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> implements Prisma.PrismaPromise<T> {
+    private readonly _dmmf;
+    private readonly _queryType;
+    private readonly _rootField;
+    private readonly _clientMethod;
+    private readonly _args;
+    private readonly _dataPath;
+    private readonly _errorFormat;
+    private readonly _measurePerformance?;
+    private _isList;
+    private _callsite;
+    private _requestPromise?;
+    readonly [Symbol.toStringTag]: 'PrismaPromise';
+    constructor(_dmmf: runtime.DMMFClass, _queryType: 'query' | 'mutation', _rootField: string, _clientMethod: string, _args: any, _dataPath: string[], _errorFormat: ErrorFormat, _measurePerformance?: boolean | undefined, _isList?: boolean);
+
+    admin<T extends UserArgs<ExtArgs> = {}>(args?: Subset<T, UserArgs<ExtArgs>>): Prisma__UserClient<$Types.GetResult<UserPayload<ExtArgs>, T, 'findUnique', never> | Null, never, ExtArgs>;
+
+    private get _document();
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): Promise<T>;
+  }
+
+
+
+  // Custom InputTypes
+
+  /**
+   * AdminAuditLog base type for findUnique actions
+   */
+  export type AdminAuditLogFindUniqueArgsBase<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminAuditLogInclude<ExtArgs> | null
+    /**
+     * Filter, which AdminAuditLog to fetch.
+     */
+    where: AdminAuditLogWhereUniqueInput
+  }
+
+  /**
+   * AdminAuditLog findUnique
+   */
+  export interface AdminAuditLogFindUniqueArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> extends AdminAuditLogFindUniqueArgsBase<ExtArgs> {
+   /**
+    * Throw an Error if query returns no results
+    * @deprecated since 4.0.0: use `findUniqueOrThrow` method instead
+    */
+    rejectOnNotFound?: RejectOnNotFound
+  }
+      
+
+  /**
+   * AdminAuditLog findUniqueOrThrow
+   */
+  export type AdminAuditLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminAuditLogInclude<ExtArgs> | null
+    /**
+     * Filter, which AdminAuditLog to fetch.
+     */
+    where: AdminAuditLogWhereUniqueInput
+  }
+
+
+  /**
+   * AdminAuditLog base type for findFirst actions
+   */
+  export type AdminAuditLogFindFirstArgsBase<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminAuditLogInclude<ExtArgs> | null
+    /**
+     * Filter, which AdminAuditLog to fetch.
+     */
+    where?: AdminAuditLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminAuditLogs to fetch.
+     */
+    orderBy?: Enumerable<AdminAuditLogOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AdminAuditLogs.
+     */
+    cursor?: AdminAuditLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminAuditLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminAuditLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AdminAuditLogs.
+     */
+    distinct?: Enumerable<AdminAuditLogScalarFieldEnum>
+  }
+
+  /**
+   * AdminAuditLog findFirst
+   */
+  export interface AdminAuditLogFindFirstArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> extends AdminAuditLogFindFirstArgsBase<ExtArgs> {
+   /**
+    * Throw an Error if query returns no results
+    * @deprecated since 4.0.0: use `findFirstOrThrow` method instead
+    */
+    rejectOnNotFound?: RejectOnNotFound
+  }
+      
+
+  /**
+   * AdminAuditLog findFirstOrThrow
+   */
+  export type AdminAuditLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminAuditLogInclude<ExtArgs> | null
+    /**
+     * Filter, which AdminAuditLog to fetch.
+     */
+    where?: AdminAuditLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminAuditLogs to fetch.
+     */
+    orderBy?: Enumerable<AdminAuditLogOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AdminAuditLogs.
+     */
+    cursor?: AdminAuditLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminAuditLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminAuditLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AdminAuditLogs.
+     */
+    distinct?: Enumerable<AdminAuditLogScalarFieldEnum>
+  }
+
+
+  /**
+   * AdminAuditLog findMany
+   */
+  export type AdminAuditLogFindManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminAuditLogInclude<ExtArgs> | null
+    /**
+     * Filter, which AdminAuditLogs to fetch.
+     */
+    where?: AdminAuditLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminAuditLogs to fetch.
+     */
+    orderBy?: Enumerable<AdminAuditLogOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AdminAuditLogs.
+     */
+    cursor?: AdminAuditLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminAuditLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminAuditLogs.
+     */
+    skip?: number
+    distinct?: Enumerable<AdminAuditLogScalarFieldEnum>
+  }
+
+
+  /**
+   * AdminAuditLog create
+   */
+  export type AdminAuditLogCreateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminAuditLogInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AdminAuditLog.
+     */
+    data: XOR<AdminAuditLogCreateInput, AdminAuditLogUncheckedCreateInput>
+  }
+
+
+  /**
+   * AdminAuditLog createMany
+   */
+  export type AdminAuditLogCreateManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AdminAuditLogs.
+     */
+    data: Enumerable<AdminAuditLogCreateManyInput>
+    skipDuplicates?: boolean
+  }
+
+
+  /**
+   * AdminAuditLog update
+   */
+  export type AdminAuditLogUpdateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminAuditLogInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AdminAuditLog.
+     */
+    data: XOR<AdminAuditLogUpdateInput, AdminAuditLogUncheckedUpdateInput>
+    /**
+     * Choose, which AdminAuditLog to update.
+     */
+    where: AdminAuditLogWhereUniqueInput
+  }
+
+
+  /**
+   * AdminAuditLog updateMany
+   */
+  export type AdminAuditLogUpdateManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AdminAuditLogs.
+     */
+    data: XOR<AdminAuditLogUpdateManyMutationInput, AdminAuditLogUncheckedUpdateManyInput>
+    /**
+     * Filter which AdminAuditLogs to update
+     */
+    where?: AdminAuditLogWhereInput
+  }
+
+
+  /**
+   * AdminAuditLog upsert
+   */
+  export type AdminAuditLogUpsertArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminAuditLogInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AdminAuditLog to update in case it exists.
+     */
+    where: AdminAuditLogWhereUniqueInput
+    /**
+     * In case the AdminAuditLog found by the `where` argument doesn't exist, create a new AdminAuditLog with this data.
+     */
+    create: XOR<AdminAuditLogCreateInput, AdminAuditLogUncheckedCreateInput>
+    /**
+     * In case the AdminAuditLog was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AdminAuditLogUpdateInput, AdminAuditLogUncheckedUpdateInput>
+  }
+
+
+  /**
+   * AdminAuditLog delete
+   */
+  export type AdminAuditLogDeleteArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminAuditLogInclude<ExtArgs> | null
+    /**
+     * Filter which AdminAuditLog to delete.
+     */
+    where: AdminAuditLogWhereUniqueInput
+  }
+
+
+  /**
+   * AdminAuditLog deleteMany
+   */
+  export type AdminAuditLogDeleteManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AdminAuditLogs to delete
+     */
+    where?: AdminAuditLogWhereInput
+  }
+
+
+  /**
+   * AdminAuditLog without action
+   */
+  export type AdminAuditLogArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminAuditLog
+     */
+    select?: AdminAuditLogSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminAuditLogInclude<ExtArgs> | null
+  }
+
+
+
+  /**
+   * Model AdminNotification
+   */
+
+
+  export type AggregateAdminNotification = {
+    _count: AdminNotificationCountAggregateOutputType | null
+    _min: AdminNotificationMinAggregateOutputType | null
+    _max: AdminNotificationMaxAggregateOutputType | null
+  }
+
+  export type AdminNotificationMinAggregateOutputType = {
+    id: string | null
+    title: string | null
+    message: string | null
+    type: string | null
+    isRead: boolean | null
+    createdAt: Date | null
+  }
+
+  export type AdminNotificationMaxAggregateOutputType = {
+    id: string | null
+    title: string | null
+    message: string | null
+    type: string | null
+    isRead: boolean | null
+    createdAt: Date | null
+  }
+
+  export type AdminNotificationCountAggregateOutputType = {
+    id: number
+    title: number
+    message: number
+    type: number
+    isRead: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type AdminNotificationMinAggregateInputType = {
+    id?: true
+    title?: true
+    message?: true
+    type?: true
+    isRead?: true
+    createdAt?: true
+  }
+
+  export type AdminNotificationMaxAggregateInputType = {
+    id?: true
+    title?: true
+    message?: true
+    type?: true
+    isRead?: true
+    createdAt?: true
+  }
+
+  export type AdminNotificationCountAggregateInputType = {
+    id?: true
+    title?: true
+    message?: true
+    type?: true
+    isRead?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type AdminNotificationAggregateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AdminNotification to aggregate.
+     */
+    where?: AdminNotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminNotifications to fetch.
+     */
+    orderBy?: Enumerable<AdminNotificationOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AdminNotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminNotifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminNotifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AdminNotifications
+    **/
+    _count?: true | AdminNotificationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AdminNotificationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AdminNotificationMaxAggregateInputType
+  }
+
+  export type GetAdminNotificationAggregateType<T extends AdminNotificationAggregateArgs> = {
+        [P in keyof T & keyof AggregateAdminNotification]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAdminNotification[P]>
+      : GetScalarType<T[P], AggregateAdminNotification[P]>
+  }
+
+
+
+
+  export type AdminNotificationGroupByArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    where?: AdminNotificationWhereInput
+    orderBy?: Enumerable<AdminNotificationOrderByWithAggregationInput>
+    by: AdminNotificationScalarFieldEnum[]
+    having?: AdminNotificationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AdminNotificationCountAggregateInputType | true
+    _min?: AdminNotificationMinAggregateInputType
+    _max?: AdminNotificationMaxAggregateInputType
+  }
+
+
+  export type AdminNotificationGroupByOutputType = {
+    id: string
+    title: string
+    message: string
+    type: string
+    isRead: boolean
+    createdAt: Date
+    _count: AdminNotificationCountAggregateOutputType | null
+    _min: AdminNotificationMinAggregateOutputType | null
+    _max: AdminNotificationMaxAggregateOutputType | null
+  }
+
+  type GetAdminNotificationGroupByPayload<T extends AdminNotificationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickArray<AdminNotificationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AdminNotificationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AdminNotificationGroupByOutputType[P]>
+            : GetScalarType<T[P], AdminNotificationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AdminNotificationSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    message?: boolean
+    type?: boolean
+    isRead?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["adminNotification"]>
+
+  export type AdminNotificationSelectScalar = {
+    id?: boolean
+    title?: boolean
+    message?: boolean
+    type?: boolean
+    isRead?: boolean
+    createdAt?: boolean
+  }
+
+
+  type AdminNotificationGetPayload<S extends boolean | null | undefined | AdminNotificationArgs> = $Types.GetResult<AdminNotificationPayload, S>
+
+  type AdminNotificationCountArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = 
+    Omit<AdminNotificationFindManyArgs, 'select' | 'include'> & {
+      select?: AdminNotificationCountAggregateInputType | true
+    }
+
+  export interface AdminNotificationDelegate<GlobalRejectSettings extends Prisma.RejectOnNotFound | Prisma.RejectPerOperation | false | undefined, ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AdminNotification'], meta: { name: 'AdminNotification' } }
+    /**
+     * Find zero or one AdminNotification that matches the filter.
+     * @param {AdminNotificationFindUniqueArgs} args - Arguments to find a AdminNotification
+     * @example
+     * // Get one AdminNotification
+     * const adminNotification = await prisma.adminNotification.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findUnique<T extends AdminNotificationFindUniqueArgs<ExtArgs>, LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
+      args: SelectSubset<T, AdminNotificationFindUniqueArgs<ExtArgs>>
+    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findUnique', 'AdminNotification'> extends True ? Prisma__AdminNotificationClient<$Types.GetResult<AdminNotificationPayload<ExtArgs>, T, 'findUnique', never>, never, ExtArgs> : Prisma__AdminNotificationClient<$Types.GetResult<AdminNotificationPayload<ExtArgs>, T, 'findUnique', never> | null, null, ExtArgs>
+
+    /**
+     * Find one AdminNotification that matches the filter or throw an error  with `error.code='P2025'` 
+     *     if no matches were found.
+     * @param {AdminNotificationFindUniqueOrThrowArgs} args - Arguments to find a AdminNotification
+     * @example
+     * // Get one AdminNotification
+     * const adminNotification = await prisma.adminNotification.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findUniqueOrThrow<T extends AdminNotificationFindUniqueOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, AdminNotificationFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__AdminNotificationClient<$Types.GetResult<AdminNotificationPayload<ExtArgs>, T, 'findUniqueOrThrow', never>, never, ExtArgs>
+
+    /**
+     * Find the first AdminNotification that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminNotificationFindFirstArgs} args - Arguments to find a AdminNotification
+     * @example
+     * // Get one AdminNotification
+     * const adminNotification = await prisma.adminNotification.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findFirst<T extends AdminNotificationFindFirstArgs<ExtArgs>, LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
+      args?: SelectSubset<T, AdminNotificationFindFirstArgs<ExtArgs>>
+    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findFirst', 'AdminNotification'> extends True ? Prisma__AdminNotificationClient<$Types.GetResult<AdminNotificationPayload<ExtArgs>, T, 'findFirst', never>, never, ExtArgs> : Prisma__AdminNotificationClient<$Types.GetResult<AdminNotificationPayload<ExtArgs>, T, 'findFirst', never> | null, null, ExtArgs>
+
+    /**
+     * Find the first AdminNotification that matches the filter or
+     * throw `NotFoundError` if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminNotificationFindFirstOrThrowArgs} args - Arguments to find a AdminNotification
+     * @example
+     * // Get one AdminNotification
+     * const adminNotification = await prisma.adminNotification.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findFirstOrThrow<T extends AdminNotificationFindFirstOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, AdminNotificationFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__AdminNotificationClient<$Types.GetResult<AdminNotificationPayload<ExtArgs>, T, 'findFirstOrThrow', never>, never, ExtArgs>
+
+    /**
+     * Find zero or more AdminNotifications that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminNotificationFindManyArgs=} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AdminNotifications
+     * const adminNotifications = await prisma.adminNotification.findMany()
+     * 
+     * // Get first 10 AdminNotifications
+     * const adminNotifications = await prisma.adminNotification.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const adminNotificationWithIdOnly = await prisma.adminNotification.findMany({ select: { id: true } })
+     * 
+    **/
+    findMany<T extends AdminNotificationFindManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, AdminNotificationFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<$Types.GetResult<AdminNotificationPayload<ExtArgs>, T, 'findMany', never>>
+
+    /**
+     * Create a AdminNotification.
+     * @param {AdminNotificationCreateArgs} args - Arguments to create a AdminNotification.
+     * @example
+     * // Create one AdminNotification
+     * const AdminNotification = await prisma.adminNotification.create({
+     *   data: {
+     *     // ... data to create a AdminNotification
+     *   }
+     * })
+     * 
+    **/
+    create<T extends AdminNotificationCreateArgs<ExtArgs>>(
+      args: SelectSubset<T, AdminNotificationCreateArgs<ExtArgs>>
+    ): Prisma__AdminNotificationClient<$Types.GetResult<AdminNotificationPayload<ExtArgs>, T, 'create', never>, never, ExtArgs>
+
+    /**
+     * Create many AdminNotifications.
+     *     @param {AdminNotificationCreateManyArgs} args - Arguments to create many AdminNotifications.
+     *     @example
+     *     // Create many AdminNotifications
+     *     const adminNotification = await prisma.adminNotification.createMany({
+     *       data: {
+     *         // ... provide data here
+     *       }
+     *     })
+     *     
+    **/
+    createMany<T extends AdminNotificationCreateManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, AdminNotificationCreateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a AdminNotification.
+     * @param {AdminNotificationDeleteArgs} args - Arguments to delete one AdminNotification.
+     * @example
+     * // Delete one AdminNotification
+     * const AdminNotification = await prisma.adminNotification.delete({
+     *   where: {
+     *     // ... filter to delete one AdminNotification
+     *   }
+     * })
+     * 
+    **/
+    delete<T extends AdminNotificationDeleteArgs<ExtArgs>>(
+      args: SelectSubset<T, AdminNotificationDeleteArgs<ExtArgs>>
+    ): Prisma__AdminNotificationClient<$Types.GetResult<AdminNotificationPayload<ExtArgs>, T, 'delete', never>, never, ExtArgs>
+
+    /**
+     * Update one AdminNotification.
+     * @param {AdminNotificationUpdateArgs} args - Arguments to update one AdminNotification.
+     * @example
+     * // Update one AdminNotification
+     * const adminNotification = await prisma.adminNotification.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+    **/
+    update<T extends AdminNotificationUpdateArgs<ExtArgs>>(
+      args: SelectSubset<T, AdminNotificationUpdateArgs<ExtArgs>>
+    ): Prisma__AdminNotificationClient<$Types.GetResult<AdminNotificationPayload<ExtArgs>, T, 'update', never>, never, ExtArgs>
+
+    /**
+     * Delete zero or more AdminNotifications.
+     * @param {AdminNotificationDeleteManyArgs} args - Arguments to filter AdminNotifications to delete.
+     * @example
+     * // Delete a few AdminNotifications
+     * const { count } = await prisma.adminNotification.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+    **/
+    deleteMany<T extends AdminNotificationDeleteManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, AdminNotificationDeleteManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AdminNotifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminNotificationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AdminNotifications
+     * const adminNotification = await prisma.adminNotification.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+    **/
+    updateMany<T extends AdminNotificationUpdateManyArgs<ExtArgs>>(
+      args: SelectSubset<T, AdminNotificationUpdateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one AdminNotification.
+     * @param {AdminNotificationUpsertArgs} args - Arguments to update or create a AdminNotification.
+     * @example
+     * // Update or create a AdminNotification
+     * const adminNotification = await prisma.adminNotification.upsert({
+     *   create: {
+     *     // ... data to create a AdminNotification
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AdminNotification we want to update
+     *   }
+     * })
+    **/
+    upsert<T extends AdminNotificationUpsertArgs<ExtArgs>>(
+      args: SelectSubset<T, AdminNotificationUpsertArgs<ExtArgs>>
+    ): Prisma__AdminNotificationClient<$Types.GetResult<AdminNotificationPayload<ExtArgs>, T, 'upsert', never>, never, ExtArgs>
+
+    /**
+     * Count the number of AdminNotifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminNotificationCountArgs} args - Arguments to filter AdminNotifications to count.
+     * @example
+     * // Count the number of AdminNotifications
+     * const count = await prisma.adminNotification.count({
+     *   where: {
+     *     // ... the filter for the AdminNotifications we want to count
+     *   }
+     * })
+    **/
+    count<T extends AdminNotificationCountArgs>(
+      args?: Subset<T, AdminNotificationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AdminNotificationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AdminNotification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminNotificationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AdminNotificationAggregateArgs>(args: Subset<T, AdminNotificationAggregateArgs>): Prisma.PrismaPromise<GetAdminNotificationAggregateType<T>>
+
+    /**
+     * Group by AdminNotification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminNotificationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AdminNotificationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AdminNotificationGroupByArgs['orderBy'] }
+        : { orderBy?: AdminNotificationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends TupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AdminNotificationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAdminNotificationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AdminNotification.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export class Prisma__AdminNotificationClient<T, Null = never, ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> implements Prisma.PrismaPromise<T> {
+    private readonly _dmmf;
+    private readonly _queryType;
+    private readonly _rootField;
+    private readonly _clientMethod;
+    private readonly _args;
+    private readonly _dataPath;
+    private readonly _errorFormat;
+    private readonly _measurePerformance?;
+    private _isList;
+    private _callsite;
+    private _requestPromise?;
+    readonly [Symbol.toStringTag]: 'PrismaPromise';
+    constructor(_dmmf: runtime.DMMFClass, _queryType: 'query' | 'mutation', _rootField: string, _clientMethod: string, _args: any, _dataPath: string[], _errorFormat: ErrorFormat, _measurePerformance?: boolean | undefined, _isList?: boolean);
+
+
+    private get _document();
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): Promise<T>;
+  }
+
+
+
+  // Custom InputTypes
+
+  /**
+   * AdminNotification base type for findUnique actions
+   */
+  export type AdminNotificationFindUniqueArgsBase<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminNotification
+     */
+    select?: AdminNotificationSelect<ExtArgs> | null
+    /**
+     * Filter, which AdminNotification to fetch.
+     */
+    where: AdminNotificationWhereUniqueInput
+  }
+
+  /**
+   * AdminNotification findUnique
+   */
+  export interface AdminNotificationFindUniqueArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> extends AdminNotificationFindUniqueArgsBase<ExtArgs> {
+   /**
+    * Throw an Error if query returns no results
+    * @deprecated since 4.0.0: use `findUniqueOrThrow` method instead
+    */
+    rejectOnNotFound?: RejectOnNotFound
+  }
+      
+
+  /**
+   * AdminNotification findUniqueOrThrow
+   */
+  export type AdminNotificationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminNotification
+     */
+    select?: AdminNotificationSelect<ExtArgs> | null
+    /**
+     * Filter, which AdminNotification to fetch.
+     */
+    where: AdminNotificationWhereUniqueInput
+  }
+
+
+  /**
+   * AdminNotification base type for findFirst actions
+   */
+  export type AdminNotificationFindFirstArgsBase<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminNotification
+     */
+    select?: AdminNotificationSelect<ExtArgs> | null
+    /**
+     * Filter, which AdminNotification to fetch.
+     */
+    where?: AdminNotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminNotifications to fetch.
+     */
+    orderBy?: Enumerable<AdminNotificationOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AdminNotifications.
+     */
+    cursor?: AdminNotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminNotifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminNotifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AdminNotifications.
+     */
+    distinct?: Enumerable<AdminNotificationScalarFieldEnum>
+  }
+
+  /**
+   * AdminNotification findFirst
+   */
+  export interface AdminNotificationFindFirstArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> extends AdminNotificationFindFirstArgsBase<ExtArgs> {
+   /**
+    * Throw an Error if query returns no results
+    * @deprecated since 4.0.0: use `findFirstOrThrow` method instead
+    */
+    rejectOnNotFound?: RejectOnNotFound
+  }
+      
+
+  /**
+   * AdminNotification findFirstOrThrow
+   */
+  export type AdminNotificationFindFirstOrThrowArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminNotification
+     */
+    select?: AdminNotificationSelect<ExtArgs> | null
+    /**
+     * Filter, which AdminNotification to fetch.
+     */
+    where?: AdminNotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminNotifications to fetch.
+     */
+    orderBy?: Enumerable<AdminNotificationOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AdminNotifications.
+     */
+    cursor?: AdminNotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminNotifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminNotifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AdminNotifications.
+     */
+    distinct?: Enumerable<AdminNotificationScalarFieldEnum>
+  }
+
+
+  /**
+   * AdminNotification findMany
+   */
+  export type AdminNotificationFindManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminNotification
+     */
+    select?: AdminNotificationSelect<ExtArgs> | null
+    /**
+     * Filter, which AdminNotifications to fetch.
+     */
+    where?: AdminNotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminNotifications to fetch.
+     */
+    orderBy?: Enumerable<AdminNotificationOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AdminNotifications.
+     */
+    cursor?: AdminNotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminNotifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminNotifications.
+     */
+    skip?: number
+    distinct?: Enumerable<AdminNotificationScalarFieldEnum>
+  }
+
+
+  /**
+   * AdminNotification create
+   */
+  export type AdminNotificationCreateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminNotification
+     */
+    select?: AdminNotificationSelect<ExtArgs> | null
+    /**
+     * The data needed to create a AdminNotification.
+     */
+    data: XOR<AdminNotificationCreateInput, AdminNotificationUncheckedCreateInput>
+  }
+
+
+  /**
+   * AdminNotification createMany
+   */
+  export type AdminNotificationCreateManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AdminNotifications.
+     */
+    data: Enumerable<AdminNotificationCreateManyInput>
+    skipDuplicates?: boolean
+  }
+
+
+  /**
+   * AdminNotification update
+   */
+  export type AdminNotificationUpdateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminNotification
+     */
+    select?: AdminNotificationSelect<ExtArgs> | null
+    /**
+     * The data needed to update a AdminNotification.
+     */
+    data: XOR<AdminNotificationUpdateInput, AdminNotificationUncheckedUpdateInput>
+    /**
+     * Choose, which AdminNotification to update.
+     */
+    where: AdminNotificationWhereUniqueInput
+  }
+
+
+  /**
+   * AdminNotification updateMany
+   */
+  export type AdminNotificationUpdateManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AdminNotifications.
+     */
+    data: XOR<AdminNotificationUpdateManyMutationInput, AdminNotificationUncheckedUpdateManyInput>
+    /**
+     * Filter which AdminNotifications to update
+     */
+    where?: AdminNotificationWhereInput
+  }
+
+
+  /**
+   * AdminNotification upsert
+   */
+  export type AdminNotificationUpsertArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminNotification
+     */
+    select?: AdminNotificationSelect<ExtArgs> | null
+    /**
+     * The filter to search for the AdminNotification to update in case it exists.
+     */
+    where: AdminNotificationWhereUniqueInput
+    /**
+     * In case the AdminNotification found by the `where` argument doesn't exist, create a new AdminNotification with this data.
+     */
+    create: XOR<AdminNotificationCreateInput, AdminNotificationUncheckedCreateInput>
+    /**
+     * In case the AdminNotification was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AdminNotificationUpdateInput, AdminNotificationUncheckedUpdateInput>
+  }
+
+
+  /**
+   * AdminNotification delete
+   */
+  export type AdminNotificationDeleteArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminNotification
+     */
+    select?: AdminNotificationSelect<ExtArgs> | null
+    /**
+     * Filter which AdminNotification to delete.
+     */
+    where: AdminNotificationWhereUniqueInput
+  }
+
+
+  /**
+   * AdminNotification deleteMany
+   */
+  export type AdminNotificationDeleteManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AdminNotifications to delete
+     */
+    where?: AdminNotificationWhereInput
+  }
+
+
+  /**
+   * AdminNotification without action
+   */
+  export type AdminNotificationArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminNotification
+     */
+    select?: AdminNotificationSelect<ExtArgs> | null
+  }
+
+
+
+  /**
    * Enums
    */
 
@@ -10783,7 +15260,10 @@ export namespace Prisma {
     email: 'email',
     passwordHash: 'passwordHash',
     role: 'role',
+    isSuspended: 'isSuspended',
+    suspendedAt: 'suspendedAt',
     createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
     otpHash: 'otpHash',
     otpExpiresAt: 'otpExpiresAt',
     otpAttempts: 'otpAttempts'
@@ -10792,11 +15272,27 @@ export namespace Prisma {
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
+  export const PasswordResetTokenScalarFieldEnum: {
+    id: 'id',
+    email: 'email',
+    tokenHash: 'tokenHash',
+    expiresAt: 'expiresAt',
+    createdAt: 'createdAt'
+  };
+
+  export type PasswordResetTokenScalarFieldEnum = (typeof PasswordResetTokenScalarFieldEnum)[keyof typeof PasswordResetTokenScalarFieldEnum]
+
+
   export const SubscriptionTierScalarFieldEnum: {
     id: 'id',
     name: 'name',
+    slug: 'slug',
+    description: 'description',
     accessTier: 'accessTier',
-    createdAt: 'createdAt'
+    isActive: 'isActive',
+    isFeatured: 'isFeatured',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type SubscriptionTierScalarFieldEnum = (typeof SubscriptionTierScalarFieldEnum)[keyof typeof SubscriptionTierScalarFieldEnum]
@@ -10805,10 +15301,14 @@ export namespace Prisma {
   export const SubscriptionPriceScalarFieldEnum: {
     id: 'id',
     tierId: 'tierId',
+    stripeProductId: 'stripeProductId',
     stripePriceId: 'stripePriceId',
     interval: 'interval',
     priceCents: 'priceCents',
-    createdAt: 'createdAt'
+    currency: 'currency',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type SubscriptionPriceScalarFieldEnum = (typeof SubscriptionPriceScalarFieldEnum)[keyof typeof SubscriptionPriceScalarFieldEnum]
@@ -10823,7 +15323,8 @@ export namespace Prisma {
     status: 'status',
     startAt: 'startAt',
     endAt: 'endAt',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
@@ -10835,6 +15336,7 @@ export namespace Prisma {
     subscriptionId: 'subscriptionId',
     amountCents: 'amountCents',
     currency: 'currency',
+    paymentProvider: 'paymentProvider',
     stripePaymentIntent: 'stripePaymentIntent',
     status: 'status',
     metadata: 'metadata',
@@ -10847,21 +15349,57 @@ export namespace Prisma {
   export const GymScalarFieldEnum: {
     id: 'id',
     name: 'name',
+    description: 'description',
     addressLine: 'addressLine',
     city: 'city',
+    province: 'province',
+    postalCode: 'postalCode',
     latitude: 'latitude',
     longitude: 'longitude',
+    phoneNumber: 'phoneNumber',
+    whatsappNumber: 'whatsappNumber',
+    instagramHandle: 'instagramHandle',
+    websiteUrl: 'websiteUrl',
+    googleMapsLink: 'googleMapsLink',
+    cnicNumber: 'cnicNumber',
+    businessName: 'businessName',
     openingTime: 'openingTime',
     closingTime: 'closingTime',
     is24Hours: 'is24Hours',
     tier: 'tier',
     coverImageUrl: 'coverImageUrl',
     status: 'status',
+    submittedAt: 'submittedAt',
+    reviewedAt: 'reviewedAt',
+    reviewedByAdminId: 'reviewedByAdminId',
+    rejectionReason: 'rejectionReason',
+    approvalNotes: 'approvalNotes',
+    resubmissionCount: 'resubmissionCount',
+    isFeatured: 'isFeatured',
+    isArchived: 'isArchived',
+    isBlocked: 'isBlocked',
+    blockedReason: 'blockedReason',
     ownerId: 'ownerId',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type GymScalarFieldEnum = (typeof GymScalarFieldEnum)[keyof typeof GymScalarFieldEnum]
+
+
+  export const GymVerificationDocumentScalarFieldEnum: {
+    id: 'id',
+    gymId: 'gymId',
+    type: 'type',
+    fileUrl: 'fileUrl',
+    status: 'status',
+    rejectedReason: 'rejectedReason',
+    reviewedAt: 'reviewedAt',
+    reviewNotes: 'reviewNotes',
+    createdAt: 'createdAt'
+  };
+
+  export type GymVerificationDocumentScalarFieldEnum = (typeof GymVerificationDocumentScalarFieldEnum)[keyof typeof GymVerificationDocumentScalarFieldEnum]
 
 
   export const GymPhotoScalarFieldEnum: {
@@ -10894,6 +15432,31 @@ export namespace Prisma {
   };
 
   export type QrJtiUsageScalarFieldEnum = (typeof QrJtiUsageScalarFieldEnum)[keyof typeof QrJtiUsageScalarFieldEnum]
+
+
+  export const AdminAuditLogScalarFieldEnum: {
+    id: 'id',
+    adminId: 'adminId',
+    action: 'action',
+    entityType: 'entityType',
+    entityId: 'entityId',
+    metadata: 'metadata',
+    createdAt: 'createdAt'
+  };
+
+  export type AdminAuditLogScalarFieldEnum = (typeof AdminAuditLogScalarFieldEnum)[keyof typeof AdminAuditLogScalarFieldEnum]
+
+
+  export const AdminNotificationScalarFieldEnum: {
+    id: 'id',
+    title: 'title',
+    message: 'message',
+    type: 'type',
+    isRead: 'isRead',
+    createdAt: 'createdAt'
+  };
+
+  export type AdminNotificationScalarFieldEnum = (typeof AdminNotificationScalarFieldEnum)[keyof typeof AdminNotificationScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -10951,7 +15514,10 @@ export namespace Prisma {
     email?: StringFilter | string
     passwordHash?: StringFilter | string
     role?: StringFilter | string
+    isSuspended?: BoolFilter | boolean
+    suspendedAt?: DateTimeNullableFilter | Date | string | null
     createdAt?: DateTimeFilter | Date | string
+    updatedAt?: DateTimeFilter | Date | string
     otpHash?: StringNullableFilter | string | null
     otpExpiresAt?: DateTimeNullableFilter | Date | string | null
     otpAttempts?: IntNullableFilter | number | null
@@ -10959,6 +15525,7 @@ export namespace Prisma {
     payments?: PaymentListRelationFilter
     checkIns?: CheckInListRelationFilter
     gymsOwned?: GymListRelationFilter
+    adminAuditLogs?: AdminAuditLogListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -10967,7 +15534,10 @@ export namespace Prisma {
     email?: SortOrder
     passwordHash?: SortOrder
     role?: SortOrder
+    isSuspended?: SortOrder
+    suspendedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     otpHash?: SortOrderInput | SortOrder
     otpExpiresAt?: SortOrderInput | SortOrder
     otpAttempts?: SortOrderInput | SortOrder
@@ -10975,6 +15545,7 @@ export namespace Prisma {
     payments?: PaymentOrderByRelationAggregateInput
     checkIns?: CheckInOrderByRelationAggregateInput
     gymsOwned?: GymOrderByRelationAggregateInput
+    adminAuditLogs?: AdminAuditLogOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = {
@@ -10988,7 +15559,10 @@ export namespace Prisma {
     email?: SortOrder
     passwordHash?: SortOrder
     role?: SortOrder
+    isSuspended?: SortOrder
+    suspendedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     otpHash?: SortOrderInput | SortOrder
     otpExpiresAt?: SortOrderInput | SortOrder
     otpAttempts?: SortOrderInput | SortOrder
@@ -11008,10 +15582,58 @@ export namespace Prisma {
     email?: StringWithAggregatesFilter | string
     passwordHash?: StringWithAggregatesFilter | string
     role?: StringWithAggregatesFilter | string
+    isSuspended?: BoolWithAggregatesFilter | boolean
+    suspendedAt?: DateTimeNullableWithAggregatesFilter | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter | Date | string
     otpHash?: StringNullableWithAggregatesFilter | string | null
     otpExpiresAt?: DateTimeNullableWithAggregatesFilter | Date | string | null
     otpAttempts?: IntNullableWithAggregatesFilter | number | null
+  }
+
+  export type PasswordResetTokenWhereInput = {
+    AND?: Enumerable<PasswordResetTokenWhereInput>
+    OR?: Enumerable<PasswordResetTokenWhereInput>
+    NOT?: Enumerable<PasswordResetTokenWhereInput>
+    id?: StringFilter | string
+    email?: StringFilter | string
+    tokenHash?: StringFilter | string
+    expiresAt?: DateTimeFilter | Date | string
+    createdAt?: DateTimeFilter | Date | string
+  }
+
+  export type PasswordResetTokenOrderByWithRelationInput = {
+    id?: SortOrder
+    email?: SortOrder
+    tokenHash?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PasswordResetTokenWhereUniqueInput = {
+    id?: string
+  }
+
+  export type PasswordResetTokenOrderByWithAggregationInput = {
+    id?: SortOrder
+    email?: SortOrder
+    tokenHash?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+    _count?: PasswordResetTokenCountOrderByAggregateInput
+    _max?: PasswordResetTokenMaxOrderByAggregateInput
+    _min?: PasswordResetTokenMinOrderByAggregateInput
+  }
+
+  export type PasswordResetTokenScalarWhereWithAggregatesInput = {
+    AND?: Enumerable<PasswordResetTokenScalarWhereWithAggregatesInput>
+    OR?: Enumerable<PasswordResetTokenScalarWhereWithAggregatesInput>
+    NOT?: Enumerable<PasswordResetTokenScalarWhereWithAggregatesInput>
+    id?: StringWithAggregatesFilter | string
+    email?: StringWithAggregatesFilter | string
+    tokenHash?: StringWithAggregatesFilter | string
+    expiresAt?: DateTimeWithAggregatesFilter | Date | string
+    createdAt?: DateTimeWithAggregatesFilter | Date | string
   }
 
   export type SubscriptionTierWhereInput = {
@@ -11020,8 +15642,13 @@ export namespace Prisma {
     NOT?: Enumerable<SubscriptionTierWhereInput>
     id?: StringFilter | string
     name?: StringFilter | string
+    slug?: StringFilter | string
+    description?: StringNullableFilter | string | null
     accessTier?: IntFilter | number
+    isActive?: BoolFilter | boolean
+    isFeatured?: BoolFilter | boolean
     createdAt?: DateTimeFilter | Date | string
+    updatedAt?: DateTimeFilter | Date | string
     prices?: SubscriptionPriceListRelationFilter
     subscriptions?: SubscriptionListRelationFilter
   }
@@ -11029,21 +15656,32 @@ export namespace Prisma {
   export type SubscriptionTierOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
+    slug?: SortOrder
+    description?: SortOrderInput | SortOrder
     accessTier?: SortOrder
+    isActive?: SortOrder
+    isFeatured?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     prices?: SubscriptionPriceOrderByRelationAggregateInput
     subscriptions?: SubscriptionOrderByRelationAggregateInput
   }
 
   export type SubscriptionTierWhereUniqueInput = {
     id?: string
+    slug?: string
   }
 
   export type SubscriptionTierOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
+    slug?: SortOrder
+    description?: SortOrderInput | SortOrder
     accessTier?: SortOrder
+    isActive?: SortOrder
+    isFeatured?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: SubscriptionTierCountOrderByAggregateInput
     _avg?: SubscriptionTierAvgOrderByAggregateInput
     _max?: SubscriptionTierMaxOrderByAggregateInput
@@ -11057,8 +15695,13 @@ export namespace Prisma {
     NOT?: Enumerable<SubscriptionTierScalarWhereWithAggregatesInput>
     id?: StringWithAggregatesFilter | string
     name?: StringWithAggregatesFilter | string
+    slug?: StringWithAggregatesFilter | string
+    description?: StringNullableWithAggregatesFilter | string | null
     accessTier?: IntWithAggregatesFilter | number
+    isActive?: BoolWithAggregatesFilter | boolean
+    isFeatured?: BoolWithAggregatesFilter | boolean
     createdAt?: DateTimeWithAggregatesFilter | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter | Date | string
   }
 
   export type SubscriptionPriceWhereInput = {
@@ -11067,20 +15710,28 @@ export namespace Prisma {
     NOT?: Enumerable<SubscriptionPriceWhereInput>
     id?: StringFilter | string
     tierId?: StringFilter | string
+    stripeProductId?: StringFilter | string
     stripePriceId?: StringFilter | string
     interval?: StringFilter | string
     priceCents?: IntFilter | number
+    currency?: StringFilter | string
+    isActive?: BoolFilter | boolean
     createdAt?: DateTimeFilter | Date | string
+    updatedAt?: DateTimeFilter | Date | string
     tier?: XOR<SubscriptionTierRelationFilter, SubscriptionTierWhereInput>
   }
 
   export type SubscriptionPriceOrderByWithRelationInput = {
     id?: SortOrder
     tierId?: SortOrder
+    stripeProductId?: SortOrder
     stripePriceId?: SortOrder
     interval?: SortOrder
     priceCents?: SortOrder
+    currency?: SortOrder
+    isActive?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     tier?: SubscriptionTierOrderByWithRelationInput
   }
 
@@ -11092,10 +15743,14 @@ export namespace Prisma {
   export type SubscriptionPriceOrderByWithAggregationInput = {
     id?: SortOrder
     tierId?: SortOrder
+    stripeProductId?: SortOrder
     stripePriceId?: SortOrder
     interval?: SortOrder
     priceCents?: SortOrder
+    currency?: SortOrder
+    isActive?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: SubscriptionPriceCountOrderByAggregateInput
     _avg?: SubscriptionPriceAvgOrderByAggregateInput
     _max?: SubscriptionPriceMaxOrderByAggregateInput
@@ -11109,10 +15764,14 @@ export namespace Prisma {
     NOT?: Enumerable<SubscriptionPriceScalarWhereWithAggregatesInput>
     id?: StringWithAggregatesFilter | string
     tierId?: StringWithAggregatesFilter | string
+    stripeProductId?: StringWithAggregatesFilter | string
     stripePriceId?: StringWithAggregatesFilter | string
     interval?: StringWithAggregatesFilter | string
     priceCents?: IntWithAggregatesFilter | number
+    currency?: StringWithAggregatesFilter | string
+    isActive?: BoolWithAggregatesFilter | boolean
     createdAt?: DateTimeWithAggregatesFilter | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter | Date | string
   }
 
   export type SubscriptionWhereInput = {
@@ -11128,6 +15787,7 @@ export namespace Prisma {
     startAt?: DateTimeNullableFilter | Date | string | null
     endAt?: DateTimeNullableFilter | Date | string | null
     createdAt?: DateTimeFilter | Date | string
+    updatedAt?: DateTimeFilter | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
     tier?: XOR<SubscriptionTierRelationFilter, SubscriptionTierWhereInput>
     payments?: PaymentListRelationFilter
@@ -11143,6 +15803,7 @@ export namespace Prisma {
     startAt?: SortOrderInput | SortOrder
     endAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
     tier?: SubscriptionTierOrderByWithRelationInput
     payments?: PaymentOrderByRelationAggregateInput
@@ -11163,6 +15824,7 @@ export namespace Prisma {
     startAt?: SortOrderInput | SortOrder
     endAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: SubscriptionCountOrderByAggregateInput
     _max?: SubscriptionMaxOrderByAggregateInput
     _min?: SubscriptionMinOrderByAggregateInput
@@ -11181,6 +15843,7 @@ export namespace Prisma {
     startAt?: DateTimeNullableWithAggregatesFilter | Date | string | null
     endAt?: DateTimeNullableWithAggregatesFilter | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter | Date | string
   }
 
   export type PaymentWhereInput = {
@@ -11192,6 +15855,7 @@ export namespace Prisma {
     subscriptionId?: StringNullableFilter | string | null
     amountCents?: IntFilter | number
     currency?: StringFilter | string
+    paymentProvider?: StringNullableFilter | string | null
     stripePaymentIntent?: StringNullableFilter | string | null
     status?: StringFilter | string
     metadata?: JsonNullableFilter
@@ -11206,6 +15870,7 @@ export namespace Prisma {
     subscriptionId?: SortOrderInput | SortOrder
     amountCents?: SortOrder
     currency?: SortOrder
+    paymentProvider?: SortOrderInput | SortOrder
     stripePaymentIntent?: SortOrderInput | SortOrder
     status?: SortOrder
     metadata?: SortOrderInput | SortOrder
@@ -11224,6 +15889,7 @@ export namespace Prisma {
     subscriptionId?: SortOrderInput | SortOrder
     amountCents?: SortOrder
     currency?: SortOrder
+    paymentProvider?: SortOrderInput | SortOrder
     stripePaymentIntent?: SortOrderInput | SortOrder
     status?: SortOrder
     metadata?: SortOrderInput | SortOrder
@@ -11244,6 +15910,7 @@ export namespace Prisma {
     subscriptionId?: StringNullableWithAggregatesFilter | string | null
     amountCents?: IntWithAggregatesFilter | number
     currency?: StringWithAggregatesFilter | string
+    paymentProvider?: StringNullableWithAggregatesFilter | string | null
     stripePaymentIntent?: StringNullableWithAggregatesFilter | string | null
     status?: StringWithAggregatesFilter | string
     metadata?: JsonNullableWithAggregatesFilter
@@ -11256,41 +15923,85 @@ export namespace Prisma {
     NOT?: Enumerable<GymWhereInput>
     id?: StringFilter | string
     name?: StringFilter | string
+    description?: StringNullableFilter | string | null
     addressLine?: StringFilter | string
     city?: StringFilter | string
+    province?: StringNullableFilter | string | null
+    postalCode?: StringNullableFilter | string | null
     latitude?: FloatFilter | number
     longitude?: FloatFilter | number
+    phoneNumber?: StringNullableFilter | string | null
+    whatsappNumber?: StringNullableFilter | string | null
+    instagramHandle?: StringNullableFilter | string | null
+    websiteUrl?: StringNullableFilter | string | null
+    googleMapsLink?: StringNullableFilter | string | null
+    cnicNumber?: StringNullableFilter | string | null
+    businessName?: StringNullableFilter | string | null
     openingTime?: StringNullableFilter | string | null
     closingTime?: StringNullableFilter | string | null
     is24Hours?: BoolFilter | boolean
     tier?: IntFilter | number
     coverImageUrl?: StringNullableFilter | string | null
     status?: StringFilter | string
+    submittedAt?: DateTimeNullableFilter | Date | string | null
+    reviewedAt?: DateTimeNullableFilter | Date | string | null
+    reviewedByAdminId?: StringNullableFilter | string | null
+    rejectionReason?: StringNullableFilter | string | null
+    approvalNotes?: StringNullableFilter | string | null
+    resubmissionCount?: IntFilter | number
+    isFeatured?: BoolFilter | boolean
+    isArchived?: BoolFilter | boolean
+    isBlocked?: BoolFilter | boolean
+    blockedReason?: StringNullableFilter | string | null
     ownerId?: StringNullableFilter | string | null
     createdAt?: DateTimeFilter | Date | string
+    updatedAt?: DateTimeFilter | Date | string
     owner?: XOR<UserRelationFilter, UserWhereInput> | null
     checkIns?: CheckInListRelationFilter
     photos?: GymPhotoListRelationFilter
+    verificationDocuments?: GymVerificationDocumentListRelationFilter
   }
 
   export type GymOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
+    description?: SortOrderInput | SortOrder
     addressLine?: SortOrder
     city?: SortOrder
+    province?: SortOrderInput | SortOrder
+    postalCode?: SortOrderInput | SortOrder
     latitude?: SortOrder
     longitude?: SortOrder
+    phoneNumber?: SortOrderInput | SortOrder
+    whatsappNumber?: SortOrderInput | SortOrder
+    instagramHandle?: SortOrderInput | SortOrder
+    websiteUrl?: SortOrderInput | SortOrder
+    googleMapsLink?: SortOrderInput | SortOrder
+    cnicNumber?: SortOrderInput | SortOrder
+    businessName?: SortOrderInput | SortOrder
     openingTime?: SortOrderInput | SortOrder
     closingTime?: SortOrderInput | SortOrder
     is24Hours?: SortOrder
     tier?: SortOrder
     coverImageUrl?: SortOrderInput | SortOrder
     status?: SortOrder
+    submittedAt?: SortOrderInput | SortOrder
+    reviewedAt?: SortOrderInput | SortOrder
+    reviewedByAdminId?: SortOrderInput | SortOrder
+    rejectionReason?: SortOrderInput | SortOrder
+    approvalNotes?: SortOrderInput | SortOrder
+    resubmissionCount?: SortOrder
+    isFeatured?: SortOrder
+    isArchived?: SortOrder
+    isBlocked?: SortOrder
+    blockedReason?: SortOrderInput | SortOrder
     ownerId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     owner?: UserOrderByWithRelationInput
     checkIns?: CheckInOrderByRelationAggregateInput
     photos?: GymPhotoOrderByRelationAggregateInput
+    verificationDocuments?: GymVerificationDocumentOrderByRelationAggregateInput
   }
 
   export type GymWhereUniqueInput = {
@@ -11300,18 +16011,39 @@ export namespace Prisma {
   export type GymOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
+    description?: SortOrderInput | SortOrder
     addressLine?: SortOrder
     city?: SortOrder
+    province?: SortOrderInput | SortOrder
+    postalCode?: SortOrderInput | SortOrder
     latitude?: SortOrder
     longitude?: SortOrder
+    phoneNumber?: SortOrderInput | SortOrder
+    whatsappNumber?: SortOrderInput | SortOrder
+    instagramHandle?: SortOrderInput | SortOrder
+    websiteUrl?: SortOrderInput | SortOrder
+    googleMapsLink?: SortOrderInput | SortOrder
+    cnicNumber?: SortOrderInput | SortOrder
+    businessName?: SortOrderInput | SortOrder
     openingTime?: SortOrderInput | SortOrder
     closingTime?: SortOrderInput | SortOrder
     is24Hours?: SortOrder
     tier?: SortOrder
     coverImageUrl?: SortOrderInput | SortOrder
     status?: SortOrder
+    submittedAt?: SortOrderInput | SortOrder
+    reviewedAt?: SortOrderInput | SortOrder
+    reviewedByAdminId?: SortOrderInput | SortOrder
+    rejectionReason?: SortOrderInput | SortOrder
+    approvalNotes?: SortOrderInput | SortOrder
+    resubmissionCount?: SortOrder
+    isFeatured?: SortOrder
+    isArchived?: SortOrder
+    isBlocked?: SortOrder
+    blockedReason?: SortOrderInput | SortOrder
     ownerId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: GymCountOrderByAggregateInput
     _avg?: GymAvgOrderByAggregateInput
     _max?: GymMaxOrderByAggregateInput
@@ -11325,17 +16057,101 @@ export namespace Prisma {
     NOT?: Enumerable<GymScalarWhereWithAggregatesInput>
     id?: StringWithAggregatesFilter | string
     name?: StringWithAggregatesFilter | string
+    description?: StringNullableWithAggregatesFilter | string | null
     addressLine?: StringWithAggregatesFilter | string
     city?: StringWithAggregatesFilter | string
+    province?: StringNullableWithAggregatesFilter | string | null
+    postalCode?: StringNullableWithAggregatesFilter | string | null
     latitude?: FloatWithAggregatesFilter | number
     longitude?: FloatWithAggregatesFilter | number
+    phoneNumber?: StringNullableWithAggregatesFilter | string | null
+    whatsappNumber?: StringNullableWithAggregatesFilter | string | null
+    instagramHandle?: StringNullableWithAggregatesFilter | string | null
+    websiteUrl?: StringNullableWithAggregatesFilter | string | null
+    googleMapsLink?: StringNullableWithAggregatesFilter | string | null
+    cnicNumber?: StringNullableWithAggregatesFilter | string | null
+    businessName?: StringNullableWithAggregatesFilter | string | null
     openingTime?: StringNullableWithAggregatesFilter | string | null
     closingTime?: StringNullableWithAggregatesFilter | string | null
     is24Hours?: BoolWithAggregatesFilter | boolean
     tier?: IntWithAggregatesFilter | number
     coverImageUrl?: StringNullableWithAggregatesFilter | string | null
     status?: StringWithAggregatesFilter | string
+    submittedAt?: DateTimeNullableWithAggregatesFilter | Date | string | null
+    reviewedAt?: DateTimeNullableWithAggregatesFilter | Date | string | null
+    reviewedByAdminId?: StringNullableWithAggregatesFilter | string | null
+    rejectionReason?: StringNullableWithAggregatesFilter | string | null
+    approvalNotes?: StringNullableWithAggregatesFilter | string | null
+    resubmissionCount?: IntWithAggregatesFilter | number
+    isFeatured?: BoolWithAggregatesFilter | boolean
+    isArchived?: BoolWithAggregatesFilter | boolean
+    isBlocked?: BoolWithAggregatesFilter | boolean
+    blockedReason?: StringNullableWithAggregatesFilter | string | null
     ownerId?: StringNullableWithAggregatesFilter | string | null
+    createdAt?: DateTimeWithAggregatesFilter | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter | Date | string
+  }
+
+  export type GymVerificationDocumentWhereInput = {
+    AND?: Enumerable<GymVerificationDocumentWhereInput>
+    OR?: Enumerable<GymVerificationDocumentWhereInput>
+    NOT?: Enumerable<GymVerificationDocumentWhereInput>
+    id?: StringFilter | string
+    gymId?: StringFilter | string
+    type?: StringFilter | string
+    fileUrl?: StringFilter | string
+    status?: StringFilter | string
+    rejectedReason?: StringNullableFilter | string | null
+    reviewedAt?: DateTimeNullableFilter | Date | string | null
+    reviewNotes?: StringNullableFilter | string | null
+    createdAt?: DateTimeFilter | Date | string
+    gym?: XOR<GymRelationFilter, GymWhereInput>
+  }
+
+  export type GymVerificationDocumentOrderByWithRelationInput = {
+    id?: SortOrder
+    gymId?: SortOrder
+    type?: SortOrder
+    fileUrl?: SortOrder
+    status?: SortOrder
+    rejectedReason?: SortOrderInput | SortOrder
+    reviewedAt?: SortOrderInput | SortOrder
+    reviewNotes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    gym?: GymOrderByWithRelationInput
+  }
+
+  export type GymVerificationDocumentWhereUniqueInput = {
+    id?: string
+  }
+
+  export type GymVerificationDocumentOrderByWithAggregationInput = {
+    id?: SortOrder
+    gymId?: SortOrder
+    type?: SortOrder
+    fileUrl?: SortOrder
+    status?: SortOrder
+    rejectedReason?: SortOrderInput | SortOrder
+    reviewedAt?: SortOrderInput | SortOrder
+    reviewNotes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: GymVerificationDocumentCountOrderByAggregateInput
+    _max?: GymVerificationDocumentMaxOrderByAggregateInput
+    _min?: GymVerificationDocumentMinOrderByAggregateInput
+  }
+
+  export type GymVerificationDocumentScalarWhereWithAggregatesInput = {
+    AND?: Enumerable<GymVerificationDocumentScalarWhereWithAggregatesInput>
+    OR?: Enumerable<GymVerificationDocumentScalarWhereWithAggregatesInput>
+    NOT?: Enumerable<GymVerificationDocumentScalarWhereWithAggregatesInput>
+    id?: StringWithAggregatesFilter | string
+    gymId?: StringWithAggregatesFilter | string
+    type?: StringWithAggregatesFilter | string
+    fileUrl?: StringWithAggregatesFilter | string
+    status?: StringWithAggregatesFilter | string
+    rejectedReason?: StringNullableWithAggregatesFilter | string | null
+    reviewedAt?: DateTimeNullableWithAggregatesFilter | Date | string | null
+    reviewNotes?: StringNullableWithAggregatesFilter | string | null
     createdAt?: DateTimeWithAggregatesFilter | Date | string
   }
 
@@ -11477,13 +16293,120 @@ export namespace Prisma {
     expiresAt?: DateTimeWithAggregatesFilter | Date | string
   }
 
+  export type AdminAuditLogWhereInput = {
+    AND?: Enumerable<AdminAuditLogWhereInput>
+    OR?: Enumerable<AdminAuditLogWhereInput>
+    NOT?: Enumerable<AdminAuditLogWhereInput>
+    id?: StringFilter | string
+    adminId?: StringFilter | string
+    action?: StringFilter | string
+    entityType?: StringFilter | string
+    entityId?: StringNullableFilter | string | null
+    metadata?: JsonNullableFilter
+    createdAt?: DateTimeFilter | Date | string
+    admin?: XOR<UserRelationFilter, UserWhereInput>
+  }
+
+  export type AdminAuditLogOrderByWithRelationInput = {
+    id?: SortOrder
+    adminId?: SortOrder
+    action?: SortOrder
+    entityType?: SortOrder
+    entityId?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    admin?: UserOrderByWithRelationInput
+  }
+
+  export type AdminAuditLogWhereUniqueInput = {
+    id?: string
+  }
+
+  export type AdminAuditLogOrderByWithAggregationInput = {
+    id?: SortOrder
+    adminId?: SortOrder
+    action?: SortOrder
+    entityType?: SortOrder
+    entityId?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: AdminAuditLogCountOrderByAggregateInput
+    _max?: AdminAuditLogMaxOrderByAggregateInput
+    _min?: AdminAuditLogMinOrderByAggregateInput
+  }
+
+  export type AdminAuditLogScalarWhereWithAggregatesInput = {
+    AND?: Enumerable<AdminAuditLogScalarWhereWithAggregatesInput>
+    OR?: Enumerable<AdminAuditLogScalarWhereWithAggregatesInput>
+    NOT?: Enumerable<AdminAuditLogScalarWhereWithAggregatesInput>
+    id?: StringWithAggregatesFilter | string
+    adminId?: StringWithAggregatesFilter | string
+    action?: StringWithAggregatesFilter | string
+    entityType?: StringWithAggregatesFilter | string
+    entityId?: StringNullableWithAggregatesFilter | string | null
+    metadata?: JsonNullableWithAggregatesFilter
+    createdAt?: DateTimeWithAggregatesFilter | Date | string
+  }
+
+  export type AdminNotificationWhereInput = {
+    AND?: Enumerable<AdminNotificationWhereInput>
+    OR?: Enumerable<AdminNotificationWhereInput>
+    NOT?: Enumerable<AdminNotificationWhereInput>
+    id?: StringFilter | string
+    title?: StringFilter | string
+    message?: StringFilter | string
+    type?: StringFilter | string
+    isRead?: BoolFilter | boolean
+    createdAt?: DateTimeFilter | Date | string
+  }
+
+  export type AdminNotificationOrderByWithRelationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    type?: SortOrder
+    isRead?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AdminNotificationWhereUniqueInput = {
+    id?: string
+  }
+
+  export type AdminNotificationOrderByWithAggregationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    type?: SortOrder
+    isRead?: SortOrder
+    createdAt?: SortOrder
+    _count?: AdminNotificationCountOrderByAggregateInput
+    _max?: AdminNotificationMaxOrderByAggregateInput
+    _min?: AdminNotificationMinOrderByAggregateInput
+  }
+
+  export type AdminNotificationScalarWhereWithAggregatesInput = {
+    AND?: Enumerable<AdminNotificationScalarWhereWithAggregatesInput>
+    OR?: Enumerable<AdminNotificationScalarWhereWithAggregatesInput>
+    NOT?: Enumerable<AdminNotificationScalarWhereWithAggregatesInput>
+    id?: StringWithAggregatesFilter | string
+    title?: StringWithAggregatesFilter | string
+    message?: StringWithAggregatesFilter | string
+    type?: StringWithAggregatesFilter | string
+    isRead?: BoolWithAggregatesFilter | boolean
+    createdAt?: DateTimeWithAggregatesFilter | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     name: string
     email: string
     passwordHash: string
     role?: string
+    isSuspended?: boolean
+    suspendedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     otpHash?: string | null
     otpExpiresAt?: Date | string | null
     otpAttempts?: number | null
@@ -11491,6 +16414,7 @@ export namespace Prisma {
     payments?: PaymentCreateNestedManyWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     gymsOwned?: GymCreateNestedManyWithoutOwnerInput
+    adminAuditLogs?: AdminAuditLogCreateNestedManyWithoutAdminInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -11499,7 +16423,10 @@ export namespace Prisma {
     email: string
     passwordHash: string
     role?: string
+    isSuspended?: boolean
+    suspendedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     otpHash?: string | null
     otpExpiresAt?: Date | string | null
     otpAttempts?: number | null
@@ -11507,6 +16434,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     gymsOwned?: GymUncheckedCreateNestedManyWithoutOwnerInput
+    adminAuditLogs?: AdminAuditLogUncheckedCreateNestedManyWithoutAdminInput
   }
 
   export type UserUpdateInput = {
@@ -11515,7 +16443,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otpHash?: NullableStringFieldUpdateOperationsInput | string | null
     otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -11523,6 +16454,7 @@ export namespace Prisma {
     payments?: PaymentUpdateManyWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUpdateManyWithoutOwnerNestedInput
+    adminAuditLogs?: AdminAuditLogUpdateManyWithoutAdminNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -11531,7 +16463,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otpHash?: NullableStringFieldUpdateOperationsInput | string | null
     otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -11539,6 +16474,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUncheckedUpdateManyWithoutOwnerNestedInput
+    adminAuditLogs?: AdminAuditLogUncheckedUpdateManyWithoutAdminNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -11547,7 +16483,10 @@ export namespace Prisma {
     email: string
     passwordHash: string
     role?: string
+    isSuspended?: boolean
+    suspendedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     otpHash?: string | null
     otpExpiresAt?: Date | string | null
     otpAttempts?: number | null
@@ -11559,7 +16498,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otpHash?: NullableStringFieldUpdateOperationsInput | string | null
     otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -11571,17 +16513,81 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otpHash?: NullableStringFieldUpdateOperationsInput | string | null
     otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
+  export type PasswordResetTokenCreateInput = {
+    id?: string
+    email: string
+    tokenHash: string
+    expiresAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type PasswordResetTokenUncheckedCreateInput = {
+    id?: string
+    email: string
+    tokenHash: string
+    expiresAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type PasswordResetTokenUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    tokenHash?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PasswordResetTokenUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    tokenHash?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PasswordResetTokenCreateManyInput = {
+    id?: string
+    email: string
+    tokenHash: string
+    expiresAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type PasswordResetTokenUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    tokenHash?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PasswordResetTokenUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    tokenHash?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type SubscriptionTierCreateInput = {
     id?: string
     name: string
+    slug: string
+    description?: string | null
     accessTier: number
+    isActive?: boolean
+    isFeatured?: boolean
     createdAt?: Date | string
+    updatedAt?: Date | string
     prices?: SubscriptionPriceCreateNestedManyWithoutTierInput
     subscriptions?: SubscriptionCreateNestedManyWithoutTierInput
   }
@@ -11589,8 +16595,13 @@ export namespace Prisma {
   export type SubscriptionTierUncheckedCreateInput = {
     id?: string
     name: string
+    slug: string
+    description?: string | null
     accessTier: number
+    isActive?: boolean
+    isFeatured?: boolean
     createdAt?: Date | string
+    updatedAt?: Date | string
     prices?: SubscriptionPriceUncheckedCreateNestedManyWithoutTierInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutTierInput
   }
@@ -11598,8 +16609,13 @@ export namespace Prisma {
   export type SubscriptionTierUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     prices?: SubscriptionPriceUpdateManyWithoutTierNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutTierNestedInput
   }
@@ -11607,8 +16623,13 @@ export namespace Prisma {
   export type SubscriptionTierUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     prices?: SubscriptionPriceUncheckedUpdateManyWithoutTierNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutTierNestedInput
   }
@@ -11616,84 +16637,127 @@ export namespace Prisma {
   export type SubscriptionTierCreateManyInput = {
     id?: string
     name: string
+    slug: string
+    description?: string | null
     accessTier: number
+    isActive?: boolean
+    isFeatured?: boolean
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SubscriptionTierUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SubscriptionTierUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SubscriptionPriceCreateInput = {
     id?: string
+    stripeProductId: string
     stripePriceId: string
     interval: string
     priceCents: number
+    currency?: string
+    isActive?: boolean
     createdAt?: Date | string
+    updatedAt?: Date | string
     tier: SubscriptionTierCreateNestedOneWithoutPricesInput
   }
 
   export type SubscriptionPriceUncheckedCreateInput = {
     id?: string
     tierId: string
+    stripeProductId: string
     stripePriceId: string
     interval: string
     priceCents: number
+    currency?: string
+    isActive?: boolean
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SubscriptionPriceUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    stripeProductId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     interval?: StringFieldUpdateOperationsInput | string
     priceCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tier?: SubscriptionTierUpdateOneRequiredWithoutPricesNestedInput
   }
 
   export type SubscriptionPriceUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     tierId?: StringFieldUpdateOperationsInput | string
+    stripeProductId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     interval?: StringFieldUpdateOperationsInput | string
     priceCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SubscriptionPriceCreateManyInput = {
     id?: string
     tierId: string
+    stripeProductId: string
     stripePriceId: string
     interval: string
     priceCents: number
+    currency?: string
+    isActive?: boolean
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SubscriptionPriceUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    stripeProductId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     interval?: StringFieldUpdateOperationsInput | string
     priceCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SubscriptionPriceUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     tierId?: StringFieldUpdateOperationsInput | string
+    stripeProductId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     interval?: StringFieldUpdateOperationsInput | string
     priceCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SubscriptionCreateInput = {
@@ -11704,6 +16768,7 @@ export namespace Prisma {
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     user: UserCreateNestedOneWithoutSubscriptionsInput
     tier: SubscriptionTierCreateNestedOneWithoutSubscriptionsInput
     payments?: PaymentCreateNestedManyWithoutSubscriptionInput
@@ -11719,6 +16784,7 @@ export namespace Prisma {
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     payments?: PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
   }
 
@@ -11730,6 +16796,7 @@ export namespace Prisma {
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSubscriptionsNestedInput
     tier?: SubscriptionTierUpdateOneRequiredWithoutSubscriptionsNestedInput
     payments?: PaymentUpdateManyWithoutSubscriptionNestedInput
@@ -11745,6 +16812,7 @@ export namespace Prisma {
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     payments?: PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
   }
 
@@ -11758,6 +16826,7 @@ export namespace Prisma {
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SubscriptionUpdateManyMutationInput = {
@@ -11768,6 +16837,7 @@ export namespace Prisma {
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SubscriptionUncheckedUpdateManyInput = {
@@ -11780,12 +16850,14 @@ export namespace Prisma {
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PaymentCreateInput = {
     id?: string
     amountCents: number
     currency: string
+    paymentProvider?: string | null
     stripePaymentIntent?: string | null
     status: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -11800,6 +16872,7 @@ export namespace Prisma {
     subscriptionId?: string | null
     amountCents: number
     currency: string
+    paymentProvider?: string | null
     stripePaymentIntent?: string | null
     status: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -11810,6 +16883,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     amountCents?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
+    paymentProvider?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntent?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -11824,6 +16898,7 @@ export namespace Prisma {
     subscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     amountCents?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
+    paymentProvider?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntent?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -11836,6 +16911,7 @@ export namespace Prisma {
     subscriptionId?: string | null
     amountCents: number
     currency: string
+    paymentProvider?: string | null
     stripePaymentIntent?: string | null
     status: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -11846,6 +16922,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     amountCents?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
+    paymentProvider?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntent?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -11858,6 +16935,7 @@ export namespace Prisma {
     subscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     amountCents?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
+    paymentProvider?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntent?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -11867,126 +16945,360 @@ export namespace Prisma {
   export type GymCreateInput = {
     id?: string
     name: string
+    description?: string | null
     addressLine: string
     city: string
+    province?: string | null
+    postalCode?: string | null
     latitude: number
     longitude: number
+    phoneNumber?: string | null
+    whatsappNumber?: string | null
+    instagramHandle?: string | null
+    websiteUrl?: string | null
+    googleMapsLink?: string | null
+    cnicNumber?: string | null
+    businessName?: string | null
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
     tier: number
     coverImageUrl?: string | null
     status?: string
+    submittedAt?: Date | string | null
+    reviewedAt?: Date | string | null
+    reviewedByAdminId?: string | null
+    rejectionReason?: string | null
+    approvalNotes?: string | null
+    resubmissionCount?: number
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     owner?: UserCreateNestedOneWithoutGymsOwnedInput
     checkIns?: CheckInCreateNestedManyWithoutGymInput
     photos?: GymPhotoCreateNestedManyWithoutGymInput
+    verificationDocuments?: GymVerificationDocumentCreateNestedManyWithoutGymInput
   }
 
   export type GymUncheckedCreateInput = {
     id?: string
     name: string
+    description?: string | null
     addressLine: string
     city: string
+    province?: string | null
+    postalCode?: string | null
     latitude: number
     longitude: number
+    phoneNumber?: string | null
+    whatsappNumber?: string | null
+    instagramHandle?: string | null
+    websiteUrl?: string | null
+    googleMapsLink?: string | null
+    cnicNumber?: string | null
+    businessName?: string | null
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
     tier: number
     coverImageUrl?: string | null
     status?: string
+    submittedAt?: Date | string | null
+    reviewedAt?: Date | string | null
+    reviewedByAdminId?: string | null
+    rejectionReason?: string | null
+    approvalNotes?: string | null
+    resubmissionCount?: number
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: string | null
     ownerId?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     checkIns?: CheckInUncheckedCreateNestedManyWithoutGymInput
     photos?: GymPhotoUncheckedCreateNestedManyWithoutGymInput
+    verificationDocuments?: GymVerificationDocumentUncheckedCreateNestedManyWithoutGymInput
   }
 
   export type GymUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     addressLine?: StringFieldUpdateOperationsInput | string
     city?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsLink?: NullableStringFieldUpdateOperationsInput | string | null
+    cnicNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    businessName?: NullableStringFieldUpdateOperationsInput | string | null
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedByAdminId?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    approvalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resubmissionCount?: IntFieldUpdateOperationsInput | number
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneWithoutGymsOwnedNestedInput
     checkIns?: CheckInUpdateManyWithoutGymNestedInput
     photos?: GymPhotoUpdateManyWithoutGymNestedInput
+    verificationDocuments?: GymVerificationDocumentUpdateManyWithoutGymNestedInput
   }
 
   export type GymUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     addressLine?: StringFieldUpdateOperationsInput | string
     city?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsLink?: NullableStringFieldUpdateOperationsInput | string | null
+    cnicNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    businessName?: NullableStringFieldUpdateOperationsInput | string | null
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedByAdminId?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    approvalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resubmissionCount?: IntFieldUpdateOperationsInput | number
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     checkIns?: CheckInUncheckedUpdateManyWithoutGymNestedInput
     photos?: GymPhotoUncheckedUpdateManyWithoutGymNestedInput
+    verificationDocuments?: GymVerificationDocumentUncheckedUpdateManyWithoutGymNestedInput
   }
 
   export type GymCreateManyInput = {
     id?: string
     name: string
+    description?: string | null
     addressLine: string
     city: string
+    province?: string | null
+    postalCode?: string | null
     latitude: number
     longitude: number
+    phoneNumber?: string | null
+    whatsappNumber?: string | null
+    instagramHandle?: string | null
+    websiteUrl?: string | null
+    googleMapsLink?: string | null
+    cnicNumber?: string | null
+    businessName?: string | null
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
     tier: number
     coverImageUrl?: string | null
     status?: string
+    submittedAt?: Date | string | null
+    reviewedAt?: Date | string | null
+    reviewedByAdminId?: string | null
+    rejectionReason?: string | null
+    approvalNotes?: string | null
+    resubmissionCount?: number
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: string | null
     ownerId?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type GymUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     addressLine?: StringFieldUpdateOperationsInput | string
     city?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsLink?: NullableStringFieldUpdateOperationsInput | string | null
+    cnicNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    businessName?: NullableStringFieldUpdateOperationsInput | string | null
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedByAdminId?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    approvalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resubmissionCount?: IntFieldUpdateOperationsInput | number
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type GymUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     addressLine?: StringFieldUpdateOperationsInput | string
     city?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsLink?: NullableStringFieldUpdateOperationsInput | string | null
+    cnicNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    businessName?: NullableStringFieldUpdateOperationsInput | string | null
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedByAdminId?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    approvalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resubmissionCount?: IntFieldUpdateOperationsInput | number
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GymVerificationDocumentCreateInput = {
+    id?: string
+    type: string
+    fileUrl: string
+    status?: string
+    rejectedReason?: string | null
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    createdAt?: Date | string
+    gym: GymCreateNestedOneWithoutVerificationDocumentsInput
+  }
+
+  export type GymVerificationDocumentUncheckedCreateInput = {
+    id?: string
+    gymId: string
+    type: string
+    fileUrl: string
+    status?: string
+    rejectedReason?: string | null
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    createdAt?: Date | string
+  }
+
+  export type GymVerificationDocumentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    rejectedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    gym?: GymUpdateOneRequiredWithoutVerificationDocumentsNestedInput
+  }
+
+  export type GymVerificationDocumentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    gymId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    rejectedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GymVerificationDocumentCreateManyInput = {
+    id?: string
+    gymId: string
+    type: string
+    fileUrl: string
+    status?: string
+    rejectedReason?: string | null
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    createdAt?: Date | string
+  }
+
+  export type GymVerificationDocumentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    rejectedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GymVerificationDocumentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    gymId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    rejectedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -12148,6 +17460,138 @@ export namespace Prisma {
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AdminAuditLogCreateInput = {
+    id?: string
+    action: string
+    entityType: string
+    entityId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    admin: UserCreateNestedOneWithoutAdminAuditLogsInput
+  }
+
+  export type AdminAuditLogUncheckedCreateInput = {
+    id?: string
+    adminId: string
+    action: string
+    entityType: string
+    entityId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type AdminAuditLogUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    entityType?: StringFieldUpdateOperationsInput | string
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    admin?: UserUpdateOneRequiredWithoutAdminAuditLogsNestedInput
+  }
+
+  export type AdminAuditLogUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    adminId?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    entityType?: StringFieldUpdateOperationsInput | string
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminAuditLogCreateManyInput = {
+    id?: string
+    adminId: string
+    action: string
+    entityType: string
+    entityId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type AdminAuditLogUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    entityType?: StringFieldUpdateOperationsInput | string
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminAuditLogUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    adminId?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    entityType?: StringFieldUpdateOperationsInput | string
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminNotificationCreateInput = {
+    id?: string
+    title: string
+    message: string
+    type: string
+    isRead?: boolean
+    createdAt?: Date | string
+  }
+
+  export type AdminNotificationUncheckedCreateInput = {
+    id?: string
+    title: string
+    message: string
+    type: string
+    isRead?: boolean
+    createdAt?: Date | string
+  }
+
+  export type AdminNotificationUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminNotificationUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminNotificationCreateManyInput = {
+    id?: string
+    title: string
+    message: string
+    type: string
+    isRead?: boolean
+    createdAt?: Date | string
+  }
+
+  export type AdminNotificationUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminNotificationUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter = {
     equals?: string
     in?: Enumerable<string> | string
@@ -12161,6 +17605,22 @@ export namespace Prisma {
     endsWith?: string
     mode?: QueryMode
     not?: NestedStringFilter | string
+  }
+
+  export type BoolFilter = {
+    equals?: boolean
+    not?: NestedBoolFilter | boolean
+  }
+
+  export type DateTimeNullableFilter = {
+    equals?: Date | string | null
+    in?: Enumerable<Date> | Enumerable<string> | Date | string | null
+    notIn?: Enumerable<Date> | Enumerable<string> | Date | string | null
+    lt?: Date | string
+    lte?: Date | string
+    gt?: Date | string
+    gte?: Date | string
+    not?: NestedDateTimeNullableFilter | Date | string | null
   }
 
   export type DateTimeFilter = {
@@ -12187,17 +17647,6 @@ export namespace Prisma {
     endsWith?: string
     mode?: QueryMode
     not?: NestedStringNullableFilter | string | null
-  }
-
-  export type DateTimeNullableFilter = {
-    equals?: Date | string | null
-    in?: Enumerable<Date> | Enumerable<string> | Date | string | null
-    notIn?: Enumerable<Date> | Enumerable<string> | Date | string | null
-    lt?: Date | string
-    lte?: Date | string
-    gt?: Date | string
-    gte?: Date | string
-    not?: NestedDateTimeNullableFilter | Date | string | null
   }
 
   export type IntNullableFilter = {
@@ -12235,6 +17684,12 @@ export namespace Prisma {
     none?: GymWhereInput
   }
 
+  export type AdminAuditLogListRelationFilter = {
+    every?: AdminAuditLogWhereInput
+    some?: AdminAuditLogWhereInput
+    none?: AdminAuditLogWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -12256,13 +17711,20 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type AdminAuditLogOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
     role?: SortOrder
+    isSuspended?: SortOrder
+    suspendedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     otpHash?: SortOrder
     otpExpiresAt?: SortOrder
     otpAttempts?: SortOrder
@@ -12278,7 +17740,10 @@ export namespace Prisma {
     email?: SortOrder
     passwordHash?: SortOrder
     role?: SortOrder
+    isSuspended?: SortOrder
+    suspendedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     otpHash?: SortOrder
     otpExpiresAt?: SortOrder
     otpAttempts?: SortOrder
@@ -12290,7 +17755,10 @@ export namespace Prisma {
     email?: SortOrder
     passwordHash?: SortOrder
     role?: SortOrder
+    isSuspended?: SortOrder
+    suspendedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     otpHash?: SortOrder
     otpExpiresAt?: SortOrder
     otpAttempts?: SortOrder
@@ -12316,6 +17784,28 @@ export namespace Prisma {
     _count?: NestedIntFilter
     _min?: NestedStringFilter
     _max?: NestedStringFilter
+  }
+
+  export type BoolWithAggregatesFilter = {
+    equals?: boolean
+    not?: NestedBoolWithAggregatesFilter | boolean
+    _count?: NestedIntFilter
+    _min?: NestedBoolFilter
+    _max?: NestedBoolFilter
+  }
+
+  export type DateTimeNullableWithAggregatesFilter = {
+    equals?: Date | string | null
+    in?: Enumerable<Date> | Enumerable<string> | Date | string | null
+    notIn?: Enumerable<Date> | Enumerable<string> | Date | string | null
+    lt?: Date | string
+    lte?: Date | string
+    gt?: Date | string
+    gte?: Date | string
+    not?: NestedDateTimeNullableWithAggregatesFilter | Date | string | null
+    _count?: NestedIntNullableFilter
+    _min?: NestedDateTimeNullableFilter
+    _max?: NestedDateTimeNullableFilter
   }
 
   export type DateTimeWithAggregatesFilter = {
@@ -12350,20 +17840,6 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter
   }
 
-  export type DateTimeNullableWithAggregatesFilter = {
-    equals?: Date | string | null
-    in?: Enumerable<Date> | Enumerable<string> | Date | string | null
-    notIn?: Enumerable<Date> | Enumerable<string> | Date | string | null
-    lt?: Date | string
-    lte?: Date | string
-    gt?: Date | string
-    gte?: Date | string
-    not?: NestedDateTimeNullableWithAggregatesFilter | Date | string | null
-    _count?: NestedIntNullableFilter
-    _min?: NestedDateTimeNullableFilter
-    _max?: NestedDateTimeNullableFilter
-  }
-
   export type IntNullableWithAggregatesFilter = {
     equals?: number | null
     in?: Enumerable<number> | number | null
@@ -12378,6 +17854,30 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter
     _min?: NestedIntNullableFilter
     _max?: NestedIntNullableFilter
+  }
+
+  export type PasswordResetTokenCountOrderByAggregateInput = {
+    id?: SortOrder
+    email?: SortOrder
+    tokenHash?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PasswordResetTokenMaxOrderByAggregateInput = {
+    id?: SortOrder
+    email?: SortOrder
+    tokenHash?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PasswordResetTokenMinOrderByAggregateInput = {
+    id?: SortOrder
+    email?: SortOrder
+    tokenHash?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type IntFilter = {
@@ -12404,8 +17904,13 @@ export namespace Prisma {
   export type SubscriptionTierCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    slug?: SortOrder
+    description?: SortOrder
     accessTier?: SortOrder
+    isActive?: SortOrder
+    isFeatured?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SubscriptionTierAvgOrderByAggregateInput = {
@@ -12415,15 +17920,25 @@ export namespace Prisma {
   export type SubscriptionTierMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    slug?: SortOrder
+    description?: SortOrder
     accessTier?: SortOrder
+    isActive?: SortOrder
+    isFeatured?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SubscriptionTierMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    slug?: SortOrder
+    description?: SortOrder
     accessTier?: SortOrder
+    isActive?: SortOrder
+    isFeatured?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SubscriptionTierSumOrderByAggregateInput = {
@@ -12454,10 +17969,14 @@ export namespace Prisma {
   export type SubscriptionPriceCountOrderByAggregateInput = {
     id?: SortOrder
     tierId?: SortOrder
+    stripeProductId?: SortOrder
     stripePriceId?: SortOrder
     interval?: SortOrder
     priceCents?: SortOrder
+    currency?: SortOrder
+    isActive?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SubscriptionPriceAvgOrderByAggregateInput = {
@@ -12467,19 +17986,27 @@ export namespace Prisma {
   export type SubscriptionPriceMaxOrderByAggregateInput = {
     id?: SortOrder
     tierId?: SortOrder
+    stripeProductId?: SortOrder
     stripePriceId?: SortOrder
     interval?: SortOrder
     priceCents?: SortOrder
+    currency?: SortOrder
+    isActive?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SubscriptionPriceMinOrderByAggregateInput = {
     id?: SortOrder
     tierId?: SortOrder
+    stripeProductId?: SortOrder
     stripePriceId?: SortOrder
     interval?: SortOrder
     priceCents?: SortOrder
+    currency?: SortOrder
+    isActive?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SubscriptionPriceSumOrderByAggregateInput = {
@@ -12501,6 +18028,7 @@ export namespace Prisma {
     startAt?: SortOrder
     endAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SubscriptionMaxOrderByAggregateInput = {
@@ -12513,6 +18041,7 @@ export namespace Prisma {
     startAt?: SortOrder
     endAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SubscriptionMinOrderByAggregateInput = {
@@ -12525,6 +18054,7 @@ export namespace Prisma {
     startAt?: SortOrder
     endAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
   export type JsonNullableFilter = 
     | PatchUndefined<
@@ -12560,6 +18090,7 @@ export namespace Prisma {
     subscriptionId?: SortOrder
     amountCents?: SortOrder
     currency?: SortOrder
+    paymentProvider?: SortOrder
     stripePaymentIntent?: SortOrder
     status?: SortOrder
     metadata?: SortOrder
@@ -12576,6 +18107,7 @@ export namespace Prisma {
     subscriptionId?: SortOrder
     amountCents?: SortOrder
     currency?: SortOrder
+    paymentProvider?: SortOrder
     stripePaymentIntent?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
@@ -12587,6 +18119,7 @@ export namespace Prisma {
     subscriptionId?: SortOrder
     amountCents?: SortOrder
     currency?: SortOrder
+    paymentProvider?: SortOrder
     stripePaymentIntent?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
@@ -12632,82 +18165,152 @@ export namespace Prisma {
     not?: NestedFloatFilter | number
   }
 
-  export type BoolFilter = {
-    equals?: boolean
-    not?: NestedBoolFilter | boolean
-  }
-
   export type GymPhotoListRelationFilter = {
     every?: GymPhotoWhereInput
     some?: GymPhotoWhereInput
     none?: GymPhotoWhereInput
   }
 
+  export type GymVerificationDocumentListRelationFilter = {
+    every?: GymVerificationDocumentWhereInput
+    some?: GymVerificationDocumentWhereInput
+    none?: GymVerificationDocumentWhereInput
+  }
+
   export type GymPhotoOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type GymVerificationDocumentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type GymCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    description?: SortOrder
     addressLine?: SortOrder
     city?: SortOrder
+    province?: SortOrder
+    postalCode?: SortOrder
     latitude?: SortOrder
     longitude?: SortOrder
+    phoneNumber?: SortOrder
+    whatsappNumber?: SortOrder
+    instagramHandle?: SortOrder
+    websiteUrl?: SortOrder
+    googleMapsLink?: SortOrder
+    cnicNumber?: SortOrder
+    businessName?: SortOrder
     openingTime?: SortOrder
     closingTime?: SortOrder
     is24Hours?: SortOrder
     tier?: SortOrder
     coverImageUrl?: SortOrder
     status?: SortOrder
+    submittedAt?: SortOrder
+    reviewedAt?: SortOrder
+    reviewedByAdminId?: SortOrder
+    rejectionReason?: SortOrder
+    approvalNotes?: SortOrder
+    resubmissionCount?: SortOrder
+    isFeatured?: SortOrder
+    isArchived?: SortOrder
+    isBlocked?: SortOrder
+    blockedReason?: SortOrder
     ownerId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type GymAvgOrderByAggregateInput = {
     latitude?: SortOrder
     longitude?: SortOrder
     tier?: SortOrder
+    resubmissionCount?: SortOrder
   }
 
   export type GymMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    description?: SortOrder
     addressLine?: SortOrder
     city?: SortOrder
+    province?: SortOrder
+    postalCode?: SortOrder
     latitude?: SortOrder
     longitude?: SortOrder
+    phoneNumber?: SortOrder
+    whatsappNumber?: SortOrder
+    instagramHandle?: SortOrder
+    websiteUrl?: SortOrder
+    googleMapsLink?: SortOrder
+    cnicNumber?: SortOrder
+    businessName?: SortOrder
     openingTime?: SortOrder
     closingTime?: SortOrder
     is24Hours?: SortOrder
     tier?: SortOrder
     coverImageUrl?: SortOrder
     status?: SortOrder
+    submittedAt?: SortOrder
+    reviewedAt?: SortOrder
+    reviewedByAdminId?: SortOrder
+    rejectionReason?: SortOrder
+    approvalNotes?: SortOrder
+    resubmissionCount?: SortOrder
+    isFeatured?: SortOrder
+    isArchived?: SortOrder
+    isBlocked?: SortOrder
+    blockedReason?: SortOrder
     ownerId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type GymMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    description?: SortOrder
     addressLine?: SortOrder
     city?: SortOrder
+    province?: SortOrder
+    postalCode?: SortOrder
     latitude?: SortOrder
     longitude?: SortOrder
+    phoneNumber?: SortOrder
+    whatsappNumber?: SortOrder
+    instagramHandle?: SortOrder
+    websiteUrl?: SortOrder
+    googleMapsLink?: SortOrder
+    cnicNumber?: SortOrder
+    businessName?: SortOrder
     openingTime?: SortOrder
     closingTime?: SortOrder
     is24Hours?: SortOrder
     tier?: SortOrder
     coverImageUrl?: SortOrder
     status?: SortOrder
+    submittedAt?: SortOrder
+    reviewedAt?: SortOrder
+    reviewedByAdminId?: SortOrder
+    rejectionReason?: SortOrder
+    approvalNotes?: SortOrder
+    resubmissionCount?: SortOrder
+    isFeatured?: SortOrder
+    isArchived?: SortOrder
+    isBlocked?: SortOrder
+    blockedReason?: SortOrder
     ownerId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type GymSumOrderByAggregateInput = {
     latitude?: SortOrder
     longitude?: SortOrder
     tier?: SortOrder
+    resubmissionCount?: SortOrder
   }
 
   export type FloatWithAggregatesFilter = {
@@ -12726,17 +18329,45 @@ export namespace Prisma {
     _max?: NestedFloatFilter
   }
 
-  export type BoolWithAggregatesFilter = {
-    equals?: boolean
-    not?: NestedBoolWithAggregatesFilter | boolean
-    _count?: NestedIntFilter
-    _min?: NestedBoolFilter
-    _max?: NestedBoolFilter
-  }
-
   export type GymRelationFilter = {
     is?: GymWhereInput | null
     isNot?: GymWhereInput | null
+  }
+
+  export type GymVerificationDocumentCountOrderByAggregateInput = {
+    id?: SortOrder
+    gymId?: SortOrder
+    type?: SortOrder
+    fileUrl?: SortOrder
+    status?: SortOrder
+    rejectedReason?: SortOrder
+    reviewedAt?: SortOrder
+    reviewNotes?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type GymVerificationDocumentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    gymId?: SortOrder
+    type?: SortOrder
+    fileUrl?: SortOrder
+    status?: SortOrder
+    rejectedReason?: SortOrder
+    reviewedAt?: SortOrder
+    reviewNotes?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type GymVerificationDocumentMinOrderByAggregateInput = {
+    id?: SortOrder
+    gymId?: SortOrder
+    type?: SortOrder
+    fileUrl?: SortOrder
+    status?: SortOrder
+    rejectedReason?: SortOrder
+    reviewedAt?: SortOrder
+    reviewNotes?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type GymPhotoCountOrderByAggregateInput = {
@@ -12808,6 +18439,61 @@ export namespace Prisma {
     expiresAt?: SortOrder
   }
 
+  export type AdminAuditLogCountOrderByAggregateInput = {
+    id?: SortOrder
+    adminId?: SortOrder
+    action?: SortOrder
+    entityType?: SortOrder
+    entityId?: SortOrder
+    metadata?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AdminAuditLogMaxOrderByAggregateInput = {
+    id?: SortOrder
+    adminId?: SortOrder
+    action?: SortOrder
+    entityType?: SortOrder
+    entityId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AdminAuditLogMinOrderByAggregateInput = {
+    id?: SortOrder
+    adminId?: SortOrder
+    action?: SortOrder
+    entityType?: SortOrder
+    entityId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AdminNotificationCountOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    type?: SortOrder
+    isRead?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AdminNotificationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    type?: SortOrder
+    isRead?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AdminNotificationMinOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    type?: SortOrder
+    isRead?: SortOrder
+    createdAt?: SortOrder
+  }
+
   export type SubscriptionCreateNestedManyWithoutUserInput = {
     create?: XOR<Enumerable<SubscriptionCreateWithoutUserInput>, Enumerable<SubscriptionUncheckedCreateWithoutUserInput>>
     connectOrCreate?: Enumerable<SubscriptionCreateOrConnectWithoutUserInput>
@@ -12834,6 +18520,13 @@ export namespace Prisma {
     connectOrCreate?: Enumerable<GymCreateOrConnectWithoutOwnerInput>
     createMany?: GymCreateManyOwnerInputEnvelope
     connect?: Enumerable<GymWhereUniqueInput>
+  }
+
+  export type AdminAuditLogCreateNestedManyWithoutAdminInput = {
+    create?: XOR<Enumerable<AdminAuditLogCreateWithoutAdminInput>, Enumerable<AdminAuditLogUncheckedCreateWithoutAdminInput>>
+    connectOrCreate?: Enumerable<AdminAuditLogCreateOrConnectWithoutAdminInput>
+    createMany?: AdminAuditLogCreateManyAdminInputEnvelope
+    connect?: Enumerable<AdminAuditLogWhereUniqueInput>
   }
 
   export type SubscriptionUncheckedCreateNestedManyWithoutUserInput = {
@@ -12864,8 +18557,23 @@ export namespace Prisma {
     connect?: Enumerable<GymWhereUniqueInput>
   }
 
+  export type AdminAuditLogUncheckedCreateNestedManyWithoutAdminInput = {
+    create?: XOR<Enumerable<AdminAuditLogCreateWithoutAdminInput>, Enumerable<AdminAuditLogUncheckedCreateWithoutAdminInput>>
+    connectOrCreate?: Enumerable<AdminAuditLogCreateOrConnectWithoutAdminInput>
+    createMany?: AdminAuditLogCreateManyAdminInputEnvelope
+    connect?: Enumerable<AdminAuditLogWhereUniqueInput>
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
   }
 
   export type DateTimeFieldUpdateOperationsInput = {
@@ -12874,10 +18582,6 @@ export namespace Prisma {
 
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
-  }
-
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
   }
 
   export type NullableIntFieldUpdateOperationsInput = {
@@ -12944,6 +18648,20 @@ export namespace Prisma {
     deleteMany?: Enumerable<GymScalarWhereInput>
   }
 
+  export type AdminAuditLogUpdateManyWithoutAdminNestedInput = {
+    create?: XOR<Enumerable<AdminAuditLogCreateWithoutAdminInput>, Enumerable<AdminAuditLogUncheckedCreateWithoutAdminInput>>
+    connectOrCreate?: Enumerable<AdminAuditLogCreateOrConnectWithoutAdminInput>
+    upsert?: Enumerable<AdminAuditLogUpsertWithWhereUniqueWithoutAdminInput>
+    createMany?: AdminAuditLogCreateManyAdminInputEnvelope
+    set?: Enumerable<AdminAuditLogWhereUniqueInput>
+    disconnect?: Enumerable<AdminAuditLogWhereUniqueInput>
+    delete?: Enumerable<AdminAuditLogWhereUniqueInput>
+    connect?: Enumerable<AdminAuditLogWhereUniqueInput>
+    update?: Enumerable<AdminAuditLogUpdateWithWhereUniqueWithoutAdminInput>
+    updateMany?: Enumerable<AdminAuditLogUpdateManyWithWhereWithoutAdminInput>
+    deleteMany?: Enumerable<AdminAuditLogScalarWhereInput>
+  }
+
   export type SubscriptionUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<Enumerable<SubscriptionCreateWithoutUserInput>, Enumerable<SubscriptionUncheckedCreateWithoutUserInput>>
     connectOrCreate?: Enumerable<SubscriptionCreateOrConnectWithoutUserInput>
@@ -12998,6 +18716,20 @@ export namespace Prisma {
     update?: Enumerable<GymUpdateWithWhereUniqueWithoutOwnerInput>
     updateMany?: Enumerable<GymUpdateManyWithWhereWithoutOwnerInput>
     deleteMany?: Enumerable<GymScalarWhereInput>
+  }
+
+  export type AdminAuditLogUncheckedUpdateManyWithoutAdminNestedInput = {
+    create?: XOR<Enumerable<AdminAuditLogCreateWithoutAdminInput>, Enumerable<AdminAuditLogUncheckedCreateWithoutAdminInput>>
+    connectOrCreate?: Enumerable<AdminAuditLogCreateOrConnectWithoutAdminInput>
+    upsert?: Enumerable<AdminAuditLogUpsertWithWhereUniqueWithoutAdminInput>
+    createMany?: AdminAuditLogCreateManyAdminInputEnvelope
+    set?: Enumerable<AdminAuditLogWhereUniqueInput>
+    disconnect?: Enumerable<AdminAuditLogWhereUniqueInput>
+    delete?: Enumerable<AdminAuditLogWhereUniqueInput>
+    connect?: Enumerable<AdminAuditLogWhereUniqueInput>
+    update?: Enumerable<AdminAuditLogUpdateWithWhereUniqueWithoutAdminInput>
+    updateMany?: Enumerable<AdminAuditLogUpdateManyWithWhereWithoutAdminInput>
+    deleteMany?: Enumerable<AdminAuditLogScalarWhereInput>
   }
 
   export type SubscriptionPriceCreateNestedManyWithoutTierInput = {
@@ -13226,6 +18958,13 @@ export namespace Prisma {
     connect?: Enumerable<GymPhotoWhereUniqueInput>
   }
 
+  export type GymVerificationDocumentCreateNestedManyWithoutGymInput = {
+    create?: XOR<Enumerable<GymVerificationDocumentCreateWithoutGymInput>, Enumerable<GymVerificationDocumentUncheckedCreateWithoutGymInput>>
+    connectOrCreate?: Enumerable<GymVerificationDocumentCreateOrConnectWithoutGymInput>
+    createMany?: GymVerificationDocumentCreateManyGymInputEnvelope
+    connect?: Enumerable<GymVerificationDocumentWhereUniqueInput>
+  }
+
   export type CheckInUncheckedCreateNestedManyWithoutGymInput = {
     create?: XOR<Enumerable<CheckInCreateWithoutGymInput>, Enumerable<CheckInUncheckedCreateWithoutGymInput>>
     connectOrCreate?: Enumerable<CheckInCreateOrConnectWithoutGymInput>
@@ -13240,16 +18979,19 @@ export namespace Prisma {
     connect?: Enumerable<GymPhotoWhereUniqueInput>
   }
 
+  export type GymVerificationDocumentUncheckedCreateNestedManyWithoutGymInput = {
+    create?: XOR<Enumerable<GymVerificationDocumentCreateWithoutGymInput>, Enumerable<GymVerificationDocumentUncheckedCreateWithoutGymInput>>
+    connectOrCreate?: Enumerable<GymVerificationDocumentCreateOrConnectWithoutGymInput>
+    createMany?: GymVerificationDocumentCreateManyGymInputEnvelope
+    connect?: Enumerable<GymVerificationDocumentWhereUniqueInput>
+  }
+
   export type FloatFieldUpdateOperationsInput = {
     set?: number
     increment?: number
     decrement?: number
     multiply?: number
     divide?: number
-  }
-
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
   }
 
   export type UserUpdateOneWithoutGymsOwnedNestedInput = {
@@ -13290,6 +19032,20 @@ export namespace Prisma {
     deleteMany?: Enumerable<GymPhotoScalarWhereInput>
   }
 
+  export type GymVerificationDocumentUpdateManyWithoutGymNestedInput = {
+    create?: XOR<Enumerable<GymVerificationDocumentCreateWithoutGymInput>, Enumerable<GymVerificationDocumentUncheckedCreateWithoutGymInput>>
+    connectOrCreate?: Enumerable<GymVerificationDocumentCreateOrConnectWithoutGymInput>
+    upsert?: Enumerable<GymVerificationDocumentUpsertWithWhereUniqueWithoutGymInput>
+    createMany?: GymVerificationDocumentCreateManyGymInputEnvelope
+    set?: Enumerable<GymVerificationDocumentWhereUniqueInput>
+    disconnect?: Enumerable<GymVerificationDocumentWhereUniqueInput>
+    delete?: Enumerable<GymVerificationDocumentWhereUniqueInput>
+    connect?: Enumerable<GymVerificationDocumentWhereUniqueInput>
+    update?: Enumerable<GymVerificationDocumentUpdateWithWhereUniqueWithoutGymInput>
+    updateMany?: Enumerable<GymVerificationDocumentUpdateManyWithWhereWithoutGymInput>
+    deleteMany?: Enumerable<GymVerificationDocumentScalarWhereInput>
+  }
+
   export type CheckInUncheckedUpdateManyWithoutGymNestedInput = {
     create?: XOR<Enumerable<CheckInCreateWithoutGymInput>, Enumerable<CheckInUncheckedCreateWithoutGymInput>>
     connectOrCreate?: Enumerable<CheckInCreateOrConnectWithoutGymInput>
@@ -13316,6 +19072,34 @@ export namespace Prisma {
     update?: Enumerable<GymPhotoUpdateWithWhereUniqueWithoutGymInput>
     updateMany?: Enumerable<GymPhotoUpdateManyWithWhereWithoutGymInput>
     deleteMany?: Enumerable<GymPhotoScalarWhereInput>
+  }
+
+  export type GymVerificationDocumentUncheckedUpdateManyWithoutGymNestedInput = {
+    create?: XOR<Enumerable<GymVerificationDocumentCreateWithoutGymInput>, Enumerable<GymVerificationDocumentUncheckedCreateWithoutGymInput>>
+    connectOrCreate?: Enumerable<GymVerificationDocumentCreateOrConnectWithoutGymInput>
+    upsert?: Enumerable<GymVerificationDocumentUpsertWithWhereUniqueWithoutGymInput>
+    createMany?: GymVerificationDocumentCreateManyGymInputEnvelope
+    set?: Enumerable<GymVerificationDocumentWhereUniqueInput>
+    disconnect?: Enumerable<GymVerificationDocumentWhereUniqueInput>
+    delete?: Enumerable<GymVerificationDocumentWhereUniqueInput>
+    connect?: Enumerable<GymVerificationDocumentWhereUniqueInput>
+    update?: Enumerable<GymVerificationDocumentUpdateWithWhereUniqueWithoutGymInput>
+    updateMany?: Enumerable<GymVerificationDocumentUpdateManyWithWhereWithoutGymInput>
+    deleteMany?: Enumerable<GymVerificationDocumentScalarWhereInput>
+  }
+
+  export type GymCreateNestedOneWithoutVerificationDocumentsInput = {
+    create?: XOR<GymCreateWithoutVerificationDocumentsInput, GymUncheckedCreateWithoutVerificationDocumentsInput>
+    connectOrCreate?: GymCreateOrConnectWithoutVerificationDocumentsInput
+    connect?: GymWhereUniqueInput
+  }
+
+  export type GymUpdateOneRequiredWithoutVerificationDocumentsNestedInput = {
+    create?: XOR<GymCreateWithoutVerificationDocumentsInput, GymUncheckedCreateWithoutVerificationDocumentsInput>
+    connectOrCreate?: GymCreateOrConnectWithoutVerificationDocumentsInput
+    upsert?: GymUpsertWithoutVerificationDocumentsInput
+    connect?: GymWhereUniqueInput
+    update?: XOR<GymUpdateWithoutVerificationDocumentsInput, GymUncheckedUpdateWithoutVerificationDocumentsInput>
   }
 
   export type GymCreateNestedOneWithoutPhotosInput = {
@@ -13360,6 +19144,20 @@ export namespace Prisma {
     update?: XOR<GymUpdateWithoutCheckInsInput, GymUncheckedUpdateWithoutCheckInsInput>
   }
 
+  export type UserCreateNestedOneWithoutAdminAuditLogsInput = {
+    create?: XOR<UserCreateWithoutAdminAuditLogsInput, UserUncheckedCreateWithoutAdminAuditLogsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAdminAuditLogsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutAdminAuditLogsNestedInput = {
+    create?: XOR<UserCreateWithoutAdminAuditLogsInput, UserUncheckedCreateWithoutAdminAuditLogsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAdminAuditLogsInput
+    upsert?: UserUpsertWithoutAdminAuditLogsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<UserUpdateWithoutAdminAuditLogsInput, UserUncheckedUpdateWithoutAdminAuditLogsInput>
+  }
+
   export type NestedStringFilter = {
     equals?: string
     in?: Enumerable<string> | string
@@ -13372,6 +19170,22 @@ export namespace Prisma {
     startsWith?: string
     endsWith?: string
     not?: NestedStringFilter | string
+  }
+
+  export type NestedBoolFilter = {
+    equals?: boolean
+    not?: NestedBoolFilter | boolean
+  }
+
+  export type NestedDateTimeNullableFilter = {
+    equals?: Date | string | null
+    in?: Enumerable<Date> | Enumerable<string> | Date | string | null
+    notIn?: Enumerable<Date> | Enumerable<string> | Date | string | null
+    lt?: Date | string
+    lte?: Date | string
+    gt?: Date | string
+    gte?: Date | string
+    not?: NestedDateTimeNullableFilter | Date | string | null
   }
 
   export type NestedDateTimeFilter = {
@@ -13397,17 +19211,6 @@ export namespace Prisma {
     startsWith?: string
     endsWith?: string
     not?: NestedStringNullableFilter | string | null
-  }
-
-  export type NestedDateTimeNullableFilter = {
-    equals?: Date | string | null
-    in?: Enumerable<Date> | Enumerable<string> | Date | string | null
-    notIn?: Enumerable<Date> | Enumerable<string> | Date | string | null
-    lt?: Date | string
-    lte?: Date | string
-    gt?: Date | string
-    gte?: Date | string
-    not?: NestedDateTimeNullableFilter | Date | string | null
   }
 
   export type NestedIntNullableFilter = {
@@ -13449,6 +19252,28 @@ export namespace Prisma {
     not?: NestedIntFilter | number
   }
 
+  export type NestedBoolWithAggregatesFilter = {
+    equals?: boolean
+    not?: NestedBoolWithAggregatesFilter | boolean
+    _count?: NestedIntFilter
+    _min?: NestedBoolFilter
+    _max?: NestedBoolFilter
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter = {
+    equals?: Date | string | null
+    in?: Enumerable<Date> | Enumerable<string> | Date | string | null
+    notIn?: Enumerable<Date> | Enumerable<string> | Date | string | null
+    lt?: Date | string
+    lte?: Date | string
+    gt?: Date | string
+    gte?: Date | string
+    not?: NestedDateTimeNullableWithAggregatesFilter | Date | string | null
+    _count?: NestedIntNullableFilter
+    _min?: NestedDateTimeNullableFilter
+    _max?: NestedDateTimeNullableFilter
+  }
+
   export type NestedDateTimeWithAggregatesFilter = {
     equals?: Date | string
     in?: Enumerable<Date> | Enumerable<string> | Date | string
@@ -13478,20 +19303,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter
     _min?: NestedStringNullableFilter
     _max?: NestedStringNullableFilter
-  }
-
-  export type NestedDateTimeNullableWithAggregatesFilter = {
-    equals?: Date | string | null
-    in?: Enumerable<Date> | Enumerable<string> | Date | string | null
-    notIn?: Enumerable<Date> | Enumerable<string> | Date | string | null
-    lt?: Date | string
-    lte?: Date | string
-    gt?: Date | string
-    gte?: Date | string
-    not?: NestedDateTimeNullableWithAggregatesFilter | Date | string | null
-    _count?: NestedIntNullableFilter
-    _min?: NestedDateTimeNullableFilter
-    _max?: NestedDateTimeNullableFilter
   }
 
   export type NestedIntNullableWithAggregatesFilter = {
@@ -13570,11 +19381,6 @@ export namespace Prisma {
     not?: InputJsonValue | JsonNullValueFilter
   }
 
-  export type NestedBoolFilter = {
-    equals?: boolean
-    not?: NestedBoolFilter | boolean
-  }
-
   export type NestedFloatWithAggregatesFilter = {
     equals?: number
     in?: Enumerable<number> | number
@@ -13591,14 +19397,6 @@ export namespace Prisma {
     _max?: NestedFloatFilter
   }
 
-  export type NestedBoolWithAggregatesFilter = {
-    equals?: boolean
-    not?: NestedBoolWithAggregatesFilter | boolean
-    _count?: NestedIntFilter
-    _min?: NestedBoolFilter
-    _max?: NestedBoolFilter
-  }
-
   export type SubscriptionCreateWithoutUserInput = {
     id?: string
     stripeSubscriptionId: string
@@ -13607,6 +19405,7 @@ export namespace Prisma {
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     tier: SubscriptionTierCreateNestedOneWithoutSubscriptionsInput
     payments?: PaymentCreateNestedManyWithoutSubscriptionInput
   }
@@ -13620,6 +19419,7 @@ export namespace Prisma {
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     payments?: PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
   }
 
@@ -13637,6 +19437,7 @@ export namespace Prisma {
     id?: string
     amountCents: number
     currency: string
+    paymentProvider?: string | null
     stripePaymentIntent?: string | null
     status: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -13649,6 +19450,7 @@ export namespace Prisma {
     subscriptionId?: string | null
     amountCents: number
     currency: string
+    paymentProvider?: string | null
     stripePaymentIntent?: string | null
     status: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -13694,37 +19496,81 @@ export namespace Prisma {
   export type GymCreateWithoutOwnerInput = {
     id?: string
     name: string
+    description?: string | null
     addressLine: string
     city: string
+    province?: string | null
+    postalCode?: string | null
     latitude: number
     longitude: number
+    phoneNumber?: string | null
+    whatsappNumber?: string | null
+    instagramHandle?: string | null
+    websiteUrl?: string | null
+    googleMapsLink?: string | null
+    cnicNumber?: string | null
+    businessName?: string | null
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
     tier: number
     coverImageUrl?: string | null
     status?: string
+    submittedAt?: Date | string | null
+    reviewedAt?: Date | string | null
+    reviewedByAdminId?: string | null
+    rejectionReason?: string | null
+    approvalNotes?: string | null
+    resubmissionCount?: number
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     checkIns?: CheckInCreateNestedManyWithoutGymInput
     photos?: GymPhotoCreateNestedManyWithoutGymInput
+    verificationDocuments?: GymVerificationDocumentCreateNestedManyWithoutGymInput
   }
 
   export type GymUncheckedCreateWithoutOwnerInput = {
     id?: string
     name: string
+    description?: string | null
     addressLine: string
     city: string
+    province?: string | null
+    postalCode?: string | null
     latitude: number
     longitude: number
+    phoneNumber?: string | null
+    whatsappNumber?: string | null
+    instagramHandle?: string | null
+    websiteUrl?: string | null
+    googleMapsLink?: string | null
+    cnicNumber?: string | null
+    businessName?: string | null
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
     tier: number
     coverImageUrl?: string | null
     status?: string
+    submittedAt?: Date | string | null
+    reviewedAt?: Date | string | null
+    reviewedByAdminId?: string | null
+    rejectionReason?: string | null
+    approvalNotes?: string | null
+    resubmissionCount?: number
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     checkIns?: CheckInUncheckedCreateNestedManyWithoutGymInput
     photos?: GymPhotoUncheckedCreateNestedManyWithoutGymInput
+    verificationDocuments?: GymVerificationDocumentUncheckedCreateNestedManyWithoutGymInput
   }
 
   export type GymCreateOrConnectWithoutOwnerInput = {
@@ -13734,6 +19580,34 @@ export namespace Prisma {
 
   export type GymCreateManyOwnerInputEnvelope = {
     data: Enumerable<GymCreateManyOwnerInput>
+    skipDuplicates?: boolean
+  }
+
+  export type AdminAuditLogCreateWithoutAdminInput = {
+    id?: string
+    action: string
+    entityType: string
+    entityId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type AdminAuditLogUncheckedCreateWithoutAdminInput = {
+    id?: string
+    action: string
+    entityType: string
+    entityId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type AdminAuditLogCreateOrConnectWithoutAdminInput = {
+    where: AdminAuditLogWhereUniqueInput
+    create: XOR<AdminAuditLogCreateWithoutAdminInput, AdminAuditLogUncheckedCreateWithoutAdminInput>
+  }
+
+  export type AdminAuditLogCreateManyAdminInputEnvelope = {
+    data: Enumerable<AdminAuditLogCreateManyAdminInput>
     skipDuplicates?: boolean
   }
 
@@ -13766,6 +19640,7 @@ export namespace Prisma {
     startAt?: DateTimeNullableFilter | Date | string | null
     endAt?: DateTimeNullableFilter | Date | string | null
     createdAt?: DateTimeFilter | Date | string
+    updatedAt?: DateTimeFilter | Date | string
   }
 
   export type PaymentUpsertWithWhereUniqueWithoutUserInput = {
@@ -13793,6 +19668,7 @@ export namespace Prisma {
     subscriptionId?: StringNullableFilter | string | null
     amountCents?: IntFilter | number
     currency?: StringFilter | string
+    paymentProvider?: StringNullableFilter | string | null
     stripePaymentIntent?: StringNullableFilter | string | null
     status?: StringFilter | string
     metadata?: JsonNullableFilter
@@ -13849,34 +19725,92 @@ export namespace Prisma {
     NOT?: Enumerable<GymScalarWhereInput>
     id?: StringFilter | string
     name?: StringFilter | string
+    description?: StringNullableFilter | string | null
     addressLine?: StringFilter | string
     city?: StringFilter | string
+    province?: StringNullableFilter | string | null
+    postalCode?: StringNullableFilter | string | null
     latitude?: FloatFilter | number
     longitude?: FloatFilter | number
+    phoneNumber?: StringNullableFilter | string | null
+    whatsappNumber?: StringNullableFilter | string | null
+    instagramHandle?: StringNullableFilter | string | null
+    websiteUrl?: StringNullableFilter | string | null
+    googleMapsLink?: StringNullableFilter | string | null
+    cnicNumber?: StringNullableFilter | string | null
+    businessName?: StringNullableFilter | string | null
     openingTime?: StringNullableFilter | string | null
     closingTime?: StringNullableFilter | string | null
     is24Hours?: BoolFilter | boolean
     tier?: IntFilter | number
     coverImageUrl?: StringNullableFilter | string | null
     status?: StringFilter | string
+    submittedAt?: DateTimeNullableFilter | Date | string | null
+    reviewedAt?: DateTimeNullableFilter | Date | string | null
+    reviewedByAdminId?: StringNullableFilter | string | null
+    rejectionReason?: StringNullableFilter | string | null
+    approvalNotes?: StringNullableFilter | string | null
+    resubmissionCount?: IntFilter | number
+    isFeatured?: BoolFilter | boolean
+    isArchived?: BoolFilter | boolean
+    isBlocked?: BoolFilter | boolean
+    blockedReason?: StringNullableFilter | string | null
     ownerId?: StringNullableFilter | string | null
+    createdAt?: DateTimeFilter | Date | string
+    updatedAt?: DateTimeFilter | Date | string
+  }
+
+  export type AdminAuditLogUpsertWithWhereUniqueWithoutAdminInput = {
+    where: AdminAuditLogWhereUniqueInput
+    update: XOR<AdminAuditLogUpdateWithoutAdminInput, AdminAuditLogUncheckedUpdateWithoutAdminInput>
+    create: XOR<AdminAuditLogCreateWithoutAdminInput, AdminAuditLogUncheckedCreateWithoutAdminInput>
+  }
+
+  export type AdminAuditLogUpdateWithWhereUniqueWithoutAdminInput = {
+    where: AdminAuditLogWhereUniqueInput
+    data: XOR<AdminAuditLogUpdateWithoutAdminInput, AdminAuditLogUncheckedUpdateWithoutAdminInput>
+  }
+
+  export type AdminAuditLogUpdateManyWithWhereWithoutAdminInput = {
+    where: AdminAuditLogScalarWhereInput
+    data: XOR<AdminAuditLogUpdateManyMutationInput, AdminAuditLogUncheckedUpdateManyWithoutAdminAuditLogsInput>
+  }
+
+  export type AdminAuditLogScalarWhereInput = {
+    AND?: Enumerable<AdminAuditLogScalarWhereInput>
+    OR?: Enumerable<AdminAuditLogScalarWhereInput>
+    NOT?: Enumerable<AdminAuditLogScalarWhereInput>
+    id?: StringFilter | string
+    adminId?: StringFilter | string
+    action?: StringFilter | string
+    entityType?: StringFilter | string
+    entityId?: StringNullableFilter | string | null
+    metadata?: JsonNullableFilter
     createdAt?: DateTimeFilter | Date | string
   }
 
   export type SubscriptionPriceCreateWithoutTierInput = {
     id?: string
+    stripeProductId: string
     stripePriceId: string
     interval: string
     priceCents: number
+    currency?: string
+    isActive?: boolean
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SubscriptionPriceUncheckedCreateWithoutTierInput = {
     id?: string
+    stripeProductId: string
     stripePriceId: string
     interval: string
     priceCents: number
+    currency?: string
+    isActive?: boolean
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SubscriptionPriceCreateOrConnectWithoutTierInput = {
@@ -13897,6 +19831,7 @@ export namespace Prisma {
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     user: UserCreateNestedOneWithoutSubscriptionsInput
     payments?: PaymentCreateNestedManyWithoutSubscriptionInput
   }
@@ -13910,6 +19845,7 @@ export namespace Prisma {
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     payments?: PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
   }
 
@@ -13945,10 +19881,14 @@ export namespace Prisma {
     NOT?: Enumerable<SubscriptionPriceScalarWhereInput>
     id?: StringFilter | string
     tierId?: StringFilter | string
+    stripeProductId?: StringFilter | string
     stripePriceId?: StringFilter | string
     interval?: StringFilter | string
     priceCents?: IntFilter | number
+    currency?: StringFilter | string
+    isActive?: BoolFilter | boolean
     createdAt?: DateTimeFilter | Date | string
+    updatedAt?: DateTimeFilter | Date | string
   }
 
   export type SubscriptionUpsertWithWhereUniqueWithoutTierInput = {
@@ -13970,16 +19910,26 @@ export namespace Prisma {
   export type SubscriptionTierCreateWithoutPricesInput = {
     id?: string
     name: string
+    slug: string
+    description?: string | null
     accessTier: number
+    isActive?: boolean
+    isFeatured?: boolean
     createdAt?: Date | string
+    updatedAt?: Date | string
     subscriptions?: SubscriptionCreateNestedManyWithoutTierInput
   }
 
   export type SubscriptionTierUncheckedCreateWithoutPricesInput = {
     id?: string
     name: string
+    slug: string
+    description?: string | null
     accessTier: number
+    isActive?: boolean
+    isFeatured?: boolean
     createdAt?: Date | string
+    updatedAt?: Date | string
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutTierInput
   }
 
@@ -13996,16 +19946,26 @@ export namespace Prisma {
   export type SubscriptionTierUpdateWithoutPricesInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subscriptions?: SubscriptionUpdateManyWithoutTierNestedInput
   }
 
   export type SubscriptionTierUncheckedUpdateWithoutPricesInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutTierNestedInput
   }
 
@@ -14015,13 +19975,17 @@ export namespace Prisma {
     email: string
     passwordHash: string
     role?: string
+    isSuspended?: boolean
+    suspendedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     otpHash?: string | null
     otpExpiresAt?: Date | string | null
     otpAttempts?: number | null
     payments?: PaymentCreateNestedManyWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     gymsOwned?: GymCreateNestedManyWithoutOwnerInput
+    adminAuditLogs?: AdminAuditLogCreateNestedManyWithoutAdminInput
   }
 
   export type UserUncheckedCreateWithoutSubscriptionsInput = {
@@ -14030,13 +19994,17 @@ export namespace Prisma {
     email: string
     passwordHash: string
     role?: string
+    isSuspended?: boolean
+    suspendedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     otpHash?: string | null
     otpExpiresAt?: Date | string | null
     otpAttempts?: number | null
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     gymsOwned?: GymUncheckedCreateNestedManyWithoutOwnerInput
+    adminAuditLogs?: AdminAuditLogUncheckedCreateNestedManyWithoutAdminInput
   }
 
   export type UserCreateOrConnectWithoutSubscriptionsInput = {
@@ -14047,16 +20015,26 @@ export namespace Prisma {
   export type SubscriptionTierCreateWithoutSubscriptionsInput = {
     id?: string
     name: string
+    slug: string
+    description?: string | null
     accessTier: number
+    isActive?: boolean
+    isFeatured?: boolean
     createdAt?: Date | string
+    updatedAt?: Date | string
     prices?: SubscriptionPriceCreateNestedManyWithoutTierInput
   }
 
   export type SubscriptionTierUncheckedCreateWithoutSubscriptionsInput = {
     id?: string
     name: string
+    slug: string
+    description?: string | null
     accessTier: number
+    isActive?: boolean
+    isFeatured?: boolean
     createdAt?: Date | string
+    updatedAt?: Date | string
     prices?: SubscriptionPriceUncheckedCreateNestedManyWithoutTierInput
   }
 
@@ -14069,6 +20047,7 @@ export namespace Prisma {
     id?: string
     amountCents: number
     currency: string
+    paymentProvider?: string | null
     stripePaymentIntent?: string | null
     status: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -14081,6 +20060,7 @@ export namespace Prisma {
     userId: string
     amountCents: number
     currency: string
+    paymentProvider?: string | null
     stripePaymentIntent?: string | null
     status: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -14108,13 +20088,17 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otpHash?: NullableStringFieldUpdateOperationsInput | string | null
     otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     payments?: PaymentUpdateManyWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUpdateManyWithoutOwnerNestedInput
+    adminAuditLogs?: AdminAuditLogUpdateManyWithoutAdminNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSubscriptionsInput = {
@@ -14123,13 +20107,17 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otpHash?: NullableStringFieldUpdateOperationsInput | string | null
     otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUncheckedUpdateManyWithoutOwnerNestedInput
+    adminAuditLogs?: AdminAuditLogUncheckedUpdateManyWithoutAdminNestedInput
   }
 
   export type SubscriptionTierUpsertWithoutSubscriptionsInput = {
@@ -14140,16 +20128,26 @@ export namespace Prisma {
   export type SubscriptionTierUpdateWithoutSubscriptionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     prices?: SubscriptionPriceUpdateManyWithoutTierNestedInput
   }
 
   export type SubscriptionTierUncheckedUpdateWithoutSubscriptionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     prices?: SubscriptionPriceUncheckedUpdateManyWithoutTierNestedInput
   }
 
@@ -14175,13 +20173,17 @@ export namespace Prisma {
     email: string
     passwordHash: string
     role?: string
+    isSuspended?: boolean
+    suspendedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     otpHash?: string | null
     otpExpiresAt?: Date | string | null
     otpAttempts?: number | null
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     gymsOwned?: GymCreateNestedManyWithoutOwnerInput
+    adminAuditLogs?: AdminAuditLogCreateNestedManyWithoutAdminInput
   }
 
   export type UserUncheckedCreateWithoutPaymentsInput = {
@@ -14190,13 +20192,17 @@ export namespace Prisma {
     email: string
     passwordHash: string
     role?: string
+    isSuspended?: boolean
+    suspendedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     otpHash?: string | null
     otpExpiresAt?: Date | string | null
     otpAttempts?: number | null
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     gymsOwned?: GymUncheckedCreateNestedManyWithoutOwnerInput
+    adminAuditLogs?: AdminAuditLogUncheckedCreateNestedManyWithoutAdminInput
   }
 
   export type UserCreateOrConnectWithoutPaymentsInput = {
@@ -14212,6 +20218,7 @@ export namespace Prisma {
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     user: UserCreateNestedOneWithoutSubscriptionsInput
     tier: SubscriptionTierCreateNestedOneWithoutSubscriptionsInput
   }
@@ -14226,6 +20233,7 @@ export namespace Prisma {
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SubscriptionCreateOrConnectWithoutPaymentsInput = {
@@ -14244,13 +20252,17 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otpHash?: NullableStringFieldUpdateOperationsInput | string | null
     otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUpdateManyWithoutOwnerNestedInput
+    adminAuditLogs?: AdminAuditLogUpdateManyWithoutAdminNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPaymentsInput = {
@@ -14259,13 +20271,17 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otpHash?: NullableStringFieldUpdateOperationsInput | string | null
     otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUncheckedUpdateManyWithoutOwnerNestedInput
+    adminAuditLogs?: AdminAuditLogUncheckedUpdateManyWithoutAdminNestedInput
   }
 
   export type SubscriptionUpsertWithoutPaymentsInput = {
@@ -14281,6 +20297,7 @@ export namespace Prisma {
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSubscriptionsNestedInput
     tier?: SubscriptionTierUpdateOneRequiredWithoutSubscriptionsNestedInput
   }
@@ -14295,6 +20312,7 @@ export namespace Prisma {
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserCreateWithoutGymsOwnedInput = {
@@ -14303,13 +20321,17 @@ export namespace Prisma {
     email: string
     passwordHash: string
     role?: string
+    isSuspended?: boolean
+    suspendedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     otpHash?: string | null
     otpExpiresAt?: Date | string | null
     otpAttempts?: number | null
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
     payments?: PaymentCreateNestedManyWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
+    adminAuditLogs?: AdminAuditLogCreateNestedManyWithoutAdminInput
   }
 
   export type UserUncheckedCreateWithoutGymsOwnedInput = {
@@ -14318,13 +20340,17 @@ export namespace Prisma {
     email: string
     passwordHash: string
     role?: string
+    isSuspended?: boolean
+    suspendedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     otpHash?: string | null
     otpExpiresAt?: Date | string | null
     otpAttempts?: number | null
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
+    adminAuditLogs?: AdminAuditLogUncheckedCreateNestedManyWithoutAdminInput
   }
 
   export type UserCreateOrConnectWithoutGymsOwnedInput = {
@@ -14380,6 +20406,38 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type GymVerificationDocumentCreateWithoutGymInput = {
+    id?: string
+    type: string
+    fileUrl: string
+    status?: string
+    rejectedReason?: string | null
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    createdAt?: Date | string
+  }
+
+  export type GymVerificationDocumentUncheckedCreateWithoutGymInput = {
+    id?: string
+    type: string
+    fileUrl: string
+    status?: string
+    rejectedReason?: string | null
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    createdAt?: Date | string
+  }
+
+  export type GymVerificationDocumentCreateOrConnectWithoutGymInput = {
+    where: GymVerificationDocumentWhereUniqueInput
+    create: XOR<GymVerificationDocumentCreateWithoutGymInput, GymVerificationDocumentUncheckedCreateWithoutGymInput>
+  }
+
+  export type GymVerificationDocumentCreateManyGymInputEnvelope = {
+    data: Enumerable<GymVerificationDocumentCreateManyGymInput>
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutGymsOwnedInput = {
     update: XOR<UserUpdateWithoutGymsOwnedInput, UserUncheckedUpdateWithoutGymsOwnedInput>
     create: XOR<UserCreateWithoutGymsOwnedInput, UserUncheckedCreateWithoutGymsOwnedInput>
@@ -14391,13 +20449,17 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otpHash?: NullableStringFieldUpdateOperationsInput | string | null
     otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
     payments?: PaymentUpdateManyWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
+    adminAuditLogs?: AdminAuditLogUpdateManyWithoutAdminNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGymsOwnedInput = {
@@ -14406,13 +20468,17 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otpHash?: NullableStringFieldUpdateOperationsInput | string | null
     otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
+    adminAuditLogs?: AdminAuditLogUncheckedUpdateManyWithoutAdminNestedInput
   }
 
   export type CheckInUpsertWithWhereUniqueWithoutGymInput = {
@@ -14457,40 +20523,285 @@ export namespace Prisma {
     createdAt?: DateTimeFilter | Date | string
   }
 
-  export type GymCreateWithoutPhotosInput = {
+  export type GymVerificationDocumentUpsertWithWhereUniqueWithoutGymInput = {
+    where: GymVerificationDocumentWhereUniqueInput
+    update: XOR<GymVerificationDocumentUpdateWithoutGymInput, GymVerificationDocumentUncheckedUpdateWithoutGymInput>
+    create: XOR<GymVerificationDocumentCreateWithoutGymInput, GymVerificationDocumentUncheckedCreateWithoutGymInput>
+  }
+
+  export type GymVerificationDocumentUpdateWithWhereUniqueWithoutGymInput = {
+    where: GymVerificationDocumentWhereUniqueInput
+    data: XOR<GymVerificationDocumentUpdateWithoutGymInput, GymVerificationDocumentUncheckedUpdateWithoutGymInput>
+  }
+
+  export type GymVerificationDocumentUpdateManyWithWhereWithoutGymInput = {
+    where: GymVerificationDocumentScalarWhereInput
+    data: XOR<GymVerificationDocumentUpdateManyMutationInput, GymVerificationDocumentUncheckedUpdateManyWithoutVerificationDocumentsInput>
+  }
+
+  export type GymVerificationDocumentScalarWhereInput = {
+    AND?: Enumerable<GymVerificationDocumentScalarWhereInput>
+    OR?: Enumerable<GymVerificationDocumentScalarWhereInput>
+    NOT?: Enumerable<GymVerificationDocumentScalarWhereInput>
+    id?: StringFilter | string
+    gymId?: StringFilter | string
+    type?: StringFilter | string
+    fileUrl?: StringFilter | string
+    status?: StringFilter | string
+    rejectedReason?: StringNullableFilter | string | null
+    reviewedAt?: DateTimeNullableFilter | Date | string | null
+    reviewNotes?: StringNullableFilter | string | null
+    createdAt?: DateTimeFilter | Date | string
+  }
+
+  export type GymCreateWithoutVerificationDocumentsInput = {
     id?: string
     name: string
+    description?: string | null
     addressLine: string
     city: string
+    province?: string | null
+    postalCode?: string | null
     latitude: number
     longitude: number
+    phoneNumber?: string | null
+    whatsappNumber?: string | null
+    instagramHandle?: string | null
+    websiteUrl?: string | null
+    googleMapsLink?: string | null
+    cnicNumber?: string | null
+    businessName?: string | null
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
     tier: number
     coverImageUrl?: string | null
     status?: string
+    submittedAt?: Date | string | null
+    reviewedAt?: Date | string | null
+    reviewedByAdminId?: string | null
+    rejectionReason?: string | null
+    approvalNotes?: string | null
+    resubmissionCount?: number
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     owner?: UserCreateNestedOneWithoutGymsOwnedInput
     checkIns?: CheckInCreateNestedManyWithoutGymInput
+    photos?: GymPhotoCreateNestedManyWithoutGymInput
+  }
+
+  export type GymUncheckedCreateWithoutVerificationDocumentsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    addressLine: string
+    city: string
+    province?: string | null
+    postalCode?: string | null
+    latitude: number
+    longitude: number
+    phoneNumber?: string | null
+    whatsappNumber?: string | null
+    instagramHandle?: string | null
+    websiteUrl?: string | null
+    googleMapsLink?: string | null
+    cnicNumber?: string | null
+    businessName?: string | null
+    openingTime?: string | null
+    closingTime?: string | null
+    is24Hours?: boolean
+    tier: number
+    coverImageUrl?: string | null
+    status?: string
+    submittedAt?: Date | string | null
+    reviewedAt?: Date | string | null
+    reviewedByAdminId?: string | null
+    rejectionReason?: string | null
+    approvalNotes?: string | null
+    resubmissionCount?: number
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: string | null
+    ownerId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    checkIns?: CheckInUncheckedCreateNestedManyWithoutGymInput
+    photos?: GymPhotoUncheckedCreateNestedManyWithoutGymInput
+  }
+
+  export type GymCreateOrConnectWithoutVerificationDocumentsInput = {
+    where: GymWhereUniqueInput
+    create: XOR<GymCreateWithoutVerificationDocumentsInput, GymUncheckedCreateWithoutVerificationDocumentsInput>
+  }
+
+  export type GymUpsertWithoutVerificationDocumentsInput = {
+    update: XOR<GymUpdateWithoutVerificationDocumentsInput, GymUncheckedUpdateWithoutVerificationDocumentsInput>
+    create: XOR<GymCreateWithoutVerificationDocumentsInput, GymUncheckedCreateWithoutVerificationDocumentsInput>
+  }
+
+  export type GymUpdateWithoutVerificationDocumentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    addressLine?: StringFieldUpdateOperationsInput | string
+    city?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsLink?: NullableStringFieldUpdateOperationsInput | string | null
+    cnicNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    businessName?: NullableStringFieldUpdateOperationsInput | string | null
+    openingTime?: NullableStringFieldUpdateOperationsInput | string | null
+    closingTime?: NullableStringFieldUpdateOperationsInput | string | null
+    is24Hours?: BoolFieldUpdateOperationsInput | boolean
+    tier?: IntFieldUpdateOperationsInput | number
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedByAdminId?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    approvalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resubmissionCount?: IntFieldUpdateOperationsInput | number
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneWithoutGymsOwnedNestedInput
+    checkIns?: CheckInUpdateManyWithoutGymNestedInput
+    photos?: GymPhotoUpdateManyWithoutGymNestedInput
+  }
+
+  export type GymUncheckedUpdateWithoutVerificationDocumentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    addressLine?: StringFieldUpdateOperationsInput | string
+    city?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsLink?: NullableStringFieldUpdateOperationsInput | string | null
+    cnicNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    businessName?: NullableStringFieldUpdateOperationsInput | string | null
+    openingTime?: NullableStringFieldUpdateOperationsInput | string | null
+    closingTime?: NullableStringFieldUpdateOperationsInput | string | null
+    is24Hours?: BoolFieldUpdateOperationsInput | boolean
+    tier?: IntFieldUpdateOperationsInput | number
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedByAdminId?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    approvalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resubmissionCount?: IntFieldUpdateOperationsInput | number
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    checkIns?: CheckInUncheckedUpdateManyWithoutGymNestedInput
+    photos?: GymPhotoUncheckedUpdateManyWithoutGymNestedInput
+  }
+
+  export type GymCreateWithoutPhotosInput = {
+    id?: string
+    name: string
+    description?: string | null
+    addressLine: string
+    city: string
+    province?: string | null
+    postalCode?: string | null
+    latitude: number
+    longitude: number
+    phoneNumber?: string | null
+    whatsappNumber?: string | null
+    instagramHandle?: string | null
+    websiteUrl?: string | null
+    googleMapsLink?: string | null
+    cnicNumber?: string | null
+    businessName?: string | null
+    openingTime?: string | null
+    closingTime?: string | null
+    is24Hours?: boolean
+    tier: number
+    coverImageUrl?: string | null
+    status?: string
+    submittedAt?: Date | string | null
+    reviewedAt?: Date | string | null
+    reviewedByAdminId?: string | null
+    rejectionReason?: string | null
+    approvalNotes?: string | null
+    resubmissionCount?: number
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner?: UserCreateNestedOneWithoutGymsOwnedInput
+    checkIns?: CheckInCreateNestedManyWithoutGymInput
+    verificationDocuments?: GymVerificationDocumentCreateNestedManyWithoutGymInput
   }
 
   export type GymUncheckedCreateWithoutPhotosInput = {
     id?: string
     name: string
+    description?: string | null
     addressLine: string
     city: string
+    province?: string | null
+    postalCode?: string | null
     latitude: number
     longitude: number
+    phoneNumber?: string | null
+    whatsappNumber?: string | null
+    instagramHandle?: string | null
+    websiteUrl?: string | null
+    googleMapsLink?: string | null
+    cnicNumber?: string | null
+    businessName?: string | null
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
     tier: number
     coverImageUrl?: string | null
     status?: string
+    submittedAt?: Date | string | null
+    reviewedAt?: Date | string | null
+    reviewedByAdminId?: string | null
+    rejectionReason?: string | null
+    approvalNotes?: string | null
+    resubmissionCount?: number
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: string | null
     ownerId?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     checkIns?: CheckInUncheckedCreateNestedManyWithoutGymInput
+    verificationDocuments?: GymVerificationDocumentUncheckedCreateNestedManyWithoutGymInput
   }
 
   export type GymCreateOrConnectWithoutPhotosInput = {
@@ -14506,37 +20817,81 @@ export namespace Prisma {
   export type GymUpdateWithoutPhotosInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     addressLine?: StringFieldUpdateOperationsInput | string
     city?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsLink?: NullableStringFieldUpdateOperationsInput | string | null
+    cnicNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    businessName?: NullableStringFieldUpdateOperationsInput | string | null
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedByAdminId?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    approvalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resubmissionCount?: IntFieldUpdateOperationsInput | number
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneWithoutGymsOwnedNestedInput
     checkIns?: CheckInUpdateManyWithoutGymNestedInput
+    verificationDocuments?: GymVerificationDocumentUpdateManyWithoutGymNestedInput
   }
 
   export type GymUncheckedUpdateWithoutPhotosInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     addressLine?: StringFieldUpdateOperationsInput | string
     city?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsLink?: NullableStringFieldUpdateOperationsInput | string | null
+    cnicNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    businessName?: NullableStringFieldUpdateOperationsInput | string | null
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedByAdminId?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    approvalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resubmissionCount?: IntFieldUpdateOperationsInput | number
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     checkIns?: CheckInUncheckedUpdateManyWithoutGymNestedInput
+    verificationDocuments?: GymVerificationDocumentUncheckedUpdateManyWithoutGymNestedInput
   }
 
   export type UserCreateWithoutCheckInsInput = {
@@ -14545,13 +20900,17 @@ export namespace Prisma {
     email: string
     passwordHash: string
     role?: string
+    isSuspended?: boolean
+    suspendedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     otpHash?: string | null
     otpExpiresAt?: Date | string | null
     otpAttempts?: number | null
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
     payments?: PaymentCreateNestedManyWithoutUserInput
     gymsOwned?: GymCreateNestedManyWithoutOwnerInput
+    adminAuditLogs?: AdminAuditLogCreateNestedManyWithoutAdminInput
   }
 
   export type UserUncheckedCreateWithoutCheckInsInput = {
@@ -14560,13 +20919,17 @@ export namespace Prisma {
     email: string
     passwordHash: string
     role?: string
+    isSuspended?: boolean
+    suspendedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     otpHash?: string | null
     otpExpiresAt?: Date | string | null
     otpAttempts?: number | null
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     gymsOwned?: GymUncheckedCreateNestedManyWithoutOwnerInput
+    adminAuditLogs?: AdminAuditLogUncheckedCreateNestedManyWithoutAdminInput
   }
 
   export type UserCreateOrConnectWithoutCheckInsInput = {
@@ -14577,37 +20940,81 @@ export namespace Prisma {
   export type GymCreateWithoutCheckInsInput = {
     id?: string
     name: string
+    description?: string | null
     addressLine: string
     city: string
+    province?: string | null
+    postalCode?: string | null
     latitude: number
     longitude: number
+    phoneNumber?: string | null
+    whatsappNumber?: string | null
+    instagramHandle?: string | null
+    websiteUrl?: string | null
+    googleMapsLink?: string | null
+    cnicNumber?: string | null
+    businessName?: string | null
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
     tier: number
     coverImageUrl?: string | null
     status?: string
+    submittedAt?: Date | string | null
+    reviewedAt?: Date | string | null
+    reviewedByAdminId?: string | null
+    rejectionReason?: string | null
+    approvalNotes?: string | null
+    resubmissionCount?: number
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     owner?: UserCreateNestedOneWithoutGymsOwnedInput
     photos?: GymPhotoCreateNestedManyWithoutGymInput
+    verificationDocuments?: GymVerificationDocumentCreateNestedManyWithoutGymInput
   }
 
   export type GymUncheckedCreateWithoutCheckInsInput = {
     id?: string
     name: string
+    description?: string | null
     addressLine: string
     city: string
+    province?: string | null
+    postalCode?: string | null
     latitude: number
     longitude: number
+    phoneNumber?: string | null
+    whatsappNumber?: string | null
+    instagramHandle?: string | null
+    websiteUrl?: string | null
+    googleMapsLink?: string | null
+    cnicNumber?: string | null
+    businessName?: string | null
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
     tier: number
     coverImageUrl?: string | null
     status?: string
+    submittedAt?: Date | string | null
+    reviewedAt?: Date | string | null
+    reviewedByAdminId?: string | null
+    rejectionReason?: string | null
+    approvalNotes?: string | null
+    resubmissionCount?: number
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: string | null
     ownerId?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     photos?: GymPhotoUncheckedCreateNestedManyWithoutGymInput
+    verificationDocuments?: GymVerificationDocumentUncheckedCreateNestedManyWithoutGymInput
   }
 
   export type GymCreateOrConnectWithoutCheckInsInput = {
@@ -14626,13 +21033,17 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otpHash?: NullableStringFieldUpdateOperationsInput | string | null
     otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
     payments?: PaymentUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUpdateManyWithoutOwnerNestedInput
+    adminAuditLogs?: AdminAuditLogUpdateManyWithoutAdminNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCheckInsInput = {
@@ -14641,13 +21052,17 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otpHash?: NullableStringFieldUpdateOperationsInput | string | null
     otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUncheckedUpdateManyWithoutOwnerNestedInput
+    adminAuditLogs?: AdminAuditLogUncheckedUpdateManyWithoutAdminNestedInput
   }
 
   export type GymUpsertWithoutCheckInsInput = {
@@ -14658,37 +21073,167 @@ export namespace Prisma {
   export type GymUpdateWithoutCheckInsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     addressLine?: StringFieldUpdateOperationsInput | string
     city?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsLink?: NullableStringFieldUpdateOperationsInput | string | null
+    cnicNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    businessName?: NullableStringFieldUpdateOperationsInput | string | null
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedByAdminId?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    approvalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resubmissionCount?: IntFieldUpdateOperationsInput | number
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneWithoutGymsOwnedNestedInput
     photos?: GymPhotoUpdateManyWithoutGymNestedInput
+    verificationDocuments?: GymVerificationDocumentUpdateManyWithoutGymNestedInput
   }
 
   export type GymUncheckedUpdateWithoutCheckInsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     addressLine?: StringFieldUpdateOperationsInput | string
     city?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsLink?: NullableStringFieldUpdateOperationsInput | string | null
+    cnicNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    businessName?: NullableStringFieldUpdateOperationsInput | string | null
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedByAdminId?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    approvalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resubmissionCount?: IntFieldUpdateOperationsInput | number
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photos?: GymPhotoUncheckedUpdateManyWithoutGymNestedInput
+    verificationDocuments?: GymVerificationDocumentUncheckedUpdateManyWithoutGymNestedInput
+  }
+
+  export type UserCreateWithoutAdminAuditLogsInput = {
+    id?: string
+    name: string
+    email: string
+    passwordHash: string
+    role?: string
+    isSuspended?: boolean
+    suspendedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    otpHash?: string | null
+    otpExpiresAt?: Date | string | null
+    otpAttempts?: number | null
+    subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
+    checkIns?: CheckInCreateNestedManyWithoutUserInput
+    gymsOwned?: GymCreateNestedManyWithoutOwnerInput
+  }
+
+  export type UserUncheckedCreateWithoutAdminAuditLogsInput = {
+    id?: string
+    name: string
+    email: string
+    passwordHash: string
+    role?: string
+    isSuspended?: boolean
+    suspendedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    otpHash?: string | null
+    otpExpiresAt?: Date | string | null
+    otpAttempts?: number | null
+    subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
+    checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
+    gymsOwned?: GymUncheckedCreateNestedManyWithoutOwnerInput
+  }
+
+  export type UserCreateOrConnectWithoutAdminAuditLogsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAdminAuditLogsInput, UserUncheckedCreateWithoutAdminAuditLogsInput>
+  }
+
+  export type UserUpsertWithoutAdminAuditLogsInput = {
+    update: XOR<UserUpdateWithoutAdminAuditLogsInput, UserUncheckedUpdateWithoutAdminAuditLogsInput>
+    create: XOR<UserCreateWithoutAdminAuditLogsInput, UserUncheckedCreateWithoutAdminAuditLogsInput>
+  }
+
+  export type UserUpdateWithoutAdminAuditLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    otpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
+    checkIns?: CheckInUpdateManyWithoutUserNestedInput
+    gymsOwned?: GymUpdateManyWithoutOwnerNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAdminAuditLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    otpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
+    checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
+    gymsOwned?: GymUncheckedUpdateManyWithoutOwnerNestedInput
   }
 
   export type SubscriptionCreateManyUserInput = {
@@ -14700,6 +21245,7 @@ export namespace Prisma {
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type PaymentCreateManyUserInput = {
@@ -14707,6 +21253,7 @@ export namespace Prisma {
     subscriptionId?: string | null
     amountCents: number
     currency: string
+    paymentProvider?: string | null
     stripePaymentIntent?: string | null
     status: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -14724,16 +21271,46 @@ export namespace Prisma {
   export type GymCreateManyOwnerInput = {
     id?: string
     name: string
+    description?: string | null
     addressLine: string
     city: string
+    province?: string | null
+    postalCode?: string | null
     latitude: number
     longitude: number
+    phoneNumber?: string | null
+    whatsappNumber?: string | null
+    instagramHandle?: string | null
+    websiteUrl?: string | null
+    googleMapsLink?: string | null
+    cnicNumber?: string | null
+    businessName?: string | null
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
     tier: number
     coverImageUrl?: string | null
     status?: string
+    submittedAt?: Date | string | null
+    reviewedAt?: Date | string | null
+    reviewedByAdminId?: string | null
+    rejectionReason?: string | null
+    approvalNotes?: string | null
+    resubmissionCount?: number
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AdminAuditLogCreateManyAdminInput = {
+    id?: string
+    action: string
+    entityType: string
+    entityId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -14745,6 +21322,7 @@ export namespace Prisma {
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tier?: SubscriptionTierUpdateOneRequiredWithoutSubscriptionsNestedInput
     payments?: PaymentUpdateManyWithoutSubscriptionNestedInput
   }
@@ -14758,6 +21336,7 @@ export namespace Prisma {
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     payments?: PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
   }
 
@@ -14770,12 +21349,14 @@ export namespace Prisma {
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PaymentUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     amountCents?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
+    paymentProvider?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntent?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -14788,6 +21369,7 @@ export namespace Prisma {
     subscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     amountCents?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
+    paymentProvider?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntent?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -14799,6 +21381,7 @@ export namespace Prisma {
     subscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     amountCents?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
+    paymentProvider?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntent?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -14832,61 +21415,157 @@ export namespace Prisma {
   export type GymUpdateWithoutOwnerInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     addressLine?: StringFieldUpdateOperationsInput | string
     city?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsLink?: NullableStringFieldUpdateOperationsInput | string | null
+    cnicNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    businessName?: NullableStringFieldUpdateOperationsInput | string | null
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedByAdminId?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    approvalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resubmissionCount?: IntFieldUpdateOperationsInput | number
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     checkIns?: CheckInUpdateManyWithoutGymNestedInput
     photos?: GymPhotoUpdateManyWithoutGymNestedInput
+    verificationDocuments?: GymVerificationDocumentUpdateManyWithoutGymNestedInput
   }
 
   export type GymUncheckedUpdateWithoutOwnerInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     addressLine?: StringFieldUpdateOperationsInput | string
     city?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsLink?: NullableStringFieldUpdateOperationsInput | string | null
+    cnicNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    businessName?: NullableStringFieldUpdateOperationsInput | string | null
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedByAdminId?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    approvalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resubmissionCount?: IntFieldUpdateOperationsInput | number
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     checkIns?: CheckInUncheckedUpdateManyWithoutGymNestedInput
     photos?: GymPhotoUncheckedUpdateManyWithoutGymNestedInput
+    verificationDocuments?: GymVerificationDocumentUncheckedUpdateManyWithoutGymNestedInput
   }
 
   export type GymUncheckedUpdateManyWithoutGymsOwnedInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     addressLine?: StringFieldUpdateOperationsInput | string
     city?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsLink?: NullableStringFieldUpdateOperationsInput | string | null
+    cnicNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    businessName?: NullableStringFieldUpdateOperationsInput | string | null
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedByAdminId?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    approvalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resubmissionCount?: IntFieldUpdateOperationsInput | number
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminAuditLogUpdateWithoutAdminInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    entityType?: StringFieldUpdateOperationsInput | string
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminAuditLogUncheckedUpdateWithoutAdminInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    entityType?: StringFieldUpdateOperationsInput | string
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminAuditLogUncheckedUpdateManyWithoutAdminAuditLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    entityType?: StringFieldUpdateOperationsInput | string
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SubscriptionPriceCreateManyTierInput = {
     id?: string
+    stripeProductId: string
     stripePriceId: string
     interval: string
     priceCents: number
+    currency?: string
+    isActive?: boolean
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SubscriptionCreateManyTierInput = {
@@ -14898,30 +21577,43 @@ export namespace Prisma {
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SubscriptionPriceUpdateWithoutTierInput = {
     id?: StringFieldUpdateOperationsInput | string
+    stripeProductId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     interval?: StringFieldUpdateOperationsInput | string
     priceCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SubscriptionPriceUncheckedUpdateWithoutTierInput = {
     id?: StringFieldUpdateOperationsInput | string
+    stripeProductId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     interval?: StringFieldUpdateOperationsInput | string
     priceCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SubscriptionPriceUncheckedUpdateManyWithoutPricesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    stripeProductId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     interval?: StringFieldUpdateOperationsInput | string
     priceCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SubscriptionUpdateWithoutTierInput = {
@@ -14932,6 +21624,7 @@ export namespace Prisma {
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSubscriptionsNestedInput
     payments?: PaymentUpdateManyWithoutSubscriptionNestedInput
   }
@@ -14945,6 +21638,7 @@ export namespace Prisma {
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     payments?: PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
   }
 
@@ -14953,6 +21647,7 @@ export namespace Prisma {
     userId: string
     amountCents: number
     currency: string
+    paymentProvider?: string | null
     stripePaymentIntent?: string | null
     status: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -14963,6 +21658,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     amountCents?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
+    paymentProvider?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntent?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -14975,6 +21671,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     amountCents?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
+    paymentProvider?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntent?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -14992,6 +21689,17 @@ export namespace Prisma {
   export type GymPhotoCreateManyGymInput = {
     id?: string
     url: string
+    createdAt?: Date | string
+  }
+
+  export type GymVerificationDocumentCreateManyGymInput = {
+    id?: string
+    type: string
+    fileUrl: string
+    status?: string
+    rejectedReason?: string | null
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
     createdAt?: Date | string
   }
 
@@ -15026,6 +21734,39 @@ export namespace Prisma {
   export type GymPhotoUncheckedUpdateManyWithoutPhotosInput = {
     id?: StringFieldUpdateOperationsInput | string
     url?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GymVerificationDocumentUpdateWithoutGymInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    rejectedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GymVerificationDocumentUncheckedUpdateWithoutGymInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    rejectedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GymVerificationDocumentUncheckedUpdateManyWithoutVerificationDocumentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    rejectedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

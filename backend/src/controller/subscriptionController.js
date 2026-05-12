@@ -1,4 +1,5 @@
-const prisma = require("../prismaClient");
+const { PrismaClient } = require("../generated/prisma");
+const prisma = new PrismaClient();
 const Stripe = require("stripe");
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -88,60 +89,6 @@ async function stripeWebhook(req, res) {
   res.json({ received: true });
 }
 
-// async function handleSubscription(session) {
-//   console.log("--- DEBUG: Starting handleSubscription ---");
-
-//   const userId = session.metadata?.userId;
-//   if (!userId) {
-//     console.error("❌ Missing userId in metadata");
-//     return;
-//   }
-
-//   const user = await prisma.user.findUnique({ where: { id: userId } });
-//   if (!user) {
-//     console.error("❌ User not found");
-//     return;
-//   }
-
-//   const stripeSubscription = await stripe.subscriptions.retrieve(
-//     session.subscription
-//   );
-
-//   const priceId = stripeSubscription.items.data[0].price.id;
-
-//   const price = await prisma.subscriptionPrice.findUnique({
-//     where: { stripePriceId: priceId },
-//     include: { tier: true },
-//   });
-
-//   if (!price) {
-//     console.error("❌ No SubscriptionPrice found for:", priceId);
-//     return;
-//   }
-
-//   // ✅ SAFE DATE HANDLING
-//   const startAt = stripeSubscription.current_period_start
-//     ? new Date(stripeSubscription.current_period_start * 1000)
-//     : new Date();
-
-//   const endAt = stripeSubscription.current_period_end
-//     ? new Date(stripeSubscription.current_period_end * 1000)
-//     : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // fallback 30 days
-
-//   await prisma.subscription.create({
-//     data: {
-//       userId: user.id,
-//       tierId: price.tier.id,
-//       stripePriceId: price.stripePriceId, // ✅ REQUIRED
-//       stripeSubscriptionId: stripeSubscription.id,
-//       startAt,
-//       endAt,
-//       status: "active",
-//     },
-//   });
-
-//   console.log(`✅ Subscription saved: ${price.tier.name} (${price.interval})`);
-// }
 async function handleSubscription(session) {
   console.log("--- DEBUG: Starting handleSubscription ---");
 

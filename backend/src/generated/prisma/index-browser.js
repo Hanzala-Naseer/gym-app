@@ -111,26 +111,46 @@ exports.Prisma.UserScalarFieldEnum = {
   email: 'email',
   passwordHash: 'passwordHash',
   role: 'role',
+  isSuspended: 'isSuspended',
+  suspendedAt: 'suspendedAt',
   createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
   otpHash: 'otpHash',
   otpExpiresAt: 'otpExpiresAt',
   otpAttempts: 'otpAttempts'
 };
 
+exports.Prisma.PasswordResetTokenScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SubscriptionTierScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  slug: 'slug',
+  description: 'description',
   accessTier: 'accessTier',
-  createdAt: 'createdAt'
+  isActive: 'isActive',
+  isFeatured: 'isFeatured',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SubscriptionPriceScalarFieldEnum = {
   id: 'id',
   tierId: 'tierId',
+  stripeProductId: 'stripeProductId',
   stripePriceId: 'stripePriceId',
   interval: 'interval',
   priceCents: 'priceCents',
-  createdAt: 'createdAt'
+  currency: 'currency',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SubscriptionScalarFieldEnum = {
@@ -142,7 +162,8 @@ exports.Prisma.SubscriptionScalarFieldEnum = {
   status: 'status',
   startAt: 'startAt',
   endAt: 'endAt',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.PaymentScalarFieldEnum = {
@@ -151,6 +172,7 @@ exports.Prisma.PaymentScalarFieldEnum = {
   subscriptionId: 'subscriptionId',
   amountCents: 'amountCents',
   currency: 'currency',
+  paymentProvider: 'paymentProvider',
   stripePaymentIntent: 'stripePaymentIntent',
   status: 'status',
   metadata: 'metadata',
@@ -160,17 +182,50 @@ exports.Prisma.PaymentScalarFieldEnum = {
 exports.Prisma.GymScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  description: 'description',
   addressLine: 'addressLine',
   city: 'city',
+  province: 'province',
+  postalCode: 'postalCode',
   latitude: 'latitude',
   longitude: 'longitude',
+  phoneNumber: 'phoneNumber',
+  whatsappNumber: 'whatsappNumber',
+  instagramHandle: 'instagramHandle',
+  websiteUrl: 'websiteUrl',
+  googleMapsLink: 'googleMapsLink',
+  cnicNumber: 'cnicNumber',
+  businessName: 'businessName',
   openingTime: 'openingTime',
   closingTime: 'closingTime',
   is24Hours: 'is24Hours',
   tier: 'tier',
   coverImageUrl: 'coverImageUrl',
   status: 'status',
+  submittedAt: 'submittedAt',
+  reviewedAt: 'reviewedAt',
+  reviewedByAdminId: 'reviewedByAdminId',
+  rejectionReason: 'rejectionReason',
+  approvalNotes: 'approvalNotes',
+  resubmissionCount: 'resubmissionCount',
+  isFeatured: 'isFeatured',
+  isArchived: 'isArchived',
+  isBlocked: 'isBlocked',
+  blockedReason: 'blockedReason',
   ownerId: 'ownerId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GymVerificationDocumentScalarFieldEnum = {
+  id: 'id',
+  gymId: 'gymId',
+  type: 'type',
+  fileUrl: 'fileUrl',
+  status: 'status',
+  rejectedReason: 'rejectedReason',
+  reviewedAt: 'reviewedAt',
+  reviewNotes: 'reviewNotes',
   createdAt: 'createdAt'
 };
 
@@ -195,6 +250,25 @@ exports.Prisma.QrJtiUsageScalarFieldEnum = {
   jti: 'jti',
   createdAt: 'createdAt',
   expiresAt: 'expiresAt'
+};
+
+exports.Prisma.AdminAuditLogScalarFieldEnum = {
+  id: 'id',
+  adminId: 'adminId',
+  action: 'action',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AdminNotificationScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  message: 'message',
+  type: 'type',
+  isRead: 'isRead',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -226,14 +300,18 @@ exports.Prisma.JsonNullValueFilter = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  PasswordResetToken: 'PasswordResetToken',
   SubscriptionTier: 'SubscriptionTier',
   SubscriptionPrice: 'SubscriptionPrice',
   Subscription: 'Subscription',
   Payment: 'Payment',
   Gym: 'Gym',
+  GymVerificationDocument: 'GymVerificationDocument',
   GymPhoto: 'GymPhoto',
   CheckIn: 'CheckIn',
-  QrJtiUsage: 'QrJtiUsage'
+  QrJtiUsage: 'QrJtiUsage',
+  AdminAuditLog: 'AdminAuditLog',
+  AdminNotification: 'AdminNotification'
 };
 
 /**

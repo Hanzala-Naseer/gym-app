@@ -22,8 +22,10 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 class AppConfig {
   // IMPORTANT: Update this to your local machine's IP for actual testing
   // NOTE: This IP should match your API server location
-  static const String baseUrl = 'http://10.120.8.82:5001/api';
-  static const String imageBaseUrl = 'http://10.120.8.82:5001';
+  static const String baseUrl =
+      'https://gymkey-backend-production.up.railway.app/api';
+  static const String imageBaseUrl =
+      'https://gymkey-backend-production.up.railway.app';
 }
 
 class AppRoutes {
@@ -127,12 +129,44 @@ class Gym {
     }
 
     String getFullImageUrl(String? path) {
-      if (path == null || path.isEmpty) {
+      debugPrint('🟡 [ImageURL] Raw path from API: "$path"');
+
+      if (path == null || path.trim().isEmpty) {
+        debugPrint('⚠️ [ImageURL] Empty path → placeholder');
         return 'https://via.placeholder.com/150';
       }
-      if (path.startsWith('http')) return path;
-      return AppConfig.imageBaseUrl + path;
+
+      // 🔥 REMOVE ALL WHITESPACE (this is the real bug)
+      final cleaned = path.replaceAll(RegExp(r'\s+'), '');
+
+      debugPrint('🔧 [ImageURL] Cleaned path: "$cleaned"');
+
+      // 🔥 IF FULL URL — JUST RETURN IT
+      if (cleaned.startsWith('http')) {
+        debugPrint('🟢 [ImageURL] Final URL (used directly): $cleaned');
+        return cleaned;
+      }
+
+      // 🔥 HANDLE RELATIVE PATH
+      final normalized = cleaned.startsWith('/')
+          ? cleaned.substring(1)
+          : cleaned;
+
+      final fullUrl = normalized.startsWith('uploads/')
+          ? '${AppConfig.imageBaseUrl}/$normalized'
+          : '${AppConfig.imageBaseUrl}/uploads/$normalized';
+
+      debugPrint('🟢 [ImageURL] Final URL (constructed): $fullUrl');
+      return fullUrl;
     }
+
+    // String getFullImageUrl(String? path) {
+    //   if (path == null || path.isEmpty) {
+    //     return 'https://via.placeholder.com/150';
+    //   }
+    //   if (path.startsWith('http')) return path;
+    //   return AppConfig.imageBaseUrl + path;
+    // }
 
     final double safeDistance = (json['distance'] is num)
         ? json['distance'].toDouble()
@@ -1482,179 +1516,6 @@ class HomeScreen extends StatelessWidget {
       },
     );
   }
-
-  // Widget build(BuildContext context) {
-  //   // ValueListenableBuilder ensures the UI rebuilds when login/logout happens
-  //   return ValueListenableBuilder<bool>(
-  //     valueListenable: AuthManager().authStatusNotifier,
-  //     builder: (context, isAuthReady, child) {
-  //       final User? dynamicUser = AuthManager().user;
-
-  //       return Scaffold(
-  //         appBar: AppBar(
-  //           automaticallyImplyLeading: false,
-  //           title: Column(
-  //             crossAxisAlignment: CrossAxisAlignment.start,
-  //             children: [
-  //               const Text(
-  //                 "WELCOME BACK!",
-  //                 style: TextStyle(fontSize: 12, color: Colors.grey),
-  //               ),
-  //               Text(
-  //                 dynamicUser?.name ?? "Guest",
-  //                 style: const TextStyle(
-  //                   fontSize: 18,
-  //                   fontWeight: FontWeight.bold,
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //           actions: const [
-  //             Padding(
-  //               padding: EdgeInsets.only(right: 16),
-  //               child: Icon(Icons.notifications_outlined),
-  //             ),
-  //           ],
-  //         ),
-  //         body: RefreshIndicator(
-  //           onRefresh: () async {
-  //             await AuthManager().fetchLocation();
-  //             // Re-read token and data by notifying listeners
-  //             AuthManager().authStatusNotifier.value =
-  //                 !AuthManager().authStatusNotifier.value;
-  //           },
-  //           child: SingleChildScrollView(
-  //             padding: const EdgeInsets.all(16),
-  //             child: Column(
-  //               crossAxisAlignment: CrossAxisAlignment.start,
-  //               children: [
-  //                 // Hero Banner (Fluid width)
-  //                 Container(
-  //                   height: 150,
-  //                   width: double.infinity,
-  //                   padding: const EdgeInsets.all(20),
-  //                   decoration: BoxDecoration(
-  //                     color: Colors.black,
-  //                     borderRadius: BorderRadius.circular(8),
-  //                   ),
-  //                   child: Column(
-  //                     crossAxisAlignment: CrossAxisAlignment.start,
-  //                     children: [
-  //                       const Text(
-  //                         "WELCOME TO THE GYM\nPASSPORT",
-  //                         style: TextStyle(
-  //                           color: Colors.white,
-  //                           fontWeight: FontWeight.bold,
-  //                           fontSize: 16,
-  //                         ),
-  //                       ),
-  //                       const SizedBox(height: 12),
-  //                       ElevatedButton(
-  //                         onPressed: () {
-  //                           Navigator.pushNamed(
-  //                             context,
-  //                             AppRoutes.subscription,
-  //                           );
-  //                         },
-  //                         style: ElevatedButton.styleFrom(
-  //                           backgroundColor: Colors.white,
-  //                           foregroundColor: Colors.black,
-  //                           padding: const EdgeInsets.symmetric(
-  //                             horizontal: 10,
-  //                             vertical: 5,
-  //                           ),
-  //                           minimumSize: const Size(100, 30),
-  //                         ),
-  //                         child: const Text(
-  //                           "See All Plans",
-  //                           style: TextStyle(fontSize: 12),
-  //                         ),
-  //                       ),
-  //                     ],
-  //                   ),
-  //                 ),
-
-  //                 const SizedBox(height: 20),
-
-  //                 // Membership Status
-  //                 const Text(
-  //                   "Membership Status",
-  //                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-  //                 ),
-  //                 Container(
-  //                   margin: const EdgeInsets.only(top: 8),
-  //                   width: double.infinity,
-  //                   padding: const EdgeInsets.all(12),
-  //                   decoration: BoxDecoration(
-  //                     color: (dynamicUser?.membershipTier != null)
-  //                         ? Colors.green.withOpacity(0.1)
-  //                         : Colors.orange.withOpacity(0.1),
-  //                     borderRadius: BorderRadius.circular(8),
-  //                     border: Border.all(
-  //                       color: (dynamicUser?.membershipTier != null)
-  //                           ? Colors.green
-  //                           : Colors.orange,
-  //                       width: 1,
-  //                     ),
-  //                   ),
-  //                   child: Row(
-  //                     children: [
-  //                       Icon(
-  //                         (dynamicUser?.membershipTier != null)
-  //                             ? Icons.check_circle
-  //                             : Icons.warning_amber,
-  //                         color: (dynamicUser?.membershipTier != null)
-  //                             ? Colors.green
-  //                             : Colors.orange,
-  //                       ),
-  //                       const SizedBox(width: 8),
-  //                       Expanded(
-  //                         // Ensures text wraps correctly
-  //                         child: Text(
-  //                           (dynamicUser?.membershipTier != null)
-  //                               ? "Active Plan: ${dynamicUser!.membershipTier}"
-  //                               : "No Active Plan - Tap to Upgrade",
-  //                           style: TextStyle(
-  //                             color: (dynamicUser?.membershipTier != null)
-  //                                 ? Colors.green
-  //                                 : Colors.orange,
-  //                             fontWeight: FontWeight.bold,
-  //                           ),
-  //                         ),
-  //                       ),
-  //                     ],
-  //                   ),
-  //                 ),
-  //                 const SizedBox(height: 20),
-
-  //                 // Plans Scroll
-  //                 const Text(
-  //                   "Popular Plans",
-  //                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-  //                 ),
-  //                 const SizedBox(height: 10),
-  //                 _buildPlansSection(),
-
-  //                 const SizedBox(height: 20),
-
-  //                 // Gyms Near You
-  //                 const Text(
-  //                   "GYMS NEAR YOU",
-  //                   style: TextStyle(
-  //                     fontSize: 14,
-  //                     fontWeight: FontWeight.bold,
-  //                     color: Colors.grey,
-  //                   ),
-  //                 ),
-  //                 _buildGymsNearYouList(),
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
 }
 
 // Reusable Simple Gym Card (Responsive layout)
@@ -1895,10 +1756,6 @@ class CheckInGymCard extends StatelessWidget {
           backgroundColor: Colors.green,
         ),
       );
-      // Optional: Refresh the gym list to show updated status
-      // if (context.findAncestorStateOfType<_CheckInScreenState>() != null) {
-      //   context.findAncestorStateOfType<_CheckInScreenState>()!._refreshGyms();
-      // }
     } else if (scanResult is String) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(scanResult), backgroundColor: Colors.red),
@@ -2017,25 +1874,25 @@ class CheckInGymCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Text(
-                        '${gym.distance.toStringAsFixed(2)} KMS',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(width: 15),
-                      const Icon(
-                        Icons.directions,
-                        size: 16,
-                        color: Colors.black54,
-                      ),
-                      const SizedBox(width: 4),
-                      const Text(
-                        'GET DIRECTION',
-                        style: TextStyle(fontSize: 12, color: Colors.black54),
-                      ),
+                      // Text(
+                      //   '${gym.distance.toStringAsFixed(2)} KMS',
+                      //   style: const TextStyle(
+                      //     fontSize: 14,
+                      //     fontWeight: FontWeight.w600,
+                      //     color: Colors.black,
+                      //   ),
+                      // ),
+                      // const SizedBox(width: 15),
+                      // const Icon(
+                      //   Icons.directions,
+                      //   size: 16,
+                      //   color: Colors.black54,
+                      // ),
+                      // const SizedBox(width: 4),
+                      // const Text(
+                      //   'GET DIRECTION',
+                      //   style: TextStyle(fontSize: 12, color: Colors.black54),
+                      // ),
                     ],
                   ),
                 ],
@@ -2972,7 +2829,7 @@ class SubscriptionScreen extends StatelessWidget {
 
     // 2️⃣ Prepare request
     final url = Uri.parse(
-      "http://192.168.100.102:5001/api/subscription/create-session",
+      "https://gymkey-backend-production.up.railway.app/api/subscription/create-session",
     );
 
     final headers = {
@@ -3032,50 +2889,6 @@ class SubscriptionScreen extends StatelessWidget {
       print("========== PAYMENT DEBUG END ==========");
     }
   }
-
-  // void _handlePaymentInitiation(
-  //   BuildContext context,
-  //   SubscriptionPlan plan,
-  // ) async {
-  //   const storage = FlutterSecureStorage();
-
-  //   // Read JWT token
-  //   final token = await storage.read(key: "jwt_token");
-
-  //   if (token == null) {
-  //     ScaffoldMessenger.of(
-  //       context,
-  //     ).showSnackBar(const SnackBar(content: Text("User not logged in")));
-  //     return;
-  //   }
-
-  //   try {
-  //     final response = await http.post(
-  //       Uri.parse("http://192.168.100.102:5001/subscription/create-session"),
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         "Authorization": "Bearer $token",
-  //       },
-  //       body: convert.jsonEncode({"priceId": plan.id}),
-  //     );
-
-  //     final data = convert.jsonDecode(response.body);
-  //     print(data);
-
-  //     if (response.statusCode == 200 && data["url"] != null) {
-  //       Navigator.push(
-  //         context,
-  //         MaterialPageRoute(builder: (_) => CheckoutWebView(url: data["url"])),
-  //       );
-  //     } else {
-  //       throw "Checkout URL missing";
-  //     }
-  //   } catch (e) {
-  //     ScaffoldMessenger.of(
-  //       context,
-  //     ).showSnackBar(SnackBar(content: Text("Payment Error: $e")));
-  //   }
-  // }
 
   // --------------------------- UI BUILD ---------------------------
   @override
@@ -3230,7 +3043,8 @@ class _CheckoutWebViewState extends State<CheckoutWebView> {
   bool _loading = true;
   late WebViewController _controller;
 
-  static const successBaseUrl = "http://localhost:4000/subscription/success";
+  static const successBaseUrl =
+      "https://gymkey-backend-production.up.railway.app/subscription/success";
 
   @override
   void initState() {
@@ -3270,7 +3084,9 @@ class _CheckoutWebViewState extends State<CheckoutWebView> {
 
     try {
       final response = await http.get(
-        Uri.parse("http://192.168.100.102:5001/subscription/status"),
+        Uri.parse(
+          "https://gymkey-backend-production.up.railway.app/subscription/status",
+        ),
         headers: {"Authorization": "Bearer $token"},
       );
 

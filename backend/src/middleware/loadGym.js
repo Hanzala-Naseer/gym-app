@@ -1,5 +1,5 @@
-const prisma = require("../prismaClient");
-
+const { PrismaClient } = require("../generated/prisma");
+const prisma = new PrismaClient();
 module.exports = async function loadGym(req, res, next) {
   try {
     // Normalize gymId to lowercase to avoid UUID mismatch

@@ -57,11 +57,10 @@ const router = express.Router();
 const auth = require("../middleware/auth");
 const { authorizeRoles } = require("../middleware/roleMiddleware");
 const subscriptionCtrl = require("../controller/subscriptionController");
-const prisma = require("../prismaClient");
-
+const { PrismaClient } = require("../generated/prisma");
+const prisma = new PrismaClient();
 // -------------------- PLANS (PUBLIC) --------------------
 router.get("/plans", subscriptionCtrl.getAllPlans);
-
 
 // -------------------- CREATE SESSION --------------------
 router.post(

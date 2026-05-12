@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const prisma = require("../prismaClient");
+const { PrismaClient } = require("../generated/prisma");
+const prisma = new PrismaClient();
 const QRCode = require("qrcode");
 const { createQrToken } = require("../utils/jwtUtils");
 const auth = require("../middleware/auth");

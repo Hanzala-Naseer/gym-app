@@ -8,7 +8,7 @@ const cors = require("cors");
 app.post(
   "/api/subscription/webhook",
   express.raw({ type: "application/json" }),
-  require("./src/controller/subscriptionController").stripeWebhook
+  require("./src/controller/subscriptionController").stripeWebhook,
 );
 
 // -------------------- MIDDLEWARES --------------------
@@ -20,7 +20,7 @@ app.use("/uploads", express.static(path.join(__dirname, "src/uploads")));
 app.use(
   cors({
     origin: "*", // OK for testing
-  })
+  }),
 );
 
 // -------------------- ROUTES --------------------
@@ -38,4 +38,10 @@ app.get("/", (req, res) => res.send("Gym + Auth + Admin API running"));
 
 // -------------------- START SERVER --------------------
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// app.listen(PORT, "0.0.0.0", () => {
+//   console.log(`Server running on http://0.0.0.0:${PORT}`);
+// });
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

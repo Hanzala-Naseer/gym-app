@@ -246,10 +246,10 @@ export default function QRPage() {
                 Expires in {secondsLeft}s
               </div>
 
-              <Button onClick={downloadQR} variant="outline" className="w-full">
+              {/* <Button onClick={downloadQR} variant="outline" className="w-full">
                 <Download className="w-5 h-5 mr-2" />
                 Download QR
-              </Button>
+              </Button> */}
             </div>
           </div>
 

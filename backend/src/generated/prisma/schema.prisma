@@ -13,152 +13,360 @@ datasource db {
 ///////////////////////////////////////////////////////
 
 model User {
-  id             String         @id @default(uuid())
-  name           String
-  email          String         @unique
-  passwordHash   String
-  role           String         @default("user")
-  createdAt      DateTime       @default(now())
+  id           String @id @default(uuid())
+  name         String
+  email        String @unique
+  passwordHash String
 
-  // OTP fields for signup/verification
-  otpHash        String?        // hashed otp
-  otpExpiresAt   DateTime?      // when OTP expires
-  otpAttempts    Int?           @default(0)
+  // user | admin | owner
+  role String @default("user")
 
-  subscriptions  Subscription[]
-  payments       Payment[]
-  checkIns       CheckIn[]
-  gymsOwned      Gym[]          @relation("GymOwner")
+  // moderation
+  isSuspended Boolean   @default(false)
+  suspendedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  // OTP fields
+  otpHash      String?
+  otpExpiresAt DateTime?
+  otpAttempts  Int?      @default(0)
+
+  subscriptions Subscription[]
+  payments      Payment[]
+  checkIns      CheckIn[]
+  gymsOwned     Gym[]          @relation("GymOwner")
+
+  adminAuditLogs AdminAuditLog[]
 }
 
-// -----------------------------------------------------
+///////////////////////////////////////////////////////
+// PASSWORD RESET
+///////////////////////////////////////////////////////
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  tokenHash String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+///////////////////////////////////////////////////////
 // SUBSCRIPTIONS + TIERS
-// -----------------------------------------------------
+///////////////////////////////////////////////////////
 
 model SubscriptionTier {
-  id           String   @id @default(uuid())
-  name         String
-  accessTier   Int
-  createdAt    DateTime @default(now())
+  id String @id @default(uuid())
 
-  prices       SubscriptionPrice[]
+  name String
+  slug String @unique
+
+  description String?
+
+  accessTier Int
+
+  // admin-managed controls
+  isActive   Boolean @default(true)
+  isFeatured Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  prices        SubscriptionPrice[]
   subscriptions Subscription[]
 }
+
 model SubscriptionPrice {
-  id             String   @id @default(uuid())
-  tierId         String
-  stripePriceId  String   @unique
-  interval       String   // monthly | yearly
-  priceCents     Int
-  createdAt      DateTime @default(now())
+  id String @id @default(uuid())
 
-  tier           SubscriptionTier @relation(fields: [tierId], references: [id])
+  tierId String
+
+  // Stripe IDs
+  stripeProductId String
+  stripePriceId   String @unique
+
+  // monthly | yearly
+  interval String
+
+  // paisa/cents
+  priceCents Int
+
+  currency String @default("pkr")
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tier SubscriptionTier @relation(fields: [tierId], references: [id])
+
+  @@index([tierId])
 }
-
 
 model Subscription {
-  id                   String   @id @default(uuid())
-  userId               String
-  tierId               String
-  stripeSubscriptionId String   @unique
+  id String @id @default(uuid())
+
+  userId String
+  tierId String
+
+  stripeSubscriptionId String @unique
   stripePriceId        String
-  status               String
-  startAt              DateTime?
-  endAt                DateTime?
-  createdAt            DateTime @default(now())
+
+  // active | canceled | incomplete | past_due
+  status String
+
+  startAt DateTime?
+  endAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
-  tier SubscriptionTier @relation(fields: [tierId], references: [id])
-  payments   Payment[]        // ✅ REQUIRED
 
+  tier SubscriptionTier @relation(fields: [tierId], references: [id])
+
+  payments Payment[]
+
+  @@index([userId])
+  @@index([status])
 }
 
-
-// -----------------------------------------------------
+///////////////////////////////////////////////////////
 // PAYMENTS
-// -----------------------------------------------------
+///////////////////////////////////////////////////////
 
 model Payment {
-  id                   String           @id @default(uuid())
-  userId               String
-  subscriptionId       String?
-  amountCents          Int
-  currency             String
-  stripePaymentIntent  String?
-  status               String
-  metadata             Json?
-  createdAt            DateTime         @default(now())
+  id String @id @default(uuid())
 
-  user                 User             @relation(fields: [userId], references: [id])
-  subscription         Subscription?    @relation(fields: [subscriptionId], references: [id])
+  userId         String
+  subscriptionId String?
+
+  amountCents Int
+  currency    String
+
+  // stripe | easypaisa | jazzcash
+  paymentProvider String? @default("stripe")
+
+  stripePaymentIntent String?
+
+  // pending | succeeded | failed | refunded
+  status String
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  @@index([userId])
+  @@index([status])
 }
 
-// -----------------------------------------------------
+///////////////////////////////////////////////////////
 // GYMS
-// -----------------------------------------------------
+///////////////////////////////////////////////////////
+
 model Gym {
-  id              String    @id @default(uuid())
-  name            String
-  addressLine     String     // full address text
-  city            String
+  id String @id @default(uuid())
 
-  latitude        Float
-  longitude       Float
+  name String
+  description String?
 
-  openingTime     String?    // "06:00"
-  closingTime     String?    // "23:00"
-  is24Hours       Boolean    @default(false)
+  addressLine String
+  city String
+  province String?
+  postalCode String?
 
-  tier            Int
-  coverImageUrl   String?
-  status          String     @default("pending") // pending | approved | rejected
-  ownerId         String?
-  createdAt       DateTime   @default(now())
+  latitude Float
+  longitude Float
 
-  owner           User?      @relation("GymOwner", fields: [ownerId], references: [id])
-  checkIns        CheckIn[]
-  photos          GymPhoto[]
+  phoneNumber String?
+  whatsappNumber String?
+
+  instagramHandle String?
+  websiteUrl String?
+  googleMapsLink String?
+
+  cnicNumber String?
+  businessName String?
+
+  openingTime String?
+  closingTime String?
+
+  is24Hours Boolean @default(false)
+
+  tier Int
+
+  coverImageUrl String?
+
+  // draft | pending | changes_requested | approved | rejected
+  status String @default("draft")
+
+  submittedAt DateTime?
+
+  reviewedAt DateTime?
+  reviewedByAdminId String?
+
+  rejectionReason String?
+  approvalNotes String?
+
+  resubmissionCount Int @default(0)
+
+  isFeatured Boolean @default(false)
+  isArchived Boolean @default(false)
+
+  // moderation
+  isBlocked Boolean @default(false)
+  blockedReason String?
+
+  ownerId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  owner User? @relation("GymOwner", fields: [ownerId], references: [id])
+
+  checkIns CheckIn[]
+
+  photos GymPhoto[]
+
+  verificationDocuments GymVerificationDocument[]
+
+  @@index([status])
+  @@index([city])
 }
+///////////////////////////////////////////////////////
+// GYM VERIFICATION DOCUMENTS
+///////////////////////////////////////////////////////
+model GymVerificationDocument {
+  id String @id @default(uuid())
 
+  gymId String
 
-model GymPhoto {
-  id        String   @id @default(uuid())
-  gymId     String
-  url       String
+  // owner_cnic | business_license | ownership_proof | utility_bill
+  type String
+
+  fileUrl String
+
+  // pending | approved | rejected
+  status String @default("pending")
+
+  rejectedReason String?
+
+  reviewedAt DateTime?
+  reviewNotes String?
+
   createdAt DateTime @default(now())
 
   gym Gym @relation(fields: [gymId], references: [id])
+
+  @@index([gymId])
+}
+///////////////////////////////////////////////////////
+// GYM PHOTOS
+///////////////////////////////////////////////////////
+
+model GymPhoto {
+  id String @id @default(uuid())
+
+  gymId String
+
+  url String
+
+  createdAt DateTime @default(now())
+
+  gym Gym @relation(fields: [gymId], references: [id])
+
+  @@index([gymId])
 }
 
-// -----------------------------------------------------
+///////////////////////////////////////////////////////
 // CHECK-IN SYSTEM (QR BASED)
-// -----------------------------------------------------
+///////////////////////////////////////////////////////
 
 model CheckIn {
-  id          String   @id @default(uuid())
-  userId      String
-  gymId       String
+  id String @id @default(uuid())
+
+  userId String
+  gymId  String
+
   checkedInAt DateTime @default(now())
-  
-  // Stores the JWT ID to trace which specific token was used for this check-in
-  qrJti       String? 
-  
-  createdAt   DateTime @default(now())
+
+  // token traceability
+  qrJti String?
+
+  createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
-  gym  Gym  @relation(fields: [gymId], references: [id])
+
+  gym Gym @relation(fields: [gymId], references: [id])
 
   @@index([userId, gymId])
+  @@index([checkedInAt])
 }
 
-
-// -----------------------------------------------------
-// QR JTI USAGE — prevents reuse of QR tokens
-// -----------------------------------------------------
+///////////////////////////////////////////////////////
+// QR JTI USAGE
+///////////////////////////////////////////////////////
 
 model QrJtiUsage {
-  id        String   @id @default(uuid())
-  jti       String   @unique // MUST be unique to enforce single-use
+  id String @id @default(uuid())
+
+  jti String @unique
+
   createdAt DateTime @default(now())
-  expiresAt DateTime // When the token's validity window ends
+
+  expiresAt DateTime
+}
+
+///////////////////////////////////////////////////////
+// ADMIN AUDIT LOGS
+///////////////////////////////////////////////////////
+
+model AdminAuditLog {
+  id String @id @default(uuid())
+
+  adminId String
+
+  // APPROVED_GYM / REJECTED_GYM / UPDATED_PLAN
+  action String
+
+  entityType String
+
+  entityId String?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  admin User @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@index([action])
+}
+
+///////////////////////////////////////////////////////
+// ADMIN NOTIFICATIONS
+///////////////////////////////////////////////////////
+
+model AdminNotification {
+  id String @id @default(uuid())
+
+  title   String
+  message String
+
+  // payment / gym / security / system
+  type String
+
+  isRead Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([isRead])
 }

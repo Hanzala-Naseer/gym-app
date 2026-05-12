@@ -1,33 +1,38 @@
-import api from './api';
+import api from "./api";
 
 export const gymService = {
-  registerGym: async (gymData) => {
-    // const response = await api.post('/owner/gym/register', gymData);
-    // return response.data;
-    return { success: true };
+  // ─── Get all gyms owned by logged-in owner ─────────────────────────────────
+  getMyGyms: async () => {
+    const response = await api.get("/owners/my-gyms");
+    return response.data; // { success, gyms: [...] }
   },
 
-  getMyGym: async () => {
-    // const response = await api.get('/owner/gym');
-    // return response.data;
-    return { success: true };
+  // ─── Register a new gym (multipart — images + docs) ────────────────────────
+  registerGym: async (formData) => {
+    const response = await api.post("/gyms/register", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data; // { success, gym }
   },
 
-  getMembers: async () => {
-    // const response = await api.get('/owner/members');
-    // return response.data;
-    return { success: true };
+  // ─── Update an approved gym (PATCH /:id) ───────────────────────────────────
+  updateGym: async (gymId, formData) => {
+    const response = await api.patch(`/gyms/${gymId}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data; // { success, gym }
   },
 
-  getCheckins: async (date) => {
-    // const response = await api.get('/owner/checkins', { params: { date } });
-    // return response.data;
-    return { success: true };
+  // ─── Resubmit after rejection / changes_requested (PATCH /:id/resubmit) ───
+  resubmitGym: async (gymId, fields) => {
+    // fields is a plain object — no files in resubmit
+    const response = await api.patch(`/gyms/${gymId}/resubmit`, fields);
+    return response.data; // { success, gym }
   },
 
-  getTodayCheckins: async () => {
-    // const response = await api.get('/owner/checkins/today');
-    // return response.data;
-    return { success: true };
+  // ─── Get single gym by id ──────────────────────────────────────────────────
+  getGym: async (gymId) => {
+    const response = await api.get(`/gyms/${gymId}`);
+    return response.data; // { success, gym }
   },
 };

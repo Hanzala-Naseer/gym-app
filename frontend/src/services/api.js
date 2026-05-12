@@ -1,34 +1,36 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-// Add auth token to requests
+// ✅ FIXED: sessionStorage instead of localStorage
+// localStorage is shared across all tabs — causes admin/owner role conflict
+// sessionStorage is tab-isolated by spec — each tab has its own auth session
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('gymkey_token');
+  const token = sessionStorage.getItem("gymkey_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// Handle errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('gymkey_token');
-      localStorage.removeItem('gymkey_user');
-      window.location.href = '/login';
+      // Only clears THIS tab's session
+      sessionStorage.removeItem("gymkey_token");
+      sessionStorage.removeItem("gymkey_user");
+      window.location.href = "/login";
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

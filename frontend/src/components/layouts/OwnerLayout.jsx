@@ -1,25 +1,25 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Building2, 
-  QrCode, 
-  Users, 
-  Settings, 
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Building2,
+  QrCode,
+  Users,
+  Settings,
   LogOut,
   Menu,
   X,
-  Dumbbell
-} from 'lucide-react';
-import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
+  Dumbbell,
+} from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard/owner' },
-  { icon: Building2, label: 'My Gym', path: '/dashboard/owner/my-gym' },
-  { icon: QrCode, label: 'QR Code', path: '/dashboard/owner/qr' },
-  { icon: Users, label: 'Members', path: '/dashboard/owner/members' },
-  { icon: Settings, label: 'Settings', path: '/dashboard/owner/settings' },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard/owner" },
+  { icon: Building2, label: "My Gym", path: "/dashboard/owner/my-gym" },
+  { icon: QrCode, label: "QR Code", path: "/dashboard/owner/qr" },
+  { icon: Users, label: "Members", path: "/dashboard/owner/members" },
+  { icon: Settings, label: "Settings", path: "/dashboard/owner/settings" },
 ];
 
 export default function OwnerLayout({ children }) {
@@ -30,7 +30,7 @@ export default function OwnerLayout({ children }) {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
   };
 
   return (
@@ -42,7 +42,9 @@ export default function OwnerLayout({ children }) {
             <div className="w-8 h-8 rounded-lg gradient-hero flex items-center justify-center">
               <Dumbbell className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold text-sidebar-foreground">GymKey</span>
+            <span className="text-lg font-bold text-sidebar-foreground">
+              GymKey
+            </span>
           </Link>
           <Button
             variant="ghost"
@@ -50,26 +52,32 @@ export default function OwnerLayout({ children }) {
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="text-sidebar-foreground"
           >
-            {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {sidebarOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </Button>
         </div>
       </header>
 
       {/* Sidebar Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="lg:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside className={`
+      <aside
+        className={`
         fixed top-0 left-0 z-50 h-full w-64 bg-sidebar border-r border-sidebar-border
         transform transition-transform duration-300 ease-in-out
         lg:translate-x-0
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+      `}
+      >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b border-sidebar-border">
@@ -77,7 +85,9 @@ export default function OwnerLayout({ children }) {
               <div className="w-10 h-10 rounded-xl gradient-hero flex items-center justify-center">
                 <Dumbbell className="w-6 h-6 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold text-sidebar-foreground">GymKey</span>
+              <span className="text-xl font-bold text-sidebar-foreground">
+                GymKey
+              </span>
             </Link>
           </div>
 
@@ -86,11 +96,13 @@ export default function OwnerLayout({ children }) {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full gradient-hero flex items-center justify-center">
                 <span className="text-primary-foreground font-bold">
-                  {user?.fullName?.charAt(0) || 'O'}
+                  {user?.fullName?.charAt(0) || "O"}
                 </span>
               </div>
               <div>
-                <p className="text-sm font-medium text-sidebar-foreground">{user?.fullName || 'Owner'}</p>
+                <p className="text-sm font-medium text-sidebar-foreground">
+                  {user?.fullName || "Owner"}
+                </p>
                 <p className="text-xs text-sidebar-foreground/60">Gym Owner</p>
               </div>
             </div>
@@ -107,9 +119,10 @@ export default function OwnerLayout({ children }) {
                   onClick={() => setSidebarOpen(false)}
                   className={`
                     flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                    ${isActive 
-                      ? 'bg-sidebar-primary text-sidebar-primary-foreground' 
-                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                    ${
+                      isActive
+                        ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                     }
                   `}
                 >
@@ -135,9 +148,7 @@ export default function OwnerLayout({ children }) {
 
       {/* Main Content */}
       <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
-        <div className="p-6 lg:p-8">
-          {children}
-        </div>
+        <div className="p-6 lg:p-8">{children}</div>
       </main>
     </div>
   );
