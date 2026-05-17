@@ -201,7 +201,7 @@ model Gym {
 
   is24Hours Boolean @default(false)
 
-  tier Int
+  tier Int?
 
   coverImageUrl String?
 

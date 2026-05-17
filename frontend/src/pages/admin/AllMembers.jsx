@@ -144,7 +144,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
-import { adminService } from "@/services/adminService";
+import { adminService } from "../../services/adminService";
 
 const ROLE_OPTIONS = ["", "user", "owner", "admin"];
 const ROLE_LABELS = {

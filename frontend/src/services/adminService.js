@@ -121,4 +121,58 @@ export const adminService = {
     const response = await api.post("/admin/generate-qr", { gymId });
     return response.data;
   },
+
+  reviewGym: async (gymId, payload) => {
+    // payload: { status: "approved" | "rejected" | "changes_requested", tier?, rejectionReason?, approvalNotes? }
+    const response = await api.patch(`/gyms/${gymId}/review`, payload);
+    return response.data;
+  },
+
+  // ─── Subscription Tiers ────────────────────────────────────────────────────
+  listSubscriptionTiers: async () => {
+    const res = await api.get("/admin/subscription-tiers");
+    return res.data;
+  },
+
+  createSubscriptionTier: async (payload) => {
+    const res = await api.post("/admin/subscription-tiers", payload);
+    return res.data;
+  },
+
+  updateSubscriptionTier: async (id, payload) => {
+    const res = await api.patch(`/admin/subscription-tiers/${id}`, payload);
+    return res.data;
+  },
+
+  // ─── Subscription Prices ───────────────────────────────────────────────────
+  createSubscriptionPrice: async (payload) => {
+    const res = await api.post("/admin/subscription-prices", payload);
+    return res.data;
+  },
+
+  updateSubscriptionPrice: async (id, payload) => {
+    const res = await api.patch(`/admin/subscription-prices/${id}`, payload);
+    return res.data;
+  },
+
+  deactivateSubscriptionPrice: async (id) => {
+    const res = await api.delete(`/admin/subscription-prices/${id}`);
+    return res.data;
+  },
+
+  syncStripePrices: async () => {
+    const res = await api.post("/admin/subscription-sync");
+    return res.data;
+  },
+
+  // ─── Gym Management ────────────────────────────────────────────────────────
+  deleteGym: async (gymId) => {
+    const response = await api.delete(`/admin/gyms/${gymId}`);
+    return response.data;
+  },
+
+  updateGymTier: async (gymId, data) => {
+    const response = await api.patch(`/admin/gyms/${gymId}/tier`, data);
+    return response.data;
+  },
 };

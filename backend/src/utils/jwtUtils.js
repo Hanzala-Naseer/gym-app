@@ -1,4 +1,3 @@
-
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 
@@ -22,7 +21,7 @@ function createQrToken({ gymId, purpose = "CHECKIN", metadata = {} }) {
       metadata,
     },
     SECRET,
-    { expiresIn: QR_EXP_SECONDS + "s" }
+    { expiresIn: QR_EXP_SECONDS + "s" },
   );
   return { token, jti };
 }

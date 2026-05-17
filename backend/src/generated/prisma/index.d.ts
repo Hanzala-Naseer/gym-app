@@ -192,7 +192,7 @@ export type GymPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArg
     openingTime: string | null
     closingTime: string | null
     is24Hours: boolean
-    tier: number
+    tier: number | null
     coverImageUrl: string | null
     status: string
     submittedAt: Date | null
@@ -8796,7 +8796,7 @@ export namespace Prisma {
     openingTime: string | null
     closingTime: string | null
     is24Hours: boolean
-    tier: number
+    tier: number | null
     coverImageUrl: string | null
     status: string
     submittedAt: Date | null
@@ -15940,7 +15940,7 @@ export namespace Prisma {
     openingTime?: StringNullableFilter | string | null
     closingTime?: StringNullableFilter | string | null
     is24Hours?: BoolFilter | boolean
-    tier?: IntFilter | number
+    tier?: IntNullableFilter | number | null
     coverImageUrl?: StringNullableFilter | string | null
     status?: StringFilter | string
     submittedAt?: DateTimeNullableFilter | Date | string | null
@@ -15982,7 +15982,7 @@ export namespace Prisma {
     openingTime?: SortOrderInput | SortOrder
     closingTime?: SortOrderInput | SortOrder
     is24Hours?: SortOrder
-    tier?: SortOrder
+    tier?: SortOrderInput | SortOrder
     coverImageUrl?: SortOrderInput | SortOrder
     status?: SortOrder
     submittedAt?: SortOrderInput | SortOrder
@@ -16028,7 +16028,7 @@ export namespace Prisma {
     openingTime?: SortOrderInput | SortOrder
     closingTime?: SortOrderInput | SortOrder
     is24Hours?: SortOrder
-    tier?: SortOrder
+    tier?: SortOrderInput | SortOrder
     coverImageUrl?: SortOrderInput | SortOrder
     status?: SortOrder
     submittedAt?: SortOrderInput | SortOrder
@@ -16074,7 +16074,7 @@ export namespace Prisma {
     openingTime?: StringNullableWithAggregatesFilter | string | null
     closingTime?: StringNullableWithAggregatesFilter | string | null
     is24Hours?: BoolWithAggregatesFilter | boolean
-    tier?: IntWithAggregatesFilter | number
+    tier?: IntNullableWithAggregatesFilter | number | null
     coverImageUrl?: StringNullableWithAggregatesFilter | string | null
     status?: StringWithAggregatesFilter | string
     submittedAt?: DateTimeNullableWithAggregatesFilter | Date | string | null
@@ -16962,7 +16962,7 @@ export namespace Prisma {
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
-    tier: number
+    tier?: number | null
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -17003,7 +17003,7 @@ export namespace Prisma {
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
-    tier: number
+    tier?: number | null
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -17044,7 +17044,7 @@ export namespace Prisma {
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
-    tier?: IntFieldUpdateOperationsInput | number
+    tier?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -17085,7 +17085,7 @@ export namespace Prisma {
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
-    tier?: IntFieldUpdateOperationsInput | number
+    tier?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -17126,7 +17126,7 @@ export namespace Prisma {
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
-    tier: number
+    tier?: number | null
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -17164,7 +17164,7 @@ export namespace Prisma {
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
-    tier?: IntFieldUpdateOperationsInput | number
+    tier?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -17201,7 +17201,7 @@ export namespace Prisma {
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
-    tier?: IntFieldUpdateOperationsInput | number
+    tier?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -19513,7 +19513,7 @@ export namespace Prisma {
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
-    tier: number
+    tier?: number | null
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -19553,7 +19553,7 @@ export namespace Prisma {
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
-    tier: number
+    tier?: number | null
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -19742,7 +19742,7 @@ export namespace Prisma {
     openingTime?: StringNullableFilter | string | null
     closingTime?: StringNullableFilter | string | null
     is24Hours?: BoolFilter | boolean
-    tier?: IntFilter | number
+    tier?: IntNullableFilter | number | null
     coverImageUrl?: StringNullableFilter | string | null
     status?: StringFilter | string
     submittedAt?: DateTimeNullableFilter | Date | string | null
@@ -20574,7 +20574,7 @@ export namespace Prisma {
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
-    tier: number
+    tier?: number | null
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -20614,7 +20614,7 @@ export namespace Prisma {
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
-    tier: number
+    tier?: number | null
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -20664,7 +20664,7 @@ export namespace Prisma {
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
-    tier?: IntFieldUpdateOperationsInput | number
+    tier?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20704,7 +20704,7 @@ export namespace Prisma {
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
-    tier?: IntFieldUpdateOperationsInput | number
+    tier?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20744,7 +20744,7 @@ export namespace Prisma {
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
-    tier: number
+    tier?: number | null
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -20784,7 +20784,7 @@ export namespace Prisma {
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
-    tier: number
+    tier?: number | null
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -20834,7 +20834,7 @@ export namespace Prisma {
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
-    tier?: IntFieldUpdateOperationsInput | number
+    tier?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20874,7 +20874,7 @@ export namespace Prisma {
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
-    tier?: IntFieldUpdateOperationsInput | number
+    tier?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20957,7 +20957,7 @@ export namespace Prisma {
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
-    tier: number
+    tier?: number | null
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -20997,7 +20997,7 @@ export namespace Prisma {
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
-    tier: number
+    tier?: number | null
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -21090,7 +21090,7 @@ export namespace Prisma {
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
-    tier?: IntFieldUpdateOperationsInput | number
+    tier?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -21130,7 +21130,7 @@ export namespace Prisma {
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
-    tier?: IntFieldUpdateOperationsInput | number
+    tier?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -21288,7 +21288,7 @@ export namespace Prisma {
     openingTime?: string | null
     closingTime?: string | null
     is24Hours?: boolean
-    tier: number
+    tier?: number | null
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -21432,7 +21432,7 @@ export namespace Prisma {
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
-    tier?: IntFieldUpdateOperationsInput | number
+    tier?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -21472,7 +21472,7 @@ export namespace Prisma {
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
-    tier?: IntFieldUpdateOperationsInput | number
+    tier?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -21512,7 +21512,7 @@ export namespace Prisma {
     openingTime?: NullableStringFieldUpdateOperationsInput | string | null
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
-    tier?: IntFieldUpdateOperationsInput | number
+    tier?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

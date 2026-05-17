@@ -25,6 +25,7 @@ import AllGyms from "@/pages/admin/AllGyms";
 import AllMembers from "@/pages/admin/AllMembers";
 import AdminCheckins from "@/pages/admin/AdminCheckins";
 import AdminSettings from "@/pages/admin/AdminSettings";
+import AdminSubscriptionPlans from "@/pages/admin/AdminSubscriptionPlans";
 
 const queryClient = new QueryClient();
 
@@ -40,18 +41,110 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/verify-otp" element={<VerifyOtp />} />
-            <Route path="/dashboard/owner" element={<ProtectedRoute allowedRoles={['owner']}><OwnerDashboard /></ProtectedRoute>} />
-            <Route path="/dashboard/owner/register-gym" element={<ProtectedRoute allowedRoles={['owner']}><RegisterGym /></ProtectedRoute>} />
-            <Route path="/dashboard/owner/my-gym" element={<ProtectedRoute allowedRoles={['owner']}><MyGym /></ProtectedRoute>} />
-            <Route path="/dashboard/owner/qr" element={<ProtectedRoute allowedRoles={['owner']}><QRPage /></ProtectedRoute>} />
-            <Route path="/dashboard/owner/members" element={<ProtectedRoute allowedRoles={['owner']}><Members /></ProtectedRoute>} />
-            <Route path="/dashboard/owner/settings" element={<ProtectedRoute allowedRoles={['owner']}><OwnerSettings /></ProtectedRoute>} />
-            <Route path="/dashboard/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/dashboard/admin/pending-gyms" element={<ProtectedRoute allowedRoles={['admin']}><PendingGyms /></ProtectedRoute>} />
-            <Route path="/dashboard/admin/gyms" element={<ProtectedRoute allowedRoles={['admin']}><AllGyms /></ProtectedRoute>} />
-            <Route path="/dashboard/admin/members" element={<ProtectedRoute allowedRoles={['admin']}><AllMembers /></ProtectedRoute>} />
-            <Route path="/dashboard/admin/checkins" element={<ProtectedRoute allowedRoles={['admin']}><AdminCheckins /></ProtectedRoute>} />
-            <Route path="/dashboard/admin/settings" element={<ProtectedRoute allowedRoles={['admin']}><AdminSettings /></ProtectedRoute>} />
+            <Route
+              path="/dashboard/owner"
+              element={
+                <ProtectedRoute allowedRoles={["owner"]}>
+                  <OwnerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/owner/register-gym"
+              element={
+                <ProtectedRoute allowedRoles={["owner"]}>
+                  <RegisterGym />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/owner/my-gym"
+              element={
+                <ProtectedRoute allowedRoles={["owner"]}>
+                  <MyGym />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/owner/qr"
+              element={
+                <ProtectedRoute allowedRoles={["owner"]}>
+                  <QRPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/owner/members"
+              element={
+                <ProtectedRoute allowedRoles={["owner"]}>
+                  <Members />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/owner/settings"
+              element={
+                <ProtectedRoute allowedRoles={["owner"]}>
+                  <OwnerSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/admin"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/admin/pending-gyms"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <PendingGyms />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/admin/gyms"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AllGyms />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/admin/members"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AllMembers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/admin/checkins"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AdminCheckins />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/admin/settings"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AdminSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/admin/subscription-plans"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AdminSubscriptionPlans />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

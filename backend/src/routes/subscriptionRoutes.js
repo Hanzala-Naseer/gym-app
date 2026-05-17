@@ -3,13 +3,12 @@
 // const auth = require("../middleware/auth");
 // const { authorizeRoles } = require("../middleware/roleMiddleware");
 // const subscriptionCtrl = require("../controller/subscriptionController");
-// const prisma = require("../prismaClient");
-// router.get(
-//   "/plans",
-//   subscriptionCtrl.getAllPlans // Should be accessible without logging in
-// );
+// const { PrismaClient } = require("../generated/prisma");
+// const prisma = new PrismaClient();
+// // -------------------- PLANS (PUBLIC) --------------------
+// router.get("/plans", subscriptionCtrl.getAllPlans);
 
-// // Create Stripe Checkout Session
+// // -------------------- CREATE SESSION --------------------
 // router.post(
 //   "/create-session",
 //   auth,
@@ -17,6 +16,7 @@
 //   subscriptionCtrl.createSubscriptionSession
 // );
 
+// // -------------------- SUBSCRIPTION STATUS --------------------
 // router.get("/status", auth, async (req, res) => {
 //   try {
 //     const userId = req.user.id;
@@ -25,7 +25,10 @@
 //       where: {
 //         userId,
 //         status: "active",
-//         endAt: { gte: new Date() }, // make sure still valid
+//         endAt: { gte: new Date() },
+//       },
+//       orderBy: {
+//         createdAt: "desc",
 //       },
 //       include: {
 //         tier: true,
@@ -51,6 +54,7 @@
 //     res.status(500).json({ error: "Server error" });
 //   }
 // });
+
 // module.exports = router;
 const express = require("express");
 const router = express.Router();
@@ -59,6 +63,7 @@ const { authorizeRoles } = require("../middleware/roleMiddleware");
 const subscriptionCtrl = require("../controller/subscriptionController");
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
+
 // -------------------- PLANS (PUBLIC) --------------------
 router.get("/plans", subscriptionCtrl.getAllPlans);
 
@@ -67,7 +72,7 @@ router.post(
   "/create-session",
   auth,
   authorizeRoles(["user"]),
-  subscriptionCtrl.createSubscriptionSession
+  subscriptionCtrl.createSubscriptionSession,
 );
 
 // -------------------- SUBSCRIPTION STATUS --------------------

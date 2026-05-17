@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Gym" ALTER COLUMN "tier" DROP NOT NULL;

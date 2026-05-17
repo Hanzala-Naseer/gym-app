@@ -28,6 +28,7 @@ import AllGyms from "@/pages/admin/AllGyms";
 import AllMembers from "@/pages/admin/AllMembers";
 import AdminCheckins from "@/pages/admin/AdminCheckins";
 import AdminSettings from "@/pages/admin/AdminSettings";
+import AdminSubscriptionPlans from "@/pages/admin/AdminSubscriptionPlans";
 
 const queryClient = new QueryClient();
 
@@ -106,6 +107,11 @@ const App = () => (
             <Route path="/dashboard/admin/settings" element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminSettings />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/admin/subscription-plans" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminSubscriptionPlans />
               </ProtectedRoute>
             } />
 

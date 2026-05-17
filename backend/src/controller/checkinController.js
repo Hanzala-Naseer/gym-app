@@ -1,5 +1,6 @@
 const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
+
 module.exports = {
   checkIn: async (req, res) => {
     try {
@@ -11,7 +12,7 @@ module.exports = {
       console.log("User ID:", userId);
       console.log("Gym ID:", gymId);
 
-      // -------------------- FETCH SUBSCRIPTION (DEBUG) --------------------
+      // -------------------- FETCH SUBSCRIPTION --------------------
       const subscription = await prisma.subscription.findFirst({
         where: {
           userId,
@@ -36,7 +37,7 @@ module.exports = {
         });
       }
 
-      // -------------------- FETCH GYM (DEBUG) --------------------
+      // -------------------- FETCH GYM --------------------
       const gym = await prisma.gym.findUnique({
         where: { id: gymId },
       });
@@ -48,43 +49,68 @@ module.exports = {
         return res.status(404).json({ message: "Gym not found" });
       }
 
-      // -------------------- PRINT TIER VALUES & TYPES --------------------
+      // -------------------- TIER CHECK (ENABLED) --------------------
+      // FIXED: Use gym.tier (Int field), not gym.tier.accessTier
+      const userTier = subscription.tier?.accessTier ?? 0;
+      const gymTier = gym.tier ?? 1; // gym.tier is Int?, default to 1 if null
+
       console.log("===== TIER DEBUG =====");
-      console.log(
-        "User accessTier:",
-        subscription.tier.accessTier,
-        "TYPE:",
-        typeof subscription.tier.accessTier
-      );
-      console.log("Gym tier:", gym.tier, "TYPE:", typeof gym.tier);
+      console.log("User accessTier:", userTier, "TYPE:", typeof userTier);
+      console.log("Gym tier:", gymTier, "TYPE:", typeof gymTier);
       console.log("===== END TIER DEBUG =====");
 
-      // ⛔ TEMP: DO NOT BLOCK CHECK-IN YET
-      console.log("⚠️ Tier enforcement temporarily skipped");
+      // 🔑 TIER ENFORCEMENT ENABLED
+      if (userTier < gymTier) {
+        console.log(`❌ Tier mismatch: User ${userTier} < Gym ${gymTier}`);
+        return res.status(403).json({
+          message: `Your Tier ${userTier} subscription cannot access Tier ${gymTier} gyms. Please upgrade your plan.`,
+          code: "TIER_MISMATCH",
+          userTier: userTier,
+          requiredTier: gymTier,
+        });
+      }
 
-      // -------------------- DAILY DUPLICATE CHECK --------------------
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
+      console.log("✅ Tier check passed");
 
-      const endOfDay = new Date();
-      endOfDay.setHours(23, 59, 59, 999);
+      // -------------------- 24-HOUR CHECK (FIXED) --------------------
+      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
       const existing = await prisma.checkIn.findFirst({
         where: {
           userId,
           gymId,
           checkedInAt: {
-            gte: startOfDay,
-            lte: endOfDay,
+            gte: twentyFourHoursAgo, // FIXED: Last 24 hours, not same day
           },
+        },
+        orderBy: {
+          checkedInAt: "desc",
         },
       });
 
-      console.log("Existing check-in today:", existing);
+      console.log("Existing check-in in last 24h:", existing);
 
       if (existing) {
-        return res.status(400).json({
-          message: "You have already checked in today for this gym",
+        const lastCheckIn = new Date(existing.checkedInAt);
+        const nextAllowed = new Date(
+          lastCheckIn.getTime() + 24 * 60 * 60 * 1000,
+        );
+        const hoursRemaining = Math.ceil(
+          (nextAllowed - now) / (1000 * 60 * 60),
+        );
+        const minutesRemaining =
+          Math.ceil((nextAllowed - now) / (1000 * 60)) % 60;
+
+        console.log(
+          `❌ Already checked in. Next allowed in ${hoursRemaining}h ${minutesRemaining}m`,
+        );
+
+        return res.status(429).json({
+          message: `You already checked in to this gym within the last 24 hours. Next check-in available in ${hoursRemaining} hours ${minutesRemaining > 0 ? minutesRemaining + " minutes" : ""}.`,
+          code: "CHECKIN_LIMIT",
+          lastCheckIn: lastCheckIn,
+          nextAllowed: nextAllowed,
+          hoursRemaining: hoursRemaining,
         });
       }
 
@@ -103,7 +129,8 @@ module.exports = {
 
       res.json({
         success: true,
-        message: "Check-in successful (debug mode)",
+        message: "Check-in successful",
+        tier: userTier,
       });
     } catch (err) {
       console.error("🔥 CHECK-IN ERROR:", err);
@@ -114,108 +141,3 @@ module.exports = {
     }
   },
 };
-
-// const prisma = require("../prismaClient");
-
-// module.exports = {
-//   checkIn: async (req, res) => {
-//     try {
-//       const userId = req.user.id;
-//       const gymId = req.gym.id;
-//       const now = new Date();
-
-//       // -------------------- ACTIVE SUBSCRIPTION --------------------
-//       const subscription = await prisma.subscription.findFirst({
-//         where: {
-//           userId,
-//           status: "active",
-//           endAt: { gte: new Date() },
-//         },
-//         include: {
-//           tier: true,
-//         },
-//         orderBy: {
-//           createdAt: "desc",
-//         },
-//       });
-
-//       if (!subscription) {
-//         return res.status(403).json({
-//           message: "Active subscription required to check in",
-//         });
-//       }
-
-//       // -------------------- TIER HIERARCHY CHECK --------------------
-//       const userTier = subscription.tier.accessTier; // 1, 2, 3
-//       const gymTier = req.gym.tier;                  // 1, 2, 3
-
-//       if (
-//         typeof userTier !== "number" ||
-//         typeof gymTier !== "number"
-//       ) {
-//         console.error("❌ Invalid tier configuration", {
-//           userTier,
-//           gymTier,
-//         });
-
-//         return res.status(500).json({
-//           message: "Invalid tier configuration",
-//         });
-//       }
-
-//       // 🔑 CORE RULE (THIS IS THE MAGIC)
-//       if (userTier < gymTier) {
-//         return res.status(403).json({
-//           message: `Your Tier ${userTier} subscription cannot access Tier ${gymTier} gyms`,
-//         });
-//       }
-
-//       // -------------------- DAILY DUPLICATE CHECK --------------------
-//       const startOfDay = new Date();
-//       startOfDay.setHours(0, 0, 0, 0);
-
-//       const endOfDay = new Date();
-//       endOfDay.setHours(23, 59, 59, 999);
-
-//       const existing = await prisma.checkIn.findFirst({
-//         where: {
-//           userId,
-//           gymId,
-//           checkedInAt: {
-//             gte: startOfDay,
-//             lte: endOfDay,
-//           },
-//         },
-//       });
-
-//       if (existing) {
-//         return res.status(400).json({
-//           message: "You have already checked in today for this gym",
-//         });
-//       }
-
-//       // -------------------- RECORD CHECK-IN --------------------
-//       await prisma.checkIn.create({
-//         data: {
-//           userId,
-//           gymId,
-//           checkedInAt: now,
-//           qrJti: req.qrPayload.jti,
-//         },
-//       });
-
-//       res.json({
-//         success: true,
-//         message: "Check-in successful",
-//         subscriptionTier: userTier,
-//         gymTier: gymTier,
-//       });
-//     } catch (err) {
-//       console.error("🔥 Check-in error:", err);
-//       res.status(500).json({
-//         message: "Error recording check-in",
-//         detail: err.message,
-//       });
-//     }
-//   },
-// };
