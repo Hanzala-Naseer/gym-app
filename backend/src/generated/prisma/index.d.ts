@@ -73,6 +73,14 @@ export type SubscriptionTierPayload<ExtArgs extends $Extensions.Args = $Extensio
     slug: string
     description: string | null
     accessTier: number
+    /**
+     * ////////////////////////////////////////////////
+     * ////////////////////////////////////////////////
+     */
+    gymTierAccess: GymTier
+    monthlyVisitLimit: number | null
+    isUnlimited: boolean
+    perks: Prisma.JsonValue | null
     isActive: boolean
     isFeatured: boolean
     createdAt: Date
@@ -125,6 +133,14 @@ export type SubscriptionPayload<ExtArgs extends $Extensions.Args = $Extensions.D
     stripeSubscriptionId: string
     stripePriceId: string
     status: string
+    /**
+     * ////////////////////////////////////////////////
+     * ////////////////////////////////////////////////
+     */
+    remainingVisits: number | null
+    /**
+     * ////////////////////////////////////////////////
+     */
     startAt: Date | null
     endAt: Date | null
     createdAt: Date
@@ -192,7 +208,20 @@ export type GymPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArg
     openingTime: string | null
     closingTime: string | null
     is24Hours: boolean
+    /**
+     * ////////////////////////////////////////////////
+     * ////////////////////////////////////////////////
+     */
     tier: number | null
+    /**
+     * ////////////////////////////////////////////////
+     * ////////////////////////////////////////////////
+     */
+    gymTier: GymTier
+    payoutPerVisit: number
+    /**
+     * ////////////////////////////////////////////////
+     */
     coverImageUrl: string | null
     status: string
     submittedAt: Date | null
@@ -238,8 +267,7 @@ export type GymVerificationDocumentPayload<ExtArgs extends $Extensions.Args = $E
 
 /**
  * Model GymVerificationDocument
- * ////////////////////////////////////////////////////
- * ////////////////////////////////////////////////////
+ * 
  */
 export type GymVerificationDocument = runtime.Types.DefaultSelection<GymVerificationDocumentPayload>
 export type GymPhotoPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
@@ -272,7 +300,16 @@ export type CheckInPayload<ExtArgs extends $Extensions.Args = $Extensions.Defaul
     userId: string
     gymId: string
     checkedInAt: Date
+    /**
+     * ////////////////////////////////////////////////
+     * ////////////////////////////////////////////////
+     */
+    payoutAmount: number | null
+    isPaidToGym: boolean
     qrJti: string | null
+    gymPayoutAmount: number | null
+    platformAmount: number | null
+    memberTierSlug: string | null
     createdAt: Date
   }, ExtArgs["result"]["checkIn"]>
   composites: {}
@@ -341,6 +378,41 @@ export type AdminNotificationPayload<ExtArgs extends $Extensions.Args = $Extensi
  * 
  */
 export type AdminNotification = runtime.Types.DefaultSelection<AdminNotificationPayload>
+export type PayoutRatePayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+  name: "PayoutRate"
+  objects: {}
+  scalars: $Extensions.GetResult<{
+    id: string
+    memberTierSlug: string
+    gymTier: GymTier
+    gymGets: number
+    platformKeeps: number
+    multiplier: number
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+  }, ExtArgs["result"]["payoutRate"]>
+  composites: {}
+}
+
+/**
+ * Model PayoutRate
+ * 
+ */
+export type PayoutRate = runtime.Types.DefaultSelection<PayoutRatePayload>
+
+/**
+ * Enums
+ */
+
+export const GymTier: {
+  BASIC: 'BASIC',
+  ULTIMATE: 'ULTIMATE',
+  ELITE: 'ELITE'
+};
+
+export type GymTier = (typeof GymTier)[keyof typeof GymTier]
+
 
 /**
  * ##  Prisma Client ʲˢ
@@ -596,6 +668,16 @@ export class PrismaClient<
     * ```
     */
   get adminNotification(): Prisma.AdminNotificationDelegate<GlobalReject, ExtArgs>;
+
+  /**
+   * `prisma.payoutRate`: Exposes CRUD operations for the **PayoutRate** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PayoutRates
+    * const payoutRates = await prisma.payoutRate.findMany()
+    * ```
+    */
+  get payoutRate(): Prisma.PayoutRateDelegate<GlobalReject, ExtArgs>;
 }
 
 export namespace Prisma {
@@ -1091,7 +1173,8 @@ export namespace Prisma {
     CheckIn: 'CheckIn',
     QrJtiUsage: 'QrJtiUsage',
     AdminAuditLog: 'AdminAuditLog',
-    AdminNotification: 'AdminNotification'
+    AdminNotification: 'AdminNotification',
+    PayoutRate: 'PayoutRate'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1108,7 +1191,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
     meta: {
-      modelProps: 'user' | 'passwordResetToken' | 'subscriptionTier' | 'subscriptionPrice' | 'subscription' | 'payment' | 'gym' | 'gymVerificationDocument' | 'gymPhoto' | 'checkIn' | 'qrJtiUsage' | 'adminAuditLog' | 'adminNotification'
+      modelProps: 'user' | 'passwordResetToken' | 'subscriptionTier' | 'subscriptionPrice' | 'subscription' | 'payment' | 'gym' | 'gymVerificationDocument' | 'gymPhoto' | 'checkIn' | 'qrJtiUsage' | 'adminAuditLog' | 'adminNotification' | 'payoutRate'
       txIsolationLevel: Prisma.TransactionIsolationLevel
     },
     model: {
@@ -1954,6 +2037,71 @@ export namespace Prisma {
           count: {
             args: Prisma.AdminNotificationCountArgs<ExtArgs>,
             result: $Utils.Optional<AdminNotificationCountAggregateOutputType> | number
+          }
+        }
+      }
+      PayoutRate: {
+        payload: PayoutRatePayload<ExtArgs>
+        operations: {
+          findUnique: {
+            args: Prisma.PayoutRateFindUniqueArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PayoutRatePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PayoutRateFindUniqueOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PayoutRatePayload>
+          }
+          findFirst: {
+            args: Prisma.PayoutRateFindFirstArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PayoutRatePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PayoutRateFindFirstOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PayoutRatePayload>
+          }
+          findMany: {
+            args: Prisma.PayoutRateFindManyArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PayoutRatePayload>[]
+          }
+          create: {
+            args: Prisma.PayoutRateCreateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PayoutRatePayload>
+          }
+          createMany: {
+            args: Prisma.PayoutRateCreateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          delete: {
+            args: Prisma.PayoutRateDeleteArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PayoutRatePayload>
+          }
+          update: {
+            args: Prisma.PayoutRateUpdateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PayoutRatePayload>
+          }
+          deleteMany: {
+            args: Prisma.PayoutRateDeleteManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PayoutRateUpdateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          upsert: {
+            args: Prisma.PayoutRateUpsertArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<PayoutRatePayload>
+          }
+          aggregate: {
+            args: Prisma.PayoutRateAggregateArgs<ExtArgs>,
+            result: $Utils.Optional<AggregatePayoutRate>
+          }
+          groupBy: {
+            args: Prisma.PayoutRateGroupByArgs<ExtArgs>,
+            result: $Utils.Optional<PayoutRateGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PayoutRateCountArgs<ExtArgs>,
+            result: $Utils.Optional<PayoutRateCountAggregateOutputType> | number
           }
         }
       }
@@ -4384,10 +4532,12 @@ export namespace Prisma {
 
   export type SubscriptionTierAvgAggregateOutputType = {
     accessTier: number | null
+    monthlyVisitLimit: number | null
   }
 
   export type SubscriptionTierSumAggregateOutputType = {
     accessTier: number | null
+    monthlyVisitLimit: number | null
   }
 
   export type SubscriptionTierMinAggregateOutputType = {
@@ -4396,6 +4546,9 @@ export namespace Prisma {
     slug: string | null
     description: string | null
     accessTier: number | null
+    gymTierAccess: GymTier | null
+    monthlyVisitLimit: number | null
+    isUnlimited: boolean | null
     isActive: boolean | null
     isFeatured: boolean | null
     createdAt: Date | null
@@ -4408,6 +4561,9 @@ export namespace Prisma {
     slug: string | null
     description: string | null
     accessTier: number | null
+    gymTierAccess: GymTier | null
+    monthlyVisitLimit: number | null
+    isUnlimited: boolean | null
     isActive: boolean | null
     isFeatured: boolean | null
     createdAt: Date | null
@@ -4420,6 +4576,10 @@ export namespace Prisma {
     slug: number
     description: number
     accessTier: number
+    gymTierAccess: number
+    monthlyVisitLimit: number
+    isUnlimited: number
+    perks: number
     isActive: number
     isFeatured: number
     createdAt: number
@@ -4430,10 +4590,12 @@ export namespace Prisma {
 
   export type SubscriptionTierAvgAggregateInputType = {
     accessTier?: true
+    monthlyVisitLimit?: true
   }
 
   export type SubscriptionTierSumAggregateInputType = {
     accessTier?: true
+    monthlyVisitLimit?: true
   }
 
   export type SubscriptionTierMinAggregateInputType = {
@@ -4442,6 +4604,9 @@ export namespace Prisma {
     slug?: true
     description?: true
     accessTier?: true
+    gymTierAccess?: true
+    monthlyVisitLimit?: true
+    isUnlimited?: true
     isActive?: true
     isFeatured?: true
     createdAt?: true
@@ -4454,6 +4619,9 @@ export namespace Prisma {
     slug?: true
     description?: true
     accessTier?: true
+    gymTierAccess?: true
+    monthlyVisitLimit?: true
+    isUnlimited?: true
     isActive?: true
     isFeatured?: true
     createdAt?: true
@@ -4466,6 +4634,10 @@ export namespace Prisma {
     slug?: true
     description?: true
     accessTier?: true
+    gymTierAccess?: true
+    monthlyVisitLimit?: true
+    isUnlimited?: true
+    perks?: true
     isActive?: true
     isFeatured?: true
     createdAt?: true
@@ -4566,6 +4738,10 @@ export namespace Prisma {
     slug: string
     description: string | null
     accessTier: number
+    gymTierAccess: GymTier
+    monthlyVisitLimit: number | null
+    isUnlimited: boolean
+    perks: JsonValue | null
     isActive: boolean
     isFeatured: boolean
     createdAt: Date
@@ -4597,6 +4773,10 @@ export namespace Prisma {
     slug?: boolean
     description?: boolean
     accessTier?: boolean
+    gymTierAccess?: boolean
+    monthlyVisitLimit?: boolean
+    isUnlimited?: boolean
+    perks?: boolean
     isActive?: boolean
     isFeatured?: boolean
     createdAt?: boolean
@@ -4612,6 +4792,10 @@ export namespace Prisma {
     slug?: boolean
     description?: boolean
     accessTier?: boolean
+    gymTierAccess?: boolean
+    monthlyVisitLimit?: boolean
+    isUnlimited?: boolean
+    perks?: boolean
     isActive?: boolean
     isFeatured?: boolean
     createdAt?: boolean
@@ -6421,8 +6605,18 @@ export namespace Prisma {
 
   export type AggregateSubscription = {
     _count: SubscriptionCountAggregateOutputType | null
+    _avg: SubscriptionAvgAggregateOutputType | null
+    _sum: SubscriptionSumAggregateOutputType | null
     _min: SubscriptionMinAggregateOutputType | null
     _max: SubscriptionMaxAggregateOutputType | null
+  }
+
+  export type SubscriptionAvgAggregateOutputType = {
+    remainingVisits: number | null
+  }
+
+  export type SubscriptionSumAggregateOutputType = {
+    remainingVisits: number | null
   }
 
   export type SubscriptionMinAggregateOutputType = {
@@ -6432,6 +6626,7 @@ export namespace Prisma {
     stripeSubscriptionId: string | null
     stripePriceId: string | null
     status: string | null
+    remainingVisits: number | null
     startAt: Date | null
     endAt: Date | null
     createdAt: Date | null
@@ -6445,6 +6640,7 @@ export namespace Prisma {
     stripeSubscriptionId: string | null
     stripePriceId: string | null
     status: string | null
+    remainingVisits: number | null
     startAt: Date | null
     endAt: Date | null
     createdAt: Date | null
@@ -6458,6 +6654,7 @@ export namespace Prisma {
     stripeSubscriptionId: number
     stripePriceId: number
     status: number
+    remainingVisits: number
     startAt: number
     endAt: number
     createdAt: number
@@ -6466,6 +6663,14 @@ export namespace Prisma {
   }
 
 
+  export type SubscriptionAvgAggregateInputType = {
+    remainingVisits?: true
+  }
+
+  export type SubscriptionSumAggregateInputType = {
+    remainingVisits?: true
+  }
+
   export type SubscriptionMinAggregateInputType = {
     id?: true
     userId?: true
@@ -6473,6 +6678,7 @@ export namespace Prisma {
     stripeSubscriptionId?: true
     stripePriceId?: true
     status?: true
+    remainingVisits?: true
     startAt?: true
     endAt?: true
     createdAt?: true
@@ -6486,6 +6692,7 @@ export namespace Prisma {
     stripeSubscriptionId?: true
     stripePriceId?: true
     status?: true
+    remainingVisits?: true
     startAt?: true
     endAt?: true
     createdAt?: true
@@ -6499,6 +6706,7 @@ export namespace Prisma {
     stripeSubscriptionId?: true
     stripePriceId?: true
     status?: true
+    remainingVisits?: true
     startAt?: true
     endAt?: true
     createdAt?: true
@@ -6544,6 +6752,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: SubscriptionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: SubscriptionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: SubscriptionMinAggregateInputType
@@ -6574,6 +6794,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: SubscriptionCountAggregateInputType | true
+    _avg?: SubscriptionAvgAggregateInputType
+    _sum?: SubscriptionSumAggregateInputType
     _min?: SubscriptionMinAggregateInputType
     _max?: SubscriptionMaxAggregateInputType
   }
@@ -6586,11 +6808,14 @@ export namespace Prisma {
     stripeSubscriptionId: string
     stripePriceId: string
     status: string
+    remainingVisits: number | null
     startAt: Date | null
     endAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: SubscriptionCountAggregateOutputType | null
+    _avg: SubscriptionAvgAggregateOutputType | null
+    _sum: SubscriptionSumAggregateOutputType | null
     _min: SubscriptionMinAggregateOutputType | null
     _max: SubscriptionMaxAggregateOutputType | null
   }
@@ -6616,6 +6841,7 @@ export namespace Prisma {
     stripeSubscriptionId?: boolean
     stripePriceId?: boolean
     status?: boolean
+    remainingVisits?: boolean
     startAt?: boolean
     endAt?: boolean
     createdAt?: boolean
@@ -6633,6 +6859,7 @@ export namespace Prisma {
     stripeSubscriptionId?: boolean
     stripePriceId?: boolean
     status?: boolean
+    remainingVisits?: boolean
     startAt?: boolean
     endAt?: boolean
     createdAt?: boolean
@@ -8434,6 +8661,7 @@ export namespace Prisma {
     latitude: number | null
     longitude: number | null
     tier: number | null
+    payoutPerVisit: number | null
     resubmissionCount: number | null
   }
 
@@ -8441,6 +8669,7 @@ export namespace Prisma {
     latitude: number | null
     longitude: number | null
     tier: number | null
+    payoutPerVisit: number | null
     resubmissionCount: number | null
   }
 
@@ -8465,6 +8694,8 @@ export namespace Prisma {
     closingTime: string | null
     is24Hours: boolean | null
     tier: number | null
+    gymTier: GymTier | null
+    payoutPerVisit: number | null
     coverImageUrl: string | null
     status: string | null
     submittedAt: Date | null
@@ -8503,6 +8734,8 @@ export namespace Prisma {
     closingTime: string | null
     is24Hours: boolean | null
     tier: number | null
+    gymTier: GymTier | null
+    payoutPerVisit: number | null
     coverImageUrl: string | null
     status: string | null
     submittedAt: Date | null
@@ -8541,6 +8774,8 @@ export namespace Prisma {
     closingTime: number
     is24Hours: number
     tier: number
+    gymTier: number
+    payoutPerVisit: number
     coverImageUrl: number
     status: number
     submittedAt: number
@@ -8564,6 +8799,7 @@ export namespace Prisma {
     latitude?: true
     longitude?: true
     tier?: true
+    payoutPerVisit?: true
     resubmissionCount?: true
   }
 
@@ -8571,6 +8807,7 @@ export namespace Prisma {
     latitude?: true
     longitude?: true
     tier?: true
+    payoutPerVisit?: true
     resubmissionCount?: true
   }
 
@@ -8595,6 +8832,8 @@ export namespace Prisma {
     closingTime?: true
     is24Hours?: true
     tier?: true
+    gymTier?: true
+    payoutPerVisit?: true
     coverImageUrl?: true
     status?: true
     submittedAt?: true
@@ -8633,6 +8872,8 @@ export namespace Prisma {
     closingTime?: true
     is24Hours?: true
     tier?: true
+    gymTier?: true
+    payoutPerVisit?: true
     coverImageUrl?: true
     status?: true
     submittedAt?: true
@@ -8671,6 +8912,8 @@ export namespace Prisma {
     closingTime?: true
     is24Hours?: true
     tier?: true
+    gymTier?: true
+    payoutPerVisit?: true
     coverImageUrl?: true
     status?: true
     submittedAt?: true
@@ -8797,6 +9040,8 @@ export namespace Prisma {
     closingTime: string | null
     is24Hours: boolean
     tier: number | null
+    gymTier: GymTier
+    payoutPerVisit: number
     coverImageUrl: string | null
     status: string
     submittedAt: Date | null
@@ -8854,6 +9099,8 @@ export namespace Prisma {
     closingTime?: boolean
     is24Hours?: boolean
     tier?: boolean
+    gymTier?: boolean
+    payoutPerVisit?: boolean
     coverImageUrl?: boolean
     status?: boolean
     submittedAt?: boolean
@@ -8897,6 +9144,8 @@ export namespace Prisma {
     closingTime?: boolean
     is24Hours?: boolean
     tier?: boolean
+    gymTier?: boolean
+    payoutPerVisit?: boolean
     coverImageUrl?: boolean
     status?: boolean
     submittedAt?: boolean
@@ -11616,8 +11865,22 @@ export namespace Prisma {
 
   export type AggregateCheckIn = {
     _count: CheckInCountAggregateOutputType | null
+    _avg: CheckInAvgAggregateOutputType | null
+    _sum: CheckInSumAggregateOutputType | null
     _min: CheckInMinAggregateOutputType | null
     _max: CheckInMaxAggregateOutputType | null
+  }
+
+  export type CheckInAvgAggregateOutputType = {
+    payoutAmount: number | null
+    gymPayoutAmount: number | null
+    platformAmount: number | null
+  }
+
+  export type CheckInSumAggregateOutputType = {
+    payoutAmount: number | null
+    gymPayoutAmount: number | null
+    platformAmount: number | null
   }
 
   export type CheckInMinAggregateOutputType = {
@@ -11625,7 +11888,12 @@ export namespace Prisma {
     userId: string | null
     gymId: string | null
     checkedInAt: Date | null
+    payoutAmount: number | null
+    isPaidToGym: boolean | null
     qrJti: string | null
+    gymPayoutAmount: number | null
+    platformAmount: number | null
+    memberTierSlug: string | null
     createdAt: Date | null
   }
 
@@ -11634,7 +11902,12 @@ export namespace Prisma {
     userId: string | null
     gymId: string | null
     checkedInAt: Date | null
+    payoutAmount: number | null
+    isPaidToGym: boolean | null
     qrJti: string | null
+    gymPayoutAmount: number | null
+    platformAmount: number | null
+    memberTierSlug: string | null
     createdAt: Date | null
   }
 
@@ -11643,18 +11916,40 @@ export namespace Prisma {
     userId: number
     gymId: number
     checkedInAt: number
+    payoutAmount: number
+    isPaidToGym: number
     qrJti: number
+    gymPayoutAmount: number
+    platformAmount: number
+    memberTierSlug: number
     createdAt: number
     _all: number
   }
 
+
+  export type CheckInAvgAggregateInputType = {
+    payoutAmount?: true
+    gymPayoutAmount?: true
+    platformAmount?: true
+  }
+
+  export type CheckInSumAggregateInputType = {
+    payoutAmount?: true
+    gymPayoutAmount?: true
+    platformAmount?: true
+  }
 
   export type CheckInMinAggregateInputType = {
     id?: true
     userId?: true
     gymId?: true
     checkedInAt?: true
+    payoutAmount?: true
+    isPaidToGym?: true
     qrJti?: true
+    gymPayoutAmount?: true
+    platformAmount?: true
+    memberTierSlug?: true
     createdAt?: true
   }
 
@@ -11663,7 +11958,12 @@ export namespace Prisma {
     userId?: true
     gymId?: true
     checkedInAt?: true
+    payoutAmount?: true
+    isPaidToGym?: true
     qrJti?: true
+    gymPayoutAmount?: true
+    platformAmount?: true
+    memberTierSlug?: true
     createdAt?: true
   }
 
@@ -11672,7 +11972,12 @@ export namespace Prisma {
     userId?: true
     gymId?: true
     checkedInAt?: true
+    payoutAmount?: true
+    isPaidToGym?: true
     qrJti?: true
+    gymPayoutAmount?: true
+    platformAmount?: true
+    memberTierSlug?: true
     createdAt?: true
     _all?: true
   }
@@ -11715,6 +12020,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: CheckInAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: CheckInSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: CheckInMinAggregateInputType
@@ -11745,6 +12062,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: CheckInCountAggregateInputType | true
+    _avg?: CheckInAvgAggregateInputType
+    _sum?: CheckInSumAggregateInputType
     _min?: CheckInMinAggregateInputType
     _max?: CheckInMaxAggregateInputType
   }
@@ -11755,9 +12074,16 @@ export namespace Prisma {
     userId: string
     gymId: string
     checkedInAt: Date
+    payoutAmount: number | null
+    isPaidToGym: boolean
     qrJti: string | null
+    gymPayoutAmount: number | null
+    platformAmount: number | null
+    memberTierSlug: string | null
     createdAt: Date
     _count: CheckInCountAggregateOutputType | null
+    _avg: CheckInAvgAggregateOutputType | null
+    _sum: CheckInSumAggregateOutputType | null
     _min: CheckInMinAggregateOutputType | null
     _max: CheckInMaxAggregateOutputType | null
   }
@@ -11781,7 +12107,12 @@ export namespace Prisma {
     userId?: boolean
     gymId?: boolean
     checkedInAt?: boolean
+    payoutAmount?: boolean
+    isPaidToGym?: boolean
     qrJti?: boolean
+    gymPayoutAmount?: boolean
+    platformAmount?: boolean
+    memberTierSlug?: boolean
     createdAt?: boolean
     user?: boolean | UserArgs<ExtArgs>
     gym?: boolean | GymArgs<ExtArgs>
@@ -11792,7 +12123,12 @@ export namespace Prisma {
     userId?: boolean
     gymId?: boolean
     checkedInAt?: boolean
+    payoutAmount?: boolean
+    isPaidToGym?: boolean
     qrJti?: boolean
+    gymPayoutAmount?: boolean
+    platformAmount?: boolean
+    memberTierSlug?: boolean
     createdAt?: boolean
   }
 
@@ -15241,6 +15577,962 @@ export namespace Prisma {
 
 
   /**
+   * Model PayoutRate
+   */
+
+
+  export type AggregatePayoutRate = {
+    _count: PayoutRateCountAggregateOutputType | null
+    _avg: PayoutRateAvgAggregateOutputType | null
+    _sum: PayoutRateSumAggregateOutputType | null
+    _min: PayoutRateMinAggregateOutputType | null
+    _max: PayoutRateMaxAggregateOutputType | null
+  }
+
+  export type PayoutRateAvgAggregateOutputType = {
+    gymGets: number | null
+    platformKeeps: number | null
+    multiplier: number | null
+  }
+
+  export type PayoutRateSumAggregateOutputType = {
+    gymGets: number | null
+    platformKeeps: number | null
+    multiplier: number | null
+  }
+
+  export type PayoutRateMinAggregateOutputType = {
+    id: string | null
+    memberTierSlug: string | null
+    gymTier: GymTier | null
+    gymGets: number | null
+    platformKeeps: number | null
+    multiplier: number | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PayoutRateMaxAggregateOutputType = {
+    id: string | null
+    memberTierSlug: string | null
+    gymTier: GymTier | null
+    gymGets: number | null
+    platformKeeps: number | null
+    multiplier: number | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PayoutRateCountAggregateOutputType = {
+    id: number
+    memberTierSlug: number
+    gymTier: number
+    gymGets: number
+    platformKeeps: number
+    multiplier: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PayoutRateAvgAggregateInputType = {
+    gymGets?: true
+    platformKeeps?: true
+    multiplier?: true
+  }
+
+  export type PayoutRateSumAggregateInputType = {
+    gymGets?: true
+    platformKeeps?: true
+    multiplier?: true
+  }
+
+  export type PayoutRateMinAggregateInputType = {
+    id?: true
+    memberTierSlug?: true
+    gymTier?: true
+    gymGets?: true
+    platformKeeps?: true
+    multiplier?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PayoutRateMaxAggregateInputType = {
+    id?: true
+    memberTierSlug?: true
+    gymTier?: true
+    gymGets?: true
+    platformKeeps?: true
+    multiplier?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PayoutRateCountAggregateInputType = {
+    id?: true
+    memberTierSlug?: true
+    gymTier?: true
+    gymGets?: true
+    platformKeeps?: true
+    multiplier?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PayoutRateAggregateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PayoutRate to aggregate.
+     */
+    where?: PayoutRateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PayoutRates to fetch.
+     */
+    orderBy?: Enumerable<PayoutRateOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PayoutRateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PayoutRates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PayoutRates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PayoutRates
+    **/
+    _count?: true | PayoutRateCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PayoutRateAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PayoutRateSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PayoutRateMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PayoutRateMaxAggregateInputType
+  }
+
+  export type GetPayoutRateAggregateType<T extends PayoutRateAggregateArgs> = {
+        [P in keyof T & keyof AggregatePayoutRate]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePayoutRate[P]>
+      : GetScalarType<T[P], AggregatePayoutRate[P]>
+  }
+
+
+
+
+  export type PayoutRateGroupByArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    where?: PayoutRateWhereInput
+    orderBy?: Enumerable<PayoutRateOrderByWithAggregationInput>
+    by: PayoutRateScalarFieldEnum[]
+    having?: PayoutRateScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PayoutRateCountAggregateInputType | true
+    _avg?: PayoutRateAvgAggregateInputType
+    _sum?: PayoutRateSumAggregateInputType
+    _min?: PayoutRateMinAggregateInputType
+    _max?: PayoutRateMaxAggregateInputType
+  }
+
+
+  export type PayoutRateGroupByOutputType = {
+    id: string
+    memberTierSlug: string
+    gymTier: GymTier
+    gymGets: number
+    platformKeeps: number
+    multiplier: number
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: PayoutRateCountAggregateOutputType | null
+    _avg: PayoutRateAvgAggregateOutputType | null
+    _sum: PayoutRateSumAggregateOutputType | null
+    _min: PayoutRateMinAggregateOutputType | null
+    _max: PayoutRateMaxAggregateOutputType | null
+  }
+
+  type GetPayoutRateGroupByPayload<T extends PayoutRateGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickArray<PayoutRateGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PayoutRateGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PayoutRateGroupByOutputType[P]>
+            : GetScalarType<T[P], PayoutRateGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PayoutRateSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    memberTierSlug?: boolean
+    gymTier?: boolean
+    gymGets?: boolean
+    platformKeeps?: boolean
+    multiplier?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["payoutRate"]>
+
+  export type PayoutRateSelectScalar = {
+    id?: boolean
+    memberTierSlug?: boolean
+    gymTier?: boolean
+    gymGets?: boolean
+    platformKeeps?: boolean
+    multiplier?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+
+  type PayoutRateGetPayload<S extends boolean | null | undefined | PayoutRateArgs> = $Types.GetResult<PayoutRatePayload, S>
+
+  type PayoutRateCountArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = 
+    Omit<PayoutRateFindManyArgs, 'select' | 'include'> & {
+      select?: PayoutRateCountAggregateInputType | true
+    }
+
+  export interface PayoutRateDelegate<GlobalRejectSettings extends Prisma.RejectOnNotFound | Prisma.RejectPerOperation | false | undefined, ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PayoutRate'], meta: { name: 'PayoutRate' } }
+    /**
+     * Find zero or one PayoutRate that matches the filter.
+     * @param {PayoutRateFindUniqueArgs} args - Arguments to find a PayoutRate
+     * @example
+     * // Get one PayoutRate
+     * const payoutRate = await prisma.payoutRate.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findUnique<T extends PayoutRateFindUniqueArgs<ExtArgs>, LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
+      args: SelectSubset<T, PayoutRateFindUniqueArgs<ExtArgs>>
+    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findUnique', 'PayoutRate'> extends True ? Prisma__PayoutRateClient<$Types.GetResult<PayoutRatePayload<ExtArgs>, T, 'findUnique', never>, never, ExtArgs> : Prisma__PayoutRateClient<$Types.GetResult<PayoutRatePayload<ExtArgs>, T, 'findUnique', never> | null, null, ExtArgs>
+
+    /**
+     * Find one PayoutRate that matches the filter or throw an error  with `error.code='P2025'` 
+     *     if no matches were found.
+     * @param {PayoutRateFindUniqueOrThrowArgs} args - Arguments to find a PayoutRate
+     * @example
+     * // Get one PayoutRate
+     * const payoutRate = await prisma.payoutRate.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findUniqueOrThrow<T extends PayoutRateFindUniqueOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, PayoutRateFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__PayoutRateClient<$Types.GetResult<PayoutRatePayload<ExtArgs>, T, 'findUniqueOrThrow', never>, never, ExtArgs>
+
+    /**
+     * Find the first PayoutRate that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PayoutRateFindFirstArgs} args - Arguments to find a PayoutRate
+     * @example
+     * // Get one PayoutRate
+     * const payoutRate = await prisma.payoutRate.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findFirst<T extends PayoutRateFindFirstArgs<ExtArgs>, LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
+      args?: SelectSubset<T, PayoutRateFindFirstArgs<ExtArgs>>
+    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findFirst', 'PayoutRate'> extends True ? Prisma__PayoutRateClient<$Types.GetResult<PayoutRatePayload<ExtArgs>, T, 'findFirst', never>, never, ExtArgs> : Prisma__PayoutRateClient<$Types.GetResult<PayoutRatePayload<ExtArgs>, T, 'findFirst', never> | null, null, ExtArgs>
+
+    /**
+     * Find the first PayoutRate that matches the filter or
+     * throw `NotFoundError` if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PayoutRateFindFirstOrThrowArgs} args - Arguments to find a PayoutRate
+     * @example
+     * // Get one PayoutRate
+     * const payoutRate = await prisma.payoutRate.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findFirstOrThrow<T extends PayoutRateFindFirstOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, PayoutRateFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__PayoutRateClient<$Types.GetResult<PayoutRatePayload<ExtArgs>, T, 'findFirstOrThrow', never>, never, ExtArgs>
+
+    /**
+     * Find zero or more PayoutRates that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PayoutRateFindManyArgs=} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PayoutRates
+     * const payoutRates = await prisma.payoutRate.findMany()
+     * 
+     * // Get first 10 PayoutRates
+     * const payoutRates = await prisma.payoutRate.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const payoutRateWithIdOnly = await prisma.payoutRate.findMany({ select: { id: true } })
+     * 
+    **/
+    findMany<T extends PayoutRateFindManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, PayoutRateFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<$Types.GetResult<PayoutRatePayload<ExtArgs>, T, 'findMany', never>>
+
+    /**
+     * Create a PayoutRate.
+     * @param {PayoutRateCreateArgs} args - Arguments to create a PayoutRate.
+     * @example
+     * // Create one PayoutRate
+     * const PayoutRate = await prisma.payoutRate.create({
+     *   data: {
+     *     // ... data to create a PayoutRate
+     *   }
+     * })
+     * 
+    **/
+    create<T extends PayoutRateCreateArgs<ExtArgs>>(
+      args: SelectSubset<T, PayoutRateCreateArgs<ExtArgs>>
+    ): Prisma__PayoutRateClient<$Types.GetResult<PayoutRatePayload<ExtArgs>, T, 'create', never>, never, ExtArgs>
+
+    /**
+     * Create many PayoutRates.
+     *     @param {PayoutRateCreateManyArgs} args - Arguments to create many PayoutRates.
+     *     @example
+     *     // Create many PayoutRates
+     *     const payoutRate = await prisma.payoutRate.createMany({
+     *       data: {
+     *         // ... provide data here
+     *       }
+     *     })
+     *     
+    **/
+    createMany<T extends PayoutRateCreateManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, PayoutRateCreateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a PayoutRate.
+     * @param {PayoutRateDeleteArgs} args - Arguments to delete one PayoutRate.
+     * @example
+     * // Delete one PayoutRate
+     * const PayoutRate = await prisma.payoutRate.delete({
+     *   where: {
+     *     // ... filter to delete one PayoutRate
+     *   }
+     * })
+     * 
+    **/
+    delete<T extends PayoutRateDeleteArgs<ExtArgs>>(
+      args: SelectSubset<T, PayoutRateDeleteArgs<ExtArgs>>
+    ): Prisma__PayoutRateClient<$Types.GetResult<PayoutRatePayload<ExtArgs>, T, 'delete', never>, never, ExtArgs>
+
+    /**
+     * Update one PayoutRate.
+     * @param {PayoutRateUpdateArgs} args - Arguments to update one PayoutRate.
+     * @example
+     * // Update one PayoutRate
+     * const payoutRate = await prisma.payoutRate.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+    **/
+    update<T extends PayoutRateUpdateArgs<ExtArgs>>(
+      args: SelectSubset<T, PayoutRateUpdateArgs<ExtArgs>>
+    ): Prisma__PayoutRateClient<$Types.GetResult<PayoutRatePayload<ExtArgs>, T, 'update', never>, never, ExtArgs>
+
+    /**
+     * Delete zero or more PayoutRates.
+     * @param {PayoutRateDeleteManyArgs} args - Arguments to filter PayoutRates to delete.
+     * @example
+     * // Delete a few PayoutRates
+     * const { count } = await prisma.payoutRate.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+    **/
+    deleteMany<T extends PayoutRateDeleteManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, PayoutRateDeleteManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PayoutRates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PayoutRateUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PayoutRates
+     * const payoutRate = await prisma.payoutRate.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+    **/
+    updateMany<T extends PayoutRateUpdateManyArgs<ExtArgs>>(
+      args: SelectSubset<T, PayoutRateUpdateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PayoutRate.
+     * @param {PayoutRateUpsertArgs} args - Arguments to update or create a PayoutRate.
+     * @example
+     * // Update or create a PayoutRate
+     * const payoutRate = await prisma.payoutRate.upsert({
+     *   create: {
+     *     // ... data to create a PayoutRate
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PayoutRate we want to update
+     *   }
+     * })
+    **/
+    upsert<T extends PayoutRateUpsertArgs<ExtArgs>>(
+      args: SelectSubset<T, PayoutRateUpsertArgs<ExtArgs>>
+    ): Prisma__PayoutRateClient<$Types.GetResult<PayoutRatePayload<ExtArgs>, T, 'upsert', never>, never, ExtArgs>
+
+    /**
+     * Count the number of PayoutRates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PayoutRateCountArgs} args - Arguments to filter PayoutRates to count.
+     * @example
+     * // Count the number of PayoutRates
+     * const count = await prisma.payoutRate.count({
+     *   where: {
+     *     // ... the filter for the PayoutRates we want to count
+     *   }
+     * })
+    **/
+    count<T extends PayoutRateCountArgs>(
+      args?: Subset<T, PayoutRateCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PayoutRateCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PayoutRate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PayoutRateAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PayoutRateAggregateArgs>(args: Subset<T, PayoutRateAggregateArgs>): Prisma.PrismaPromise<GetPayoutRateAggregateType<T>>
+
+    /**
+     * Group by PayoutRate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PayoutRateGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PayoutRateGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PayoutRateGroupByArgs['orderBy'] }
+        : { orderBy?: PayoutRateGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends TupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PayoutRateGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPayoutRateGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PayoutRate.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export class Prisma__PayoutRateClient<T, Null = never, ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> implements Prisma.PrismaPromise<T> {
+    private readonly _dmmf;
+    private readonly _queryType;
+    private readonly _rootField;
+    private readonly _clientMethod;
+    private readonly _args;
+    private readonly _dataPath;
+    private readonly _errorFormat;
+    private readonly _measurePerformance?;
+    private _isList;
+    private _callsite;
+    private _requestPromise?;
+    readonly [Symbol.toStringTag]: 'PrismaPromise';
+    constructor(_dmmf: runtime.DMMFClass, _queryType: 'query' | 'mutation', _rootField: string, _clientMethod: string, _args: any, _dataPath: string[], _errorFormat: ErrorFormat, _measurePerformance?: boolean | undefined, _isList?: boolean);
+
+
+    private get _document();
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): Promise<T>;
+  }
+
+
+
+  // Custom InputTypes
+
+  /**
+   * PayoutRate base type for findUnique actions
+   */
+  export type PayoutRateFindUniqueArgsBase<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PayoutRate
+     */
+    select?: PayoutRateSelect<ExtArgs> | null
+    /**
+     * Filter, which PayoutRate to fetch.
+     */
+    where: PayoutRateWhereUniqueInput
+  }
+
+  /**
+   * PayoutRate findUnique
+   */
+  export interface PayoutRateFindUniqueArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> extends PayoutRateFindUniqueArgsBase<ExtArgs> {
+   /**
+    * Throw an Error if query returns no results
+    * @deprecated since 4.0.0: use `findUniqueOrThrow` method instead
+    */
+    rejectOnNotFound?: RejectOnNotFound
+  }
+      
+
+  /**
+   * PayoutRate findUniqueOrThrow
+   */
+  export type PayoutRateFindUniqueOrThrowArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PayoutRate
+     */
+    select?: PayoutRateSelect<ExtArgs> | null
+    /**
+     * Filter, which PayoutRate to fetch.
+     */
+    where: PayoutRateWhereUniqueInput
+  }
+
+
+  /**
+   * PayoutRate base type for findFirst actions
+   */
+  export type PayoutRateFindFirstArgsBase<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PayoutRate
+     */
+    select?: PayoutRateSelect<ExtArgs> | null
+    /**
+     * Filter, which PayoutRate to fetch.
+     */
+    where?: PayoutRateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PayoutRates to fetch.
+     */
+    orderBy?: Enumerable<PayoutRateOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PayoutRates.
+     */
+    cursor?: PayoutRateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PayoutRates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PayoutRates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PayoutRates.
+     */
+    distinct?: Enumerable<PayoutRateScalarFieldEnum>
+  }
+
+  /**
+   * PayoutRate findFirst
+   */
+  export interface PayoutRateFindFirstArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> extends PayoutRateFindFirstArgsBase<ExtArgs> {
+   /**
+    * Throw an Error if query returns no results
+    * @deprecated since 4.0.0: use `findFirstOrThrow` method instead
+    */
+    rejectOnNotFound?: RejectOnNotFound
+  }
+      
+
+  /**
+   * PayoutRate findFirstOrThrow
+   */
+  export type PayoutRateFindFirstOrThrowArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PayoutRate
+     */
+    select?: PayoutRateSelect<ExtArgs> | null
+    /**
+     * Filter, which PayoutRate to fetch.
+     */
+    where?: PayoutRateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PayoutRates to fetch.
+     */
+    orderBy?: Enumerable<PayoutRateOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PayoutRates.
+     */
+    cursor?: PayoutRateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PayoutRates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PayoutRates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PayoutRates.
+     */
+    distinct?: Enumerable<PayoutRateScalarFieldEnum>
+  }
+
+
+  /**
+   * PayoutRate findMany
+   */
+  export type PayoutRateFindManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PayoutRate
+     */
+    select?: PayoutRateSelect<ExtArgs> | null
+    /**
+     * Filter, which PayoutRates to fetch.
+     */
+    where?: PayoutRateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PayoutRates to fetch.
+     */
+    orderBy?: Enumerable<PayoutRateOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PayoutRates.
+     */
+    cursor?: PayoutRateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PayoutRates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PayoutRates.
+     */
+    skip?: number
+    distinct?: Enumerable<PayoutRateScalarFieldEnum>
+  }
+
+
+  /**
+   * PayoutRate create
+   */
+  export type PayoutRateCreateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PayoutRate
+     */
+    select?: PayoutRateSelect<ExtArgs> | null
+    /**
+     * The data needed to create a PayoutRate.
+     */
+    data: XOR<PayoutRateCreateInput, PayoutRateUncheckedCreateInput>
+  }
+
+
+  /**
+   * PayoutRate createMany
+   */
+  export type PayoutRateCreateManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PayoutRates.
+     */
+    data: Enumerable<PayoutRateCreateManyInput>
+    skipDuplicates?: boolean
+  }
+
+
+  /**
+   * PayoutRate update
+   */
+  export type PayoutRateUpdateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PayoutRate
+     */
+    select?: PayoutRateSelect<ExtArgs> | null
+    /**
+     * The data needed to update a PayoutRate.
+     */
+    data: XOR<PayoutRateUpdateInput, PayoutRateUncheckedUpdateInput>
+    /**
+     * Choose, which PayoutRate to update.
+     */
+    where: PayoutRateWhereUniqueInput
+  }
+
+
+  /**
+   * PayoutRate updateMany
+   */
+  export type PayoutRateUpdateManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PayoutRates.
+     */
+    data: XOR<PayoutRateUpdateManyMutationInput, PayoutRateUncheckedUpdateManyInput>
+    /**
+     * Filter which PayoutRates to update
+     */
+    where?: PayoutRateWhereInput
+  }
+
+
+  /**
+   * PayoutRate upsert
+   */
+  export type PayoutRateUpsertArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PayoutRate
+     */
+    select?: PayoutRateSelect<ExtArgs> | null
+    /**
+     * The filter to search for the PayoutRate to update in case it exists.
+     */
+    where: PayoutRateWhereUniqueInput
+    /**
+     * In case the PayoutRate found by the `where` argument doesn't exist, create a new PayoutRate with this data.
+     */
+    create: XOR<PayoutRateCreateInput, PayoutRateUncheckedCreateInput>
+    /**
+     * In case the PayoutRate was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PayoutRateUpdateInput, PayoutRateUncheckedUpdateInput>
+  }
+
+
+  /**
+   * PayoutRate delete
+   */
+  export type PayoutRateDeleteArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PayoutRate
+     */
+    select?: PayoutRateSelect<ExtArgs> | null
+    /**
+     * Filter which PayoutRate to delete.
+     */
+    where: PayoutRateWhereUniqueInput
+  }
+
+
+  /**
+   * PayoutRate deleteMany
+   */
+  export type PayoutRateDeleteManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PayoutRates to delete
+     */
+    where?: PayoutRateWhereInput
+  }
+
+
+  /**
+   * PayoutRate without action
+   */
+  export type PayoutRateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PayoutRate
+     */
+    select?: PayoutRateSelect<ExtArgs> | null
+  }
+
+
+
+  /**
    * Enums
    */
 
@@ -15289,6 +16581,10 @@ export namespace Prisma {
     slug: 'slug',
     description: 'description',
     accessTier: 'accessTier',
+    gymTierAccess: 'gymTierAccess',
+    monthlyVisitLimit: 'monthlyVisitLimit',
+    isUnlimited: 'isUnlimited',
+    perks: 'perks',
     isActive: 'isActive',
     isFeatured: 'isFeatured',
     createdAt: 'createdAt',
@@ -15321,6 +16617,7 @@ export namespace Prisma {
     stripeSubscriptionId: 'stripeSubscriptionId',
     stripePriceId: 'stripePriceId',
     status: 'status',
+    remainingVisits: 'remainingVisits',
     startAt: 'startAt',
     endAt: 'endAt',
     createdAt: 'createdAt',
@@ -15367,6 +16664,8 @@ export namespace Prisma {
     closingTime: 'closingTime',
     is24Hours: 'is24Hours',
     tier: 'tier',
+    gymTier: 'gymTier',
+    payoutPerVisit: 'payoutPerVisit',
     coverImageUrl: 'coverImageUrl',
     status: 'status',
     submittedAt: 'submittedAt',
@@ -15417,7 +16716,12 @@ export namespace Prisma {
     userId: 'userId',
     gymId: 'gymId',
     checkedInAt: 'checkedInAt',
+    payoutAmount: 'payoutAmount',
+    isPaidToGym: 'isPaidToGym',
     qrJti: 'qrJti',
+    gymPayoutAmount: 'gymPayoutAmount',
+    platformAmount: 'platformAmount',
+    memberTierSlug: 'memberTierSlug',
     createdAt: 'createdAt'
   };
 
@@ -15457,6 +16761,21 @@ export namespace Prisma {
   };
 
   export type AdminNotificationScalarFieldEnum = (typeof AdminNotificationScalarFieldEnum)[keyof typeof AdminNotificationScalarFieldEnum]
+
+
+  export const PayoutRateScalarFieldEnum: {
+    id: 'id',
+    memberTierSlug: 'memberTierSlug',
+    gymTier: 'gymTier',
+    gymGets: 'gymGets',
+    platformKeeps: 'platformKeeps',
+    multiplier: 'multiplier',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PayoutRateScalarFieldEnum = (typeof PayoutRateScalarFieldEnum)[keyof typeof PayoutRateScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -15645,6 +16964,10 @@ export namespace Prisma {
     slug?: StringFilter | string
     description?: StringNullableFilter | string | null
     accessTier?: IntFilter | number
+    gymTierAccess?: EnumGymTierFilter | GymTier
+    monthlyVisitLimit?: IntNullableFilter | number | null
+    isUnlimited?: BoolFilter | boolean
+    perks?: JsonNullableFilter
     isActive?: BoolFilter | boolean
     isFeatured?: BoolFilter | boolean
     createdAt?: DateTimeFilter | Date | string
@@ -15659,6 +16982,10 @@ export namespace Prisma {
     slug?: SortOrder
     description?: SortOrderInput | SortOrder
     accessTier?: SortOrder
+    gymTierAccess?: SortOrder
+    monthlyVisitLimit?: SortOrderInput | SortOrder
+    isUnlimited?: SortOrder
+    perks?: SortOrderInput | SortOrder
     isActive?: SortOrder
     isFeatured?: SortOrder
     createdAt?: SortOrder
@@ -15678,6 +17005,10 @@ export namespace Prisma {
     slug?: SortOrder
     description?: SortOrderInput | SortOrder
     accessTier?: SortOrder
+    gymTierAccess?: SortOrder
+    monthlyVisitLimit?: SortOrderInput | SortOrder
+    isUnlimited?: SortOrder
+    perks?: SortOrderInput | SortOrder
     isActive?: SortOrder
     isFeatured?: SortOrder
     createdAt?: SortOrder
@@ -15698,6 +17029,10 @@ export namespace Prisma {
     slug?: StringWithAggregatesFilter | string
     description?: StringNullableWithAggregatesFilter | string | null
     accessTier?: IntWithAggregatesFilter | number
+    gymTierAccess?: EnumGymTierWithAggregatesFilter | GymTier
+    monthlyVisitLimit?: IntNullableWithAggregatesFilter | number | null
+    isUnlimited?: BoolWithAggregatesFilter | boolean
+    perks?: JsonNullableWithAggregatesFilter
     isActive?: BoolWithAggregatesFilter | boolean
     isFeatured?: BoolWithAggregatesFilter | boolean
     createdAt?: DateTimeWithAggregatesFilter | Date | string
@@ -15784,6 +17119,7 @@ export namespace Prisma {
     stripeSubscriptionId?: StringFilter | string
     stripePriceId?: StringFilter | string
     status?: StringFilter | string
+    remainingVisits?: IntNullableFilter | number | null
     startAt?: DateTimeNullableFilter | Date | string | null
     endAt?: DateTimeNullableFilter | Date | string | null
     createdAt?: DateTimeFilter | Date | string
@@ -15800,6 +17136,7 @@ export namespace Prisma {
     stripeSubscriptionId?: SortOrder
     stripePriceId?: SortOrder
     status?: SortOrder
+    remainingVisits?: SortOrderInput | SortOrder
     startAt?: SortOrderInput | SortOrder
     endAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -15821,13 +17158,16 @@ export namespace Prisma {
     stripeSubscriptionId?: SortOrder
     stripePriceId?: SortOrder
     status?: SortOrder
+    remainingVisits?: SortOrderInput | SortOrder
     startAt?: SortOrderInput | SortOrder
     endAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: SubscriptionCountOrderByAggregateInput
+    _avg?: SubscriptionAvgOrderByAggregateInput
     _max?: SubscriptionMaxOrderByAggregateInput
     _min?: SubscriptionMinOrderByAggregateInput
+    _sum?: SubscriptionSumOrderByAggregateInput
   }
 
   export type SubscriptionScalarWhereWithAggregatesInput = {
@@ -15840,6 +17180,7 @@ export namespace Prisma {
     stripeSubscriptionId?: StringWithAggregatesFilter | string
     stripePriceId?: StringWithAggregatesFilter | string
     status?: StringWithAggregatesFilter | string
+    remainingVisits?: IntNullableWithAggregatesFilter | number | null
     startAt?: DateTimeNullableWithAggregatesFilter | Date | string | null
     endAt?: DateTimeNullableWithAggregatesFilter | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter | Date | string
@@ -15941,6 +17282,8 @@ export namespace Prisma {
     closingTime?: StringNullableFilter | string | null
     is24Hours?: BoolFilter | boolean
     tier?: IntNullableFilter | number | null
+    gymTier?: EnumGymTierFilter | GymTier
+    payoutPerVisit?: IntFilter | number
     coverImageUrl?: StringNullableFilter | string | null
     status?: StringFilter | string
     submittedAt?: DateTimeNullableFilter | Date | string | null
@@ -15983,6 +17326,8 @@ export namespace Prisma {
     closingTime?: SortOrderInput | SortOrder
     is24Hours?: SortOrder
     tier?: SortOrderInput | SortOrder
+    gymTier?: SortOrder
+    payoutPerVisit?: SortOrder
     coverImageUrl?: SortOrderInput | SortOrder
     status?: SortOrder
     submittedAt?: SortOrderInput | SortOrder
@@ -16029,6 +17374,8 @@ export namespace Prisma {
     closingTime?: SortOrderInput | SortOrder
     is24Hours?: SortOrder
     tier?: SortOrderInput | SortOrder
+    gymTier?: SortOrder
+    payoutPerVisit?: SortOrder
     coverImageUrl?: SortOrderInput | SortOrder
     status?: SortOrder
     submittedAt?: SortOrderInput | SortOrder
@@ -16075,6 +17422,8 @@ export namespace Prisma {
     closingTime?: StringNullableWithAggregatesFilter | string | null
     is24Hours?: BoolWithAggregatesFilter | boolean
     tier?: IntNullableWithAggregatesFilter | number | null
+    gymTier?: EnumGymTierWithAggregatesFilter | GymTier
+    payoutPerVisit?: IntWithAggregatesFilter | number
     coverImageUrl?: StringNullableWithAggregatesFilter | string | null
     status?: StringWithAggregatesFilter | string
     submittedAt?: DateTimeNullableWithAggregatesFilter | Date | string | null
@@ -16206,7 +17555,12 @@ export namespace Prisma {
     userId?: StringFilter | string
     gymId?: StringFilter | string
     checkedInAt?: DateTimeFilter | Date | string
+    payoutAmount?: IntNullableFilter | number | null
+    isPaidToGym?: BoolFilter | boolean
     qrJti?: StringNullableFilter | string | null
+    gymPayoutAmount?: IntNullableFilter | number | null
+    platformAmount?: IntNullableFilter | number | null
+    memberTierSlug?: StringNullableFilter | string | null
     createdAt?: DateTimeFilter | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
     gym?: XOR<GymRelationFilter, GymWhereInput>
@@ -16217,7 +17571,12 @@ export namespace Prisma {
     userId?: SortOrder
     gymId?: SortOrder
     checkedInAt?: SortOrder
+    payoutAmount?: SortOrderInput | SortOrder
+    isPaidToGym?: SortOrder
     qrJti?: SortOrderInput | SortOrder
+    gymPayoutAmount?: SortOrderInput | SortOrder
+    platformAmount?: SortOrderInput | SortOrder
+    memberTierSlug?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     user?: UserOrderByWithRelationInput
     gym?: GymOrderByWithRelationInput
@@ -16232,11 +17591,18 @@ export namespace Prisma {
     userId?: SortOrder
     gymId?: SortOrder
     checkedInAt?: SortOrder
+    payoutAmount?: SortOrderInput | SortOrder
+    isPaidToGym?: SortOrder
     qrJti?: SortOrderInput | SortOrder
+    gymPayoutAmount?: SortOrderInput | SortOrder
+    platformAmount?: SortOrderInput | SortOrder
+    memberTierSlug?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: CheckInCountOrderByAggregateInput
+    _avg?: CheckInAvgOrderByAggregateInput
     _max?: CheckInMaxOrderByAggregateInput
     _min?: CheckInMinOrderByAggregateInput
+    _sum?: CheckInSumOrderByAggregateInput
   }
 
   export type CheckInScalarWhereWithAggregatesInput = {
@@ -16247,7 +17613,12 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter | string
     gymId?: StringWithAggregatesFilter | string
     checkedInAt?: DateTimeWithAggregatesFilter | Date | string
+    payoutAmount?: IntNullableWithAggregatesFilter | number | null
+    isPaidToGym?: BoolWithAggregatesFilter | boolean
     qrJti?: StringNullableWithAggregatesFilter | string | null
+    gymPayoutAmount?: IntNullableWithAggregatesFilter | number | null
+    platformAmount?: IntNullableWithAggregatesFilter | number | null
+    memberTierSlug?: StringNullableWithAggregatesFilter | string | null
     createdAt?: DateTimeWithAggregatesFilter | Date | string
   }
 
@@ -16395,6 +17766,70 @@ export namespace Prisma {
     type?: StringWithAggregatesFilter | string
     isRead?: BoolWithAggregatesFilter | boolean
     createdAt?: DateTimeWithAggregatesFilter | Date | string
+  }
+
+  export type PayoutRateWhereInput = {
+    AND?: Enumerable<PayoutRateWhereInput>
+    OR?: Enumerable<PayoutRateWhereInput>
+    NOT?: Enumerable<PayoutRateWhereInput>
+    id?: StringFilter | string
+    memberTierSlug?: StringFilter | string
+    gymTier?: EnumGymTierFilter | GymTier
+    gymGets?: IntFilter | number
+    platformKeeps?: IntFilter | number
+    multiplier?: FloatFilter | number
+    isActive?: BoolFilter | boolean
+    createdAt?: DateTimeFilter | Date | string
+    updatedAt?: DateTimeFilter | Date | string
+  }
+
+  export type PayoutRateOrderByWithRelationInput = {
+    id?: SortOrder
+    memberTierSlug?: SortOrder
+    gymTier?: SortOrder
+    gymGets?: SortOrder
+    platformKeeps?: SortOrder
+    multiplier?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PayoutRateWhereUniqueInput = {
+    id?: string
+    memberTierSlug_gymTier?: PayoutRateMemberTierSlugGymTierCompoundUniqueInput
+  }
+
+  export type PayoutRateOrderByWithAggregationInput = {
+    id?: SortOrder
+    memberTierSlug?: SortOrder
+    gymTier?: SortOrder
+    gymGets?: SortOrder
+    platformKeeps?: SortOrder
+    multiplier?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PayoutRateCountOrderByAggregateInput
+    _avg?: PayoutRateAvgOrderByAggregateInput
+    _max?: PayoutRateMaxOrderByAggregateInput
+    _min?: PayoutRateMinOrderByAggregateInput
+    _sum?: PayoutRateSumOrderByAggregateInput
+  }
+
+  export type PayoutRateScalarWhereWithAggregatesInput = {
+    AND?: Enumerable<PayoutRateScalarWhereWithAggregatesInput>
+    OR?: Enumerable<PayoutRateScalarWhereWithAggregatesInput>
+    NOT?: Enumerable<PayoutRateScalarWhereWithAggregatesInput>
+    id?: StringWithAggregatesFilter | string
+    memberTierSlug?: StringWithAggregatesFilter | string
+    gymTier?: EnumGymTierWithAggregatesFilter | GymTier
+    gymGets?: IntWithAggregatesFilter | number
+    platformKeeps?: IntWithAggregatesFilter | number
+    multiplier?: FloatWithAggregatesFilter | number
+    isActive?: BoolWithAggregatesFilter | boolean
+    createdAt?: DateTimeWithAggregatesFilter | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter | Date | string
   }
 
   export type UserCreateInput = {
@@ -16584,6 +18019,10 @@ export namespace Prisma {
     slug: string
     description?: string | null
     accessTier: number
+    gymTierAccess: GymTier
+    monthlyVisitLimit?: number | null
+    isUnlimited?: boolean
+    perks?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     isFeatured?: boolean
     createdAt?: Date | string
@@ -16598,6 +18037,10 @@ export namespace Prisma {
     slug: string
     description?: string | null
     accessTier: number
+    gymTierAccess: GymTier
+    monthlyVisitLimit?: number | null
+    isUnlimited?: boolean
+    perks?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     isFeatured?: boolean
     createdAt?: Date | string
@@ -16612,6 +18055,10 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    gymTierAccess?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    monthlyVisitLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    isUnlimited?: BoolFieldUpdateOperationsInput | boolean
+    perks?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16626,6 +18073,10 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    gymTierAccess?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    monthlyVisitLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    isUnlimited?: BoolFieldUpdateOperationsInput | boolean
+    perks?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16640,6 +18091,10 @@ export namespace Prisma {
     slug: string
     description?: string | null
     accessTier: number
+    gymTierAccess: GymTier
+    monthlyVisitLimit?: number | null
+    isUnlimited?: boolean
+    perks?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     isFeatured?: boolean
     createdAt?: Date | string
@@ -16652,6 +18107,10 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    gymTierAccess?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    monthlyVisitLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    isUnlimited?: BoolFieldUpdateOperationsInput | boolean
+    perks?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16664,6 +18123,10 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    gymTierAccess?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    monthlyVisitLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    isUnlimited?: BoolFieldUpdateOperationsInput | boolean
+    perks?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16765,6 +18228,7 @@ export namespace Prisma {
     stripeSubscriptionId: string
     stripePriceId: string
     status: string
+    remainingVisits?: number | null
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
@@ -16781,6 +18245,7 @@ export namespace Prisma {
     stripeSubscriptionId: string
     stripePriceId: string
     status: string
+    remainingVisits?: number | null
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
@@ -16793,6 +18258,7 @@ export namespace Prisma {
     stripeSubscriptionId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    remainingVisits?: NullableIntFieldUpdateOperationsInput | number | null
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16809,6 +18275,7 @@ export namespace Prisma {
     stripeSubscriptionId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    remainingVisits?: NullableIntFieldUpdateOperationsInput | number | null
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16823,6 +18290,7 @@ export namespace Prisma {
     stripeSubscriptionId: string
     stripePriceId: string
     status: string
+    remainingVisits?: number | null
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
@@ -16834,6 +18302,7 @@ export namespace Prisma {
     stripeSubscriptionId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    remainingVisits?: NullableIntFieldUpdateOperationsInput | number | null
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16847,6 +18316,7 @@ export namespace Prisma {
     stripeSubscriptionId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    remainingVisits?: NullableIntFieldUpdateOperationsInput | number | null
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16963,6 +18433,8 @@ export namespace Prisma {
     closingTime?: string | null
     is24Hours?: boolean
     tier?: number | null
+    gymTier?: GymTier
+    payoutPerVisit?: number
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -17004,6 +18476,8 @@ export namespace Prisma {
     closingTime?: string | null
     is24Hours?: boolean
     tier?: number | null
+    gymTier?: GymTier
+    payoutPerVisit?: number
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -17045,6 +18519,8 @@ export namespace Prisma {
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: NullableIntFieldUpdateOperationsInput | number | null
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    payoutPerVisit?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -17086,6 +18562,8 @@ export namespace Prisma {
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: NullableIntFieldUpdateOperationsInput | number | null
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    payoutPerVisit?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -17127,6 +18605,8 @@ export namespace Prisma {
     closingTime?: string | null
     is24Hours?: boolean
     tier?: number | null
+    gymTier?: GymTier
+    payoutPerVisit?: number
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -17165,6 +18645,8 @@ export namespace Prisma {
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: NullableIntFieldUpdateOperationsInput | number | null
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    payoutPerVisit?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -17202,6 +18684,8 @@ export namespace Prisma {
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: NullableIntFieldUpdateOperationsInput | number | null
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    payoutPerVisit?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -17353,7 +18837,12 @@ export namespace Prisma {
   export type CheckInCreateInput = {
     id?: string
     checkedInAt?: Date | string
+    payoutAmount?: number | null
+    isPaidToGym?: boolean
     qrJti?: string | null
+    gymPayoutAmount?: number | null
+    platformAmount?: number | null
+    memberTierSlug?: string | null
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutCheckInsInput
     gym: GymCreateNestedOneWithoutCheckInsInput
@@ -17364,14 +18853,24 @@ export namespace Prisma {
     userId: string
     gymId: string
     checkedInAt?: Date | string
+    payoutAmount?: number | null
+    isPaidToGym?: boolean
     qrJti?: string | null
+    gymPayoutAmount?: number | null
+    platformAmount?: number | null
+    memberTierSlug?: string | null
     createdAt?: Date | string
   }
 
   export type CheckInUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     checkedInAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    isPaidToGym?: BoolFieldUpdateOperationsInput | boolean
     qrJti?: NullableStringFieldUpdateOperationsInput | string | null
+    gymPayoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    platformAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    memberTierSlug?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCheckInsNestedInput
     gym?: GymUpdateOneRequiredWithoutCheckInsNestedInput
@@ -17382,7 +18881,12 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     gymId?: StringFieldUpdateOperationsInput | string
     checkedInAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    isPaidToGym?: BoolFieldUpdateOperationsInput | boolean
     qrJti?: NullableStringFieldUpdateOperationsInput | string | null
+    gymPayoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    platformAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    memberTierSlug?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -17391,14 +18895,24 @@ export namespace Prisma {
     userId: string
     gymId: string
     checkedInAt?: Date | string
+    payoutAmount?: number | null
+    isPaidToGym?: boolean
     qrJti?: string | null
+    gymPayoutAmount?: number | null
+    platformAmount?: number | null
+    memberTierSlug?: string | null
     createdAt?: Date | string
   }
 
   export type CheckInUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     checkedInAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    isPaidToGym?: BoolFieldUpdateOperationsInput | boolean
     qrJti?: NullableStringFieldUpdateOperationsInput | string | null
+    gymPayoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    platformAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    memberTierSlug?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -17407,7 +18921,12 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     gymId?: StringFieldUpdateOperationsInput | string
     checkedInAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    isPaidToGym?: BoolFieldUpdateOperationsInput | boolean
     qrJti?: NullableStringFieldUpdateOperationsInput | string | null
+    gymPayoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    platformAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    memberTierSlug?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -17590,6 +19109,90 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PayoutRateCreateInput = {
+    id?: string
+    memberTierSlug: string
+    gymTier: GymTier
+    gymGets: number
+    platformKeeps: number
+    multiplier: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PayoutRateUncheckedCreateInput = {
+    id?: string
+    memberTierSlug: string
+    gymTier: GymTier
+    gymGets: number
+    platformKeeps: number
+    multiplier: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PayoutRateUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    memberTierSlug?: StringFieldUpdateOperationsInput | string
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    gymGets?: IntFieldUpdateOperationsInput | number
+    platformKeeps?: IntFieldUpdateOperationsInput | number
+    multiplier?: FloatFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PayoutRateUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    memberTierSlug?: StringFieldUpdateOperationsInput | string
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    gymGets?: IntFieldUpdateOperationsInput | number
+    platformKeeps?: IntFieldUpdateOperationsInput | number
+    multiplier?: FloatFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PayoutRateCreateManyInput = {
+    id?: string
+    memberTierSlug: string
+    gymTier: GymTier
+    gymGets: number
+    platformKeeps: number
+    multiplier: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PayoutRateUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    memberTierSlug?: StringFieldUpdateOperationsInput | string
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    gymGets?: IntFieldUpdateOperationsInput | number
+    platformKeeps?: IntFieldUpdateOperationsInput | number
+    multiplier?: FloatFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PayoutRateUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    memberTierSlug?: StringFieldUpdateOperationsInput | string
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    gymGets?: IntFieldUpdateOperationsInput | number
+    platformKeeps?: IntFieldUpdateOperationsInput | number
+    multiplier?: FloatFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter = {
@@ -17891,6 +19494,35 @@ export namespace Prisma {
     not?: NestedIntFilter | number
   }
 
+  export type EnumGymTierFilter = {
+    equals?: GymTier
+    in?: Enumerable<GymTier>
+    notIn?: Enumerable<GymTier>
+    not?: NestedEnumGymTierFilter | GymTier
+  }
+  export type JsonNullableFilter = 
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase>, Exclude<keyof Required<JsonNullableFilterBase>, 'path'>>,
+        Required<JsonNullableFilterBase>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase>, 'path'>>
+
+  export type JsonNullableFilterBase = {
+    equals?: InputJsonValue | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string
+    string_starts_with?: string
+    string_ends_with?: string
+    array_contains?: InputJsonValue | null
+    array_starts_with?: InputJsonValue | null
+    array_ends_with?: InputJsonValue | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonNullValueFilter
+  }
+
   export type SubscriptionPriceListRelationFilter = {
     every?: SubscriptionPriceWhereInput
     some?: SubscriptionPriceWhereInput
@@ -17907,6 +19539,10 @@ export namespace Prisma {
     slug?: SortOrder
     description?: SortOrder
     accessTier?: SortOrder
+    gymTierAccess?: SortOrder
+    monthlyVisitLimit?: SortOrder
+    isUnlimited?: SortOrder
+    perks?: SortOrder
     isActive?: SortOrder
     isFeatured?: SortOrder
     createdAt?: SortOrder
@@ -17915,6 +19551,7 @@ export namespace Prisma {
 
   export type SubscriptionTierAvgOrderByAggregateInput = {
     accessTier?: SortOrder
+    monthlyVisitLimit?: SortOrder
   }
 
   export type SubscriptionTierMaxOrderByAggregateInput = {
@@ -17923,6 +19560,9 @@ export namespace Prisma {
     slug?: SortOrder
     description?: SortOrder
     accessTier?: SortOrder
+    gymTierAccess?: SortOrder
+    monthlyVisitLimit?: SortOrder
+    isUnlimited?: SortOrder
     isActive?: SortOrder
     isFeatured?: SortOrder
     createdAt?: SortOrder
@@ -17935,6 +19575,9 @@ export namespace Prisma {
     slug?: SortOrder
     description?: SortOrder
     accessTier?: SortOrder
+    gymTierAccess?: SortOrder
+    monthlyVisitLimit?: SortOrder
+    isUnlimited?: SortOrder
     isActive?: SortOrder
     isFeatured?: SortOrder
     createdAt?: SortOrder
@@ -17943,6 +19586,7 @@ export namespace Prisma {
 
   export type SubscriptionTierSumOrderByAggregateInput = {
     accessTier?: SortOrder
+    monthlyVisitLimit?: SortOrder
   }
 
   export type IntWithAggregatesFilter = {
@@ -17959,6 +19603,41 @@ export namespace Prisma {
     _sum?: NestedIntFilter
     _min?: NestedIntFilter
     _max?: NestedIntFilter
+  }
+
+  export type EnumGymTierWithAggregatesFilter = {
+    equals?: GymTier
+    in?: Enumerable<GymTier>
+    notIn?: Enumerable<GymTier>
+    not?: NestedEnumGymTierWithAggregatesFilter | GymTier
+    _count?: NestedIntFilter
+    _min?: NestedEnumGymTierFilter
+    _max?: NestedEnumGymTierFilter
+  }
+  export type JsonNullableWithAggregatesFilter = 
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase = {
+    equals?: InputJsonValue | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string
+    string_starts_with?: string
+    string_ends_with?: string
+    array_contains?: InputJsonValue | null
+    array_starts_with?: InputJsonValue | null
+    array_ends_with?: InputJsonValue | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonNullValueFilter
+    _count?: NestedIntNullableFilter
+    _min?: NestedJsonNullableFilter
+    _max?: NestedJsonNullableFilter
   }
 
   export type SubscriptionTierRelationFilter = {
@@ -18025,10 +19704,15 @@ export namespace Prisma {
     stripeSubscriptionId?: SortOrder
     stripePriceId?: SortOrder
     status?: SortOrder
+    remainingVisits?: SortOrder
     startAt?: SortOrder
     endAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type SubscriptionAvgOrderByAggregateInput = {
+    remainingVisits?: SortOrder
   }
 
   export type SubscriptionMaxOrderByAggregateInput = {
@@ -18038,6 +19722,7 @@ export namespace Prisma {
     stripeSubscriptionId?: SortOrder
     stripePriceId?: SortOrder
     status?: SortOrder
+    remainingVisits?: SortOrder
     startAt?: SortOrder
     endAt?: SortOrder
     createdAt?: SortOrder
@@ -18051,32 +19736,15 @@ export namespace Prisma {
     stripeSubscriptionId?: SortOrder
     stripePriceId?: SortOrder
     status?: SortOrder
+    remainingVisits?: SortOrder
     startAt?: SortOrder
     endAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
-  export type JsonNullableFilter = 
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase>, Exclude<keyof Required<JsonNullableFilterBase>, 'path'>>,
-        Required<JsonNullableFilterBase>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase>, 'path'>>
 
-  export type JsonNullableFilterBase = {
-    equals?: InputJsonValue | JsonNullValueFilter
-    path?: string[]
-    string_contains?: string
-    string_starts_with?: string
-    string_ends_with?: string
-    array_contains?: InputJsonValue | null
-    array_starts_with?: InputJsonValue | null
-    array_ends_with?: InputJsonValue | null
-    lt?: InputJsonValue
-    lte?: InputJsonValue
-    gt?: InputJsonValue
-    gte?: InputJsonValue
-    not?: InputJsonValue | JsonNullValueFilter
+  export type SubscriptionSumOrderByAggregateInput = {
+    remainingVisits?: SortOrder
   }
 
   export type SubscriptionRelationFilter = {
@@ -18127,31 +19795,6 @@ export namespace Prisma {
 
   export type PaymentSumOrderByAggregateInput = {
     amountCents?: SortOrder
-  }
-  export type JsonNullableWithAggregatesFilter = 
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase = {
-    equals?: InputJsonValue | JsonNullValueFilter
-    path?: string[]
-    string_contains?: string
-    string_starts_with?: string
-    string_ends_with?: string
-    array_contains?: InputJsonValue | null
-    array_starts_with?: InputJsonValue | null
-    array_ends_with?: InputJsonValue | null
-    lt?: InputJsonValue
-    lte?: InputJsonValue
-    gt?: InputJsonValue
-    gte?: InputJsonValue
-    not?: InputJsonValue | JsonNullValueFilter
-    _count?: NestedIntNullableFilter
-    _min?: NestedJsonNullableFilter
-    _max?: NestedJsonNullableFilter
   }
 
   export type FloatFilter = {
@@ -18206,6 +19849,8 @@ export namespace Prisma {
     closingTime?: SortOrder
     is24Hours?: SortOrder
     tier?: SortOrder
+    gymTier?: SortOrder
+    payoutPerVisit?: SortOrder
     coverImageUrl?: SortOrder
     status?: SortOrder
     submittedAt?: SortOrder
@@ -18227,6 +19872,7 @@ export namespace Prisma {
     latitude?: SortOrder
     longitude?: SortOrder
     tier?: SortOrder
+    payoutPerVisit?: SortOrder
     resubmissionCount?: SortOrder
   }
 
@@ -18251,6 +19897,8 @@ export namespace Prisma {
     closingTime?: SortOrder
     is24Hours?: SortOrder
     tier?: SortOrder
+    gymTier?: SortOrder
+    payoutPerVisit?: SortOrder
     coverImageUrl?: SortOrder
     status?: SortOrder
     submittedAt?: SortOrder
@@ -18289,6 +19937,8 @@ export namespace Prisma {
     closingTime?: SortOrder
     is24Hours?: SortOrder
     tier?: SortOrder
+    gymTier?: SortOrder
+    payoutPerVisit?: SortOrder
     coverImageUrl?: SortOrder
     status?: SortOrder
     submittedAt?: SortOrder
@@ -18310,6 +19960,7 @@ export namespace Prisma {
     latitude?: SortOrder
     longitude?: SortOrder
     tier?: SortOrder
+    payoutPerVisit?: SortOrder
     resubmissionCount?: SortOrder
   }
 
@@ -18396,8 +20047,19 @@ export namespace Prisma {
     userId?: SortOrder
     gymId?: SortOrder
     checkedInAt?: SortOrder
+    payoutAmount?: SortOrder
+    isPaidToGym?: SortOrder
     qrJti?: SortOrder
+    gymPayoutAmount?: SortOrder
+    platformAmount?: SortOrder
+    memberTierSlug?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type CheckInAvgOrderByAggregateInput = {
+    payoutAmount?: SortOrder
+    gymPayoutAmount?: SortOrder
+    platformAmount?: SortOrder
   }
 
   export type CheckInMaxOrderByAggregateInput = {
@@ -18405,7 +20067,12 @@ export namespace Prisma {
     userId?: SortOrder
     gymId?: SortOrder
     checkedInAt?: SortOrder
+    payoutAmount?: SortOrder
+    isPaidToGym?: SortOrder
     qrJti?: SortOrder
+    gymPayoutAmount?: SortOrder
+    platformAmount?: SortOrder
+    memberTierSlug?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -18414,8 +20081,19 @@ export namespace Prisma {
     userId?: SortOrder
     gymId?: SortOrder
     checkedInAt?: SortOrder
+    payoutAmount?: SortOrder
+    isPaidToGym?: SortOrder
     qrJti?: SortOrder
+    gymPayoutAmount?: SortOrder
+    platformAmount?: SortOrder
+    memberTierSlug?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type CheckInSumOrderByAggregateInput = {
+    payoutAmount?: SortOrder
+    gymPayoutAmount?: SortOrder
+    platformAmount?: SortOrder
   }
 
   export type QrJtiUsageCountOrderByAggregateInput = {
@@ -18492,6 +20170,59 @@ export namespace Prisma {
     type?: SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type PayoutRateMemberTierSlugGymTierCompoundUniqueInput = {
+    memberTierSlug: string
+    gymTier: GymTier
+  }
+
+  export type PayoutRateCountOrderByAggregateInput = {
+    id?: SortOrder
+    memberTierSlug?: SortOrder
+    gymTier?: SortOrder
+    gymGets?: SortOrder
+    platformKeeps?: SortOrder
+    multiplier?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PayoutRateAvgOrderByAggregateInput = {
+    gymGets?: SortOrder
+    platformKeeps?: SortOrder
+    multiplier?: SortOrder
+  }
+
+  export type PayoutRateMaxOrderByAggregateInput = {
+    id?: SortOrder
+    memberTierSlug?: SortOrder
+    gymTier?: SortOrder
+    gymGets?: SortOrder
+    platformKeeps?: SortOrder
+    multiplier?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PayoutRateMinOrderByAggregateInput = {
+    id?: SortOrder
+    memberTierSlug?: SortOrder
+    gymTier?: SortOrder
+    gymGets?: SortOrder
+    platformKeeps?: SortOrder
+    multiplier?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PayoutRateSumOrderByAggregateInput = {
+    gymGets?: SortOrder
+    platformKeeps?: SortOrder
+    multiplier?: SortOrder
   }
 
   export type SubscriptionCreateNestedManyWithoutUserInput = {
@@ -18766,6 +20497,10 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type EnumGymTierFieldUpdateOperationsInput = {
+    set?: GymTier
   }
 
   export type SubscriptionPriceUpdateManyWithoutTierNestedInput = {
@@ -19332,6 +21067,13 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter | number | null
   }
 
+  export type NestedEnumGymTierFilter = {
+    equals?: GymTier
+    in?: Enumerable<GymTier>
+    notIn?: Enumerable<GymTier>
+    not?: NestedEnumGymTierFilter | GymTier
+  }
+
   export type NestedIntWithAggregatesFilter = {
     equals?: number
     in?: Enumerable<number> | number
@@ -19357,6 +21099,16 @@ export namespace Prisma {
     gt?: number
     gte?: number
     not?: NestedFloatFilter | number
+  }
+
+  export type NestedEnumGymTierWithAggregatesFilter = {
+    equals?: GymTier
+    in?: Enumerable<GymTier>
+    notIn?: Enumerable<GymTier>
+    not?: NestedEnumGymTierWithAggregatesFilter | GymTier
+    _count?: NestedIntFilter
+    _min?: NestedEnumGymTierFilter
+    _max?: NestedEnumGymTierFilter
   }
   export type NestedJsonNullableFilter = 
     | PatchUndefined<
@@ -19402,6 +21154,7 @@ export namespace Prisma {
     stripeSubscriptionId: string
     stripePriceId: string
     status: string
+    remainingVisits?: number | null
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
@@ -19416,6 +21169,7 @@ export namespace Prisma {
     stripeSubscriptionId: string
     stripePriceId: string
     status: string
+    remainingVisits?: number | null
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
@@ -19470,7 +21224,12 @@ export namespace Prisma {
   export type CheckInCreateWithoutUserInput = {
     id?: string
     checkedInAt?: Date | string
+    payoutAmount?: number | null
+    isPaidToGym?: boolean
     qrJti?: string | null
+    gymPayoutAmount?: number | null
+    platformAmount?: number | null
+    memberTierSlug?: string | null
     createdAt?: Date | string
     gym: GymCreateNestedOneWithoutCheckInsInput
   }
@@ -19479,7 +21238,12 @@ export namespace Prisma {
     id?: string
     gymId: string
     checkedInAt?: Date | string
+    payoutAmount?: number | null
+    isPaidToGym?: boolean
     qrJti?: string | null
+    gymPayoutAmount?: number | null
+    platformAmount?: number | null
+    memberTierSlug?: string | null
     createdAt?: Date | string
   }
 
@@ -19514,6 +21278,8 @@ export namespace Prisma {
     closingTime?: string | null
     is24Hours?: boolean
     tier?: number | null
+    gymTier?: GymTier
+    payoutPerVisit?: number
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -19554,6 +21320,8 @@ export namespace Prisma {
     closingTime?: string | null
     is24Hours?: boolean
     tier?: number | null
+    gymTier?: GymTier
+    payoutPerVisit?: number
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -19637,6 +21405,7 @@ export namespace Prisma {
     stripeSubscriptionId?: StringFilter | string
     stripePriceId?: StringFilter | string
     status?: StringFilter | string
+    remainingVisits?: IntNullableFilter | number | null
     startAt?: DateTimeNullableFilter | Date | string | null
     endAt?: DateTimeNullableFilter | Date | string | null
     createdAt?: DateTimeFilter | Date | string
@@ -19699,7 +21468,12 @@ export namespace Prisma {
     userId?: StringFilter | string
     gymId?: StringFilter | string
     checkedInAt?: DateTimeFilter | Date | string
+    payoutAmount?: IntNullableFilter | number | null
+    isPaidToGym?: BoolFilter | boolean
     qrJti?: StringNullableFilter | string | null
+    gymPayoutAmount?: IntNullableFilter | number | null
+    platformAmount?: IntNullableFilter | number | null
+    memberTierSlug?: StringNullableFilter | string | null
     createdAt?: DateTimeFilter | Date | string
   }
 
@@ -19743,6 +21517,8 @@ export namespace Prisma {
     closingTime?: StringNullableFilter | string | null
     is24Hours?: BoolFilter | boolean
     tier?: IntNullableFilter | number | null
+    gymTier?: EnumGymTierFilter | GymTier
+    payoutPerVisit?: IntFilter | number
     coverImageUrl?: StringNullableFilter | string | null
     status?: StringFilter | string
     submittedAt?: DateTimeNullableFilter | Date | string | null
@@ -19828,6 +21604,7 @@ export namespace Prisma {
     stripeSubscriptionId: string
     stripePriceId: string
     status: string
+    remainingVisits?: number | null
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
@@ -19842,6 +21619,7 @@ export namespace Prisma {
     stripeSubscriptionId: string
     stripePriceId: string
     status: string
+    remainingVisits?: number | null
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
@@ -19913,6 +21691,10 @@ export namespace Prisma {
     slug: string
     description?: string | null
     accessTier: number
+    gymTierAccess: GymTier
+    monthlyVisitLimit?: number | null
+    isUnlimited?: boolean
+    perks?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     isFeatured?: boolean
     createdAt?: Date | string
@@ -19926,6 +21708,10 @@ export namespace Prisma {
     slug: string
     description?: string | null
     accessTier: number
+    gymTierAccess: GymTier
+    monthlyVisitLimit?: number | null
+    isUnlimited?: boolean
+    perks?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     isFeatured?: boolean
     createdAt?: Date | string
@@ -19949,6 +21735,10 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    gymTierAccess?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    monthlyVisitLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    isUnlimited?: BoolFieldUpdateOperationsInput | boolean
+    perks?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19962,6 +21752,10 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    gymTierAccess?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    monthlyVisitLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    isUnlimited?: BoolFieldUpdateOperationsInput | boolean
+    perks?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20018,6 +21812,10 @@ export namespace Prisma {
     slug: string
     description?: string | null
     accessTier: number
+    gymTierAccess: GymTier
+    monthlyVisitLimit?: number | null
+    isUnlimited?: boolean
+    perks?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     isFeatured?: boolean
     createdAt?: Date | string
@@ -20031,6 +21829,10 @@ export namespace Prisma {
     slug: string
     description?: string | null
     accessTier: number
+    gymTierAccess: GymTier
+    monthlyVisitLimit?: number | null
+    isUnlimited?: boolean
+    perks?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     isFeatured?: boolean
     createdAt?: Date | string
@@ -20131,6 +21933,10 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    gymTierAccess?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    monthlyVisitLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    isUnlimited?: BoolFieldUpdateOperationsInput | boolean
+    perks?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20144,6 +21950,10 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     accessTier?: IntFieldUpdateOperationsInput | number
+    gymTierAccess?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    monthlyVisitLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    isUnlimited?: BoolFieldUpdateOperationsInput | boolean
+    perks?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isFeatured?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20215,6 +22025,7 @@ export namespace Prisma {
     stripeSubscriptionId: string
     stripePriceId: string
     status: string
+    remainingVisits?: number | null
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
@@ -20230,6 +22041,7 @@ export namespace Prisma {
     stripeSubscriptionId: string
     stripePriceId: string
     status: string
+    remainingVisits?: number | null
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
@@ -20294,6 +22106,7 @@ export namespace Prisma {
     stripeSubscriptionId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    remainingVisits?: NullableIntFieldUpdateOperationsInput | number | null
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20309,6 +22122,7 @@ export namespace Prisma {
     stripeSubscriptionId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    remainingVisits?: NullableIntFieldUpdateOperationsInput | number | null
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20361,7 +22175,12 @@ export namespace Prisma {
   export type CheckInCreateWithoutGymInput = {
     id?: string
     checkedInAt?: Date | string
+    payoutAmount?: number | null
+    isPaidToGym?: boolean
     qrJti?: string | null
+    gymPayoutAmount?: number | null
+    platformAmount?: number | null
+    memberTierSlug?: string | null
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutCheckInsInput
   }
@@ -20370,7 +22189,12 @@ export namespace Prisma {
     id?: string
     userId: string
     checkedInAt?: Date | string
+    payoutAmount?: number | null
+    isPaidToGym?: boolean
     qrJti?: string | null
+    gymPayoutAmount?: number | null
+    platformAmount?: number | null
+    memberTierSlug?: string | null
     createdAt?: Date | string
   }
 
@@ -20575,6 +22399,8 @@ export namespace Prisma {
     closingTime?: string | null
     is24Hours?: boolean
     tier?: number | null
+    gymTier?: GymTier
+    payoutPerVisit?: number
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -20615,6 +22441,8 @@ export namespace Prisma {
     closingTime?: string | null
     is24Hours?: boolean
     tier?: number | null
+    gymTier?: GymTier
+    payoutPerVisit?: number
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -20665,6 +22493,8 @@ export namespace Prisma {
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: NullableIntFieldUpdateOperationsInput | number | null
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    payoutPerVisit?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20705,6 +22535,8 @@ export namespace Prisma {
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: NullableIntFieldUpdateOperationsInput | number | null
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    payoutPerVisit?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20745,6 +22577,8 @@ export namespace Prisma {
     closingTime?: string | null
     is24Hours?: boolean
     tier?: number | null
+    gymTier?: GymTier
+    payoutPerVisit?: number
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -20785,6 +22619,8 @@ export namespace Prisma {
     closingTime?: string | null
     is24Hours?: boolean
     tier?: number | null
+    gymTier?: GymTier
+    payoutPerVisit?: number
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -20835,6 +22671,8 @@ export namespace Prisma {
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: NullableIntFieldUpdateOperationsInput | number | null
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    payoutPerVisit?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20875,6 +22713,8 @@ export namespace Prisma {
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: NullableIntFieldUpdateOperationsInput | number | null
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    payoutPerVisit?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20958,6 +22798,8 @@ export namespace Prisma {
     closingTime?: string | null
     is24Hours?: boolean
     tier?: number | null
+    gymTier?: GymTier
+    payoutPerVisit?: number
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -20998,6 +22840,8 @@ export namespace Prisma {
     closingTime?: string | null
     is24Hours?: boolean
     tier?: number | null
+    gymTier?: GymTier
+    payoutPerVisit?: number
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -21091,6 +22935,8 @@ export namespace Prisma {
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: NullableIntFieldUpdateOperationsInput | number | null
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    payoutPerVisit?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -21131,6 +22977,8 @@ export namespace Prisma {
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: NullableIntFieldUpdateOperationsInput | number | null
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    payoutPerVisit?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -21242,6 +23090,7 @@ export namespace Prisma {
     stripeSubscriptionId: string
     stripePriceId: string
     status: string
+    remainingVisits?: number | null
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
@@ -21264,7 +23113,12 @@ export namespace Prisma {
     id?: string
     gymId: string
     checkedInAt?: Date | string
+    payoutAmount?: number | null
+    isPaidToGym?: boolean
     qrJti?: string | null
+    gymPayoutAmount?: number | null
+    platformAmount?: number | null
+    memberTierSlug?: string | null
     createdAt?: Date | string
   }
 
@@ -21289,6 +23143,8 @@ export namespace Prisma {
     closingTime?: string | null
     is24Hours?: boolean
     tier?: number | null
+    gymTier?: GymTier
+    payoutPerVisit?: number
     coverImageUrl?: string | null
     status?: string
     submittedAt?: Date | string | null
@@ -21319,6 +23175,7 @@ export namespace Prisma {
     stripeSubscriptionId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    remainingVisits?: NullableIntFieldUpdateOperationsInput | number | null
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21333,6 +23190,7 @@ export namespace Prisma {
     stripeSubscriptionId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    remainingVisits?: NullableIntFieldUpdateOperationsInput | number | null
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21346,6 +23204,7 @@ export namespace Prisma {
     stripeSubscriptionId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    remainingVisits?: NullableIntFieldUpdateOperationsInput | number | null
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21391,7 +23250,12 @@ export namespace Prisma {
   export type CheckInUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     checkedInAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    isPaidToGym?: BoolFieldUpdateOperationsInput | boolean
     qrJti?: NullableStringFieldUpdateOperationsInput | string | null
+    gymPayoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    platformAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    memberTierSlug?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gym?: GymUpdateOneRequiredWithoutCheckInsNestedInput
   }
@@ -21400,7 +23264,12 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     gymId?: StringFieldUpdateOperationsInput | string
     checkedInAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    isPaidToGym?: BoolFieldUpdateOperationsInput | boolean
     qrJti?: NullableStringFieldUpdateOperationsInput | string | null
+    gymPayoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    platformAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    memberTierSlug?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -21408,7 +23277,12 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     gymId?: StringFieldUpdateOperationsInput | string
     checkedInAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    isPaidToGym?: BoolFieldUpdateOperationsInput | boolean
     qrJti?: NullableStringFieldUpdateOperationsInput | string | null
+    gymPayoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    platformAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    memberTierSlug?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -21433,6 +23307,8 @@ export namespace Prisma {
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: NullableIntFieldUpdateOperationsInput | number | null
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    payoutPerVisit?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -21473,6 +23349,8 @@ export namespace Prisma {
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: NullableIntFieldUpdateOperationsInput | number | null
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    payoutPerVisit?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -21513,6 +23391,8 @@ export namespace Prisma {
     closingTime?: NullableStringFieldUpdateOperationsInput | string | null
     is24Hours?: BoolFieldUpdateOperationsInput | boolean
     tier?: NullableIntFieldUpdateOperationsInput | number | null
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    payoutPerVisit?: IntFieldUpdateOperationsInput | number
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -21574,6 +23454,7 @@ export namespace Prisma {
     stripeSubscriptionId: string
     stripePriceId: string
     status: string
+    remainingVisits?: number | null
     startAt?: Date | string | null
     endAt?: Date | string | null
     createdAt?: Date | string
@@ -21621,6 +23502,7 @@ export namespace Prisma {
     stripeSubscriptionId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    remainingVisits?: NullableIntFieldUpdateOperationsInput | number | null
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21635,6 +23517,7 @@ export namespace Prisma {
     stripeSubscriptionId?: StringFieldUpdateOperationsInput | string
     stripePriceId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    remainingVisits?: NullableIntFieldUpdateOperationsInput | number | null
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21682,7 +23565,12 @@ export namespace Prisma {
     id?: string
     userId: string
     checkedInAt?: Date | string
+    payoutAmount?: number | null
+    isPaidToGym?: boolean
     qrJti?: string | null
+    gymPayoutAmount?: number | null
+    platformAmount?: number | null
+    memberTierSlug?: string | null
     createdAt?: Date | string
   }
 
@@ -21706,7 +23594,12 @@ export namespace Prisma {
   export type CheckInUpdateWithoutGymInput = {
     id?: StringFieldUpdateOperationsInput | string
     checkedInAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    isPaidToGym?: BoolFieldUpdateOperationsInput | boolean
     qrJti?: NullableStringFieldUpdateOperationsInput | string | null
+    gymPayoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    platformAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    memberTierSlug?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCheckInsNestedInput
   }
@@ -21715,7 +23608,12 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     checkedInAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    isPaidToGym?: BoolFieldUpdateOperationsInput | boolean
     qrJti?: NullableStringFieldUpdateOperationsInput | string | null
+    gymPayoutAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    platformAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    memberTierSlug?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

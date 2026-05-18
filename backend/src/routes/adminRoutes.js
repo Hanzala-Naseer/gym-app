@@ -57,10 +57,11 @@
 // router.get("/checkins", adminOnly, adminCtrl.listAllCheckins);
 
 // module.exports = router;
+// src/routes/adminRoutes.js
 const express = require("express");
 const router = express.Router();
 const adminCtrl = require("../controller/adminController");
-const adminSubCtrl = require("../controller/adminSubscriptionController");
+const subscriptionCtrl = require("../controller/subscriptionController");
 const auth = require("../middleware/auth");
 const { authorizeRoles } = require("../middleware/roleMiddleware");
 
@@ -91,7 +92,7 @@ router.patch("/gyms/:id/approve", adminOnly, adminCtrl.approveGym);
 router.patch("/gyms/:id/reject", adminOnly, adminCtrl.rejectGym);
 router.delete("/gyms/:id", adminOnly, adminCtrl.deleteGym);
 router.patch("/gyms/:id/tier", adminOnly, adminCtrl.updateGymTier);
-router.delete("/gyms/:id/hard", adminOnly, adminCtrl.hardDeleteGym); // ← ADDED
+router.delete("/gyms/:id/hard", adminOnly, adminCtrl.hardDeleteGym);
 
 ///////////////////////////////////////////////////////
 // USERS
@@ -99,7 +100,6 @@ router.delete("/gyms/:id/hard", adminOnly, adminCtrl.hardDeleteGym); // ← ADDE
 
 router.post("/owners/register", adminOnly, adminCtrl.registerOwner);
 router.get("/users", adminOnly, adminCtrl.listUsers);
-// REMOVED: router.patch("/users/:id/deactivate", adminOnly, adminCtrl.deactivateUser);
 router.delete("/users/:id", adminOnly, adminCtrl.deleteUser);
 
 ///////////////////////////////////////////////////////
@@ -109,24 +109,33 @@ router.delete("/users/:id", adminOnly, adminCtrl.deleteUser);
 router.get("/checkins", adminOnly, adminCtrl.listAllCheckins);
 
 ///////////////////////////////////////////////////////
-// SUBSCRIPTION TIERS & PRICING
+// SUBSCRIPTION TIERS & PRICING (Using subscriptionController)
 ///////////////////////////////////////////////////////
 
 // Tiers
-router.get("/subscription-tiers", adminSubCtrl.listTiers);
-router.post("/subscription-tiers", adminOnly, adminSubCtrl.createTier);
-router.patch("/subscription-tiers/:id", adminOnly, adminSubCtrl.updateTier);
+router.get("/subscription-tiers", adminOnly, subscriptionCtrl.listTiers);
+router.post("/subscription-tiers", adminOnly, subscriptionCtrl.createTier);
+router.patch("/subscription-tiers/:id", adminOnly, subscriptionCtrl.updateTier);
+router.delete(
+  "/subscription-tiers/:id",
+  adminOnly,
+  subscriptionCtrl.deactivateTier,
+);
 
 // Prices (Stripe-synced)
-router.post("/subscription-prices", adminOnly, adminSubCtrl.createPrice);
-router.patch("/subscription-prices/:id", adminOnly, adminSubCtrl.updatePrice);
+router.post("/subscription-prices", adminOnly, subscriptionCtrl.createPrice);
+router.patch(
+  "/subscription-prices/:id",
+  adminOnly,
+  subscriptionCtrl.updatePrice,
+);
 router.delete(
   "/subscription-prices/:id",
   adminOnly,
-  adminSubCtrl.deactivatePrice,
+  subscriptionCtrl.deactivatePrice,
 );
 
 // Sync utility
-router.post("/subscription-sync", adminOnly, adminSubCtrl.syncStripePrices);
+router.post("/subscription-sync", adminOnly, subscriptionCtrl.syncStripePrices);
 
 module.exports = router;

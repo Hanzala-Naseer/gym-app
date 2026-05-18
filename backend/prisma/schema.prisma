@@ -9,6 +9,16 @@ datasource db {
 }
 
 ///////////////////////////////////////////////////////
+// ENUMS
+///////////////////////////////////////////////////////
+
+enum GymTier {
+  BASIC
+  ULTIMATE
+  ELITE
+}
+
+///////////////////////////////////////////////////////
 // USER
 ///////////////////////////////////////////////////////
 
@@ -36,7 +46,7 @@ model User {
   subscriptions Subscription[]
   payments      Payment[]
   checkIns      CheckIn[]
-  gymsOwned     Gym[]          @relation("GymOwner")
+  gymsOwned     Gym[] @relation("GymOwner")
 
   adminAuditLogs AdminAuditLog[]
 }
@@ -67,7 +77,24 @@ model SubscriptionTier {
 
   description String?
 
+  // KEEPING EXISTING FIELD
   accessTier Int
+
+  ///////////////////////////////////////////////////
+  // NEW MVP FIELDS
+  ///////////////////////////////////////////////////
+
+  gymTierAccess GymTier
+
+  // 16 | 30 | null(for unlimited)
+  monthlyVisitLimit Int?
+
+  isUnlimited Boolean @default(false)
+
+  // PKR display/features
+  perks Json?
+
+  ///////////////////////////////////////////////////
 
   // admin-managed controls
   isActive   Boolean @default(true)
@@ -118,6 +145,14 @@ model Subscription {
 
   // active | canceled | incomplete | past_due
   status String
+
+  ///////////////////////////////////////////////////
+  // MVP VISIT TRACKING
+  ///////////////////////////////////////////////////
+
+  remainingVisits Int?
+
+  ///////////////////////////////////////////////////
 
   startAt DateTime?
   endAt   DateTime?
@@ -201,7 +236,22 @@ model Gym {
 
   is24Hours Boolean @default(false)
 
+  ///////////////////////////////////////////////////
+  // KEEPING EXISTING FIELD
+  ///////////////////////////////////////////////////
+
   tier Int?
+
+  ///////////////////////////////////////////////////
+  // NEW MVP TIER SYSTEM
+  ///////////////////////////////////////////////////
+
+  gymTier GymTier @default(BASIC)
+
+  // payout per successful checkin
+  payoutPerVisit Int @default(70)
+
+  ///////////////////////////////////////////////////
 
   coverImageUrl String?
 
@@ -241,9 +291,11 @@ model Gym {
   @@index([status])
   @@index([city])
 }
+
 ///////////////////////////////////////////////////////
 // GYM VERIFICATION DOCUMENTS
 ///////////////////////////////////////////////////////
+
 model GymVerificationDocument {
   id String @id @default(uuid())
 
@@ -268,6 +320,7 @@ model GymVerificationDocument {
 
   @@index([gymId])
 }
+
 ///////////////////////////////////////////////////////
 // GYM PHOTOS
 ///////////////////////////////////////////////////////
@@ -298,8 +351,22 @@ model CheckIn {
 
   checkedInAt DateTime @default(now())
 
+  ///////////////////////////////////////////////////
+  // PAYOUT TRACKING
+  ///////////////////////////////////////////////////
+
+  payoutAmount Int?
+
+  isPaidToGym Boolean @default(false)
+
+  ///////////////////////////////////////////////////
+
   // token traceability
   qrJti String?
+
+  gymPayoutAmount  Int?    // ← ADD: gymGets locked at check-in time
+  platformAmount   Int?    // ← ADD: platformKeeps locked at check-in time
+  memberTierSlug   String? // ← ADD: tier snapshot at check-in time
 
   createdAt DateTime @default(now())
 
@@ -369,4 +436,23 @@ model AdminNotification {
   createdAt DateTime @default(now())
 
   @@index([isRead])
+}
+
+
+model PayoutRate {
+  id String @id @default(uuid())
+
+  memberTierSlug String  // "basic" | "ultimate" | "elite"
+  gymTier        GymTier
+
+  gymGets        Int     // PKR gym receives per visit
+  platformKeeps  Int     // PKR platform keeps per visit
+  multiplier     Float
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([memberTierSlug, gymTier])
+  @@index([memberTierSlug])
 }

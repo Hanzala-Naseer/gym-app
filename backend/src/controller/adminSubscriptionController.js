@@ -1,280 +1,625 @@
-const { PrismaClient } = require("../generated/prisma");
-const prisma = new PrismaClient();
-const Stripe = require("stripe");
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-///////////////////////////////////////////////////////////////
-// LIST ALL TIERS (Admin + Public)
-///////////////////////////////////////////////////////////////
+// const { PrismaClient } = require("../generated/prisma");
+// const prisma = new PrismaClient();
+// const Stripe = require("stripe");
+// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-const listTiers = async (req, res) => {
-  try {
-    const tiers = await prisma.subscriptionTier.findMany({
-      include: { prices: { where: { isActive: true } } },
-      orderBy: { accessTier: "asc" },
-    });
+// ///////////////////////////////////////////////////////////////
+// // LIST ALL TIERS (Admin + Public) — WITH FULL MVP FIELDS
+// ///////////////////////////////////////////////////////////////
 
-    res.json({ success: true, tiers });
-  } catch (err) {
-    console.error("listTiers error:", err);
-    res.status(500).json({ success: false, message: "Error fetching tiers" });
-  }
-};
+// const listTiers = async (req, res) => {
+//   try {
+//     const tiers = await prisma.subscriptionTier.findMany({
+//       include: {
+//         prices: {
+//           where: { isActive: true },
+//           orderBy: { priceCents: "asc" },
+//         },
+//       },
+//       orderBy: { accessTier: "asc" },
+//     });
 
-///////////////////////////////////////////////////////////////
-// CREATE TIER (Admin only)
-///////////////////////////////////////////////////////////////
+//     res.json({ success: true, tiers });
+//   } catch (err) {
+//     console.error("listTiers error:", err);
+//     res.status(500).json({ success: false, message: "Error fetching tiers" });
+//   }
+// };
 
-const createTier = async (req, res) => {
-  try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, message: "Admin only" });
-    }
+// ///////////////////////////////////////////////////////////////
+// // GET SINGLE TIER WITH FULL DETAILS
+// ///////////////////////////////////////////////////////////////
 
-    const { name, slug, description, accessTier } = req.body;
+// const getTierById = async (req, res) => {
+//   try {
+//     const { id } = req.params;
 
-    if (!name || !slug || !accessTier) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Name, slug, and accessTier required",
-        });
-    }
+//     const tier = await prisma.subscriptionTier.findUnique({
+//       where: { id },
+//       include: {
+//         prices: {
+//           where: { isActive: true },
+//           orderBy: { priceCents: "asc" },
+//         },
+//         subscriptions: {
+//           where: {
+//             status: { in: ["active", "past_due"] },
+//           },
+//           select: {
+//             id: true,
+//             status: true,
+//             userId: true,
+//             startAt: true,
+//             endAt: true,
+//           },
+//         },
+//       },
+//     });
 
-    const tier = await prisma.subscriptionTier.create({
-      data: { name, slug, description, accessTier: parseInt(accessTier) },
-    });
+//     if (!tier) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Tier not found" });
+//     }
 
-    res.status(201).json({ success: true, tier });
-  } catch (err) {
-    console.error("createTier error:", err);
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+//     // Count active subscribers
+//     const activeSubscribers = tier.subscriptions.filter(
+//       (s) => s.status === "active",
+//     ).length;
 
-///////////////////////////////////////////////////////////////
-// UPDATE TIER (Admin only)
-///////////////////////////////////////////////////////////////
+//     res.json({
+//       success: true,
+//       tier: {
+//         ...tier,
+//         activeSubscribers,
+//         subscriptionCount: tier.subscriptions.length,
+//       },
+//     });
+//   } catch (err) {
+//     console.error("getTierById error:", err);
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
 
-const updateTier = async (req, res) => {
-  try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, message: "Admin only" });
-    }
+// ///////////////////////////////////////////////////////////////
+// // CREATE TIER (Admin only) — WITH ALL MVP FIELDS
+// ///////////////////////////////////////////////////////////////
 
-    const { id } = req.params;
-    const { name, description, accessTier, isActive, isFeatured } = req.body;
+// const createTier = async (req, res) => {
+//   try {
+//     if (req.user.role !== "admin") {
+//       return res.status(403).json({ success: false, message: "Admin only" });
+//     }
 
-    const tier = await prisma.subscriptionTier.update({
-      where: { id },
-      data: {
-        name: name || undefined,
-        description: description !== undefined ? description : undefined,
-        accessTier: accessTier ? parseInt(accessTier) : undefined,
-        isActive: isActive !== undefined ? isActive : undefined,
-        isFeatured: isFeatured !== undefined ? isFeatured : undefined,
-      },
-    });
+//     const {
+//       name,
+//       slug,
+//       description,
+//       accessTier,
+//       gymTierAccess, // "BASIC" | "ULTIMATE" | "ELITE"
+//       monthlyVisitLimit, // 16 | 30 | null
+//       isUnlimited, // boolean
+//       perks, // JSON object
+//       isActive,
+//       isFeatured,
+//     } = req.body;
 
-    res.json({ success: true, tier });
-  } catch (err) {
-    console.error("updateTier error:", err);
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+//     // Validation
+//     if (!name || !slug || accessTier === undefined) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "name, slug, and accessTier are required",
+//       });
+//     }
 
-///////////////////////////////////////////////////////////////
-// CREATE PRICE (Admin only — creates in Stripe + DB)
-///////////////////////////////////////////////////////////////
+//     // Validate gymTierAccess enum
+//     const validGymTiers = ["BASIC", "ULTIMATE", "ELITE"];
+//     if (gymTierAccess && !validGymTiers.includes(gymTierAccess)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: `gymTierAccess must be one of: ${validGymTiers.join(", ")}`,
+//       });
+//     }
 
-const createPrice = async (req, res) => {
-  try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, message: "Admin only" });
-    }
+//     // Validate monthlyVisitLimit
+//     if (monthlyVisitLimit !== undefined && monthlyVisitLimit !== null) {
+//       const validLimits = [16, 30];
+//       if (!validLimits.includes(parseInt(monthlyVisitLimit))) {
+//         return res.status(400).json({
+//           success: false,
+//           message: "monthlyVisitLimit must be 16, 30, or null (for unlimited)",
+//         });
+//       }
+//     }
 
-    const { tierId, interval, priceCents, currency } = req.body;
+//     // Build data object with all fields
+//     const data = {
+//       name,
+//       slug,
+//       description: description || null,
+//       accessTier: parseInt(accessTier),
+//       gymTierAccess: gymTierAccess || "BASIC",
+//       monthlyVisitLimit:
+//         monthlyVisitLimit !== undefined
+//           ? monthlyVisitLimit === null
+//             ? null
+//             : parseInt(monthlyVisitLimit)
+//           : null,
+//       isUnlimited: isUnlimited !== undefined ? isUnlimited : false,
+//       perks: perks || null,
+//       isActive: isActive !== undefined ? isActive : true,
+//       isFeatured: isFeatured !== undefined ? isFeatured : false,
+//     };
 
-    if (!tierId || !interval || !priceCents) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "tierId, interval, and priceCents required",
-        });
-    }
+//     const tier = await prisma.subscriptionTier.create({ data });
 
-    // Get tier for name
-    const tier = await prisma.subscriptionTier.findUnique({
-      where: { id: tierId },
-    });
-    if (!tier)
-      return res
-        .status(404)
-        .json({ success: false, message: "Tier not found" });
+//     res.status(201).json({ success: true, tier });
+//   } catch (err) {
+//     console.error("createTier error:", err);
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
 
-    // 1. Create Stripe Product (if not exists) or use existing
-    const product = await stripe.products.create({
-      name: `${tier.name} — ${interval}`,
-      description: tier.description || "",
-      metadata: { tierId, accessTier: String(tier.accessTier) },
-    });
+// ///////////////////////////////////////////////////////////////
+// // UPDATE TIER (Admin only) — WITH ALL MVP FIELDS
+// ///////////////////////////////////////////////////////////////
 
-    // 2. Create Stripe Price
-    const stripePrice = await stripe.prices.create({
-      product: product.id,
-      unit_amount: parseInt(priceCents),
-      currency: currency || "pkr",
-      recurring: { interval },
-    });
+// const updateTier = async (req, res) => {
+//   try {
+//     if (req.user.role !== "admin") {
+//       return res.status(403).json({ success: false, message: "Admin only" });
+//     }
 
-    // 3. Save to DB
-    const price = await prisma.subscriptionPrice.create({
-      data: {
-        tierId,
-        stripeProductId: product.id,
-        stripePriceId: stripePrice.id,
-        interval,
-        priceCents: parseInt(priceCents),
-        currency: currency || "pkr",
-      },
-    });
+//     const { id } = req.params;
+//     const {
+//       name,
+//       description,
+//       accessTier,
+//       gymTierAccess,
+//       monthlyVisitLimit,
+//       isUnlimited,
+//       perks,
+//       isActive,
+//       isFeatured,
+//     } = req.body;
 
-    res.status(201).json({
-      success: true,
-      message: "Price created successfully",
-      price,
-    });
-  } catch (err) {
-    console.error("createPrice error:", err);
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+//     const existing = await prisma.subscriptionTier.findUnique({
+//       where: { id },
+//       include: { prices: true },
+//     });
 
-///////////////////////////////////////////////////////////////
-// UPDATE PRICE (Admin only — deactivates old, creates new in Stripe)
-///////////////////////////////////////////////////////////////
+//     if (!existing) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Tier not found" });
+//     }
 
-const updatePrice = async (req, res) => {
-  try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, message: "Admin only" });
-    }
+//     // Validate gymTierAccess if provided
+//     const validGymTiers = ["BASIC", "ULTIMATE", "ELITE"];
+//     if (gymTierAccess && !validGymTiers.includes(gymTierAccess)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: `gymTierAccess must be one of: ${validGymTiers.join(", ")}`,
+//       });
+//     }
 
-    const { id } = req.params;
-    const { priceCents, isActive } = req.body;
+//     // Validate monthlyVisitLimit if provided
+//     if (monthlyVisitLimit !== undefined && monthlyVisitLimit !== null) {
+//       const validLimits = [16, 30];
+//       if (!validLimits.includes(parseInt(monthlyVisitLimit))) {
+//         return res.status(400).json({
+//           success: false,
+//           message: "monthlyVisitLimit must be 16, 30, or null",
+//         });
+//       }
+//     }
 
-    const existing = await prisma.subscriptionPrice.findUnique({
-      where: { id },
-      include: { tier: true },
-    });
+//     // Build update data — only include fields that are provided
+//     const updateData = {};
+//     if (name !== undefined) updateData.name = name;
+//     if (description !== undefined) updateData.description = description;
+//     if (accessTier !== undefined) updateData.accessTier = parseInt(accessTier);
+//     if (gymTierAccess !== undefined) updateData.gymTierAccess = gymTierAccess;
+//     if (monthlyVisitLimit !== undefined) {
+//       updateData.monthlyVisitLimit =
+//         monthlyVisitLimit === null ? null : parseInt(monthlyVisitLimit);
+//     }
+//     if (isUnlimited !== undefined) updateData.isUnlimited = isUnlimited;
+//     if (perks !== undefined) updateData.perks = perks;
+//     if (isActive !== undefined) updateData.isActive = isActive;
+//     if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
 
-    if (!existing)
-      return res
-        .status(404)
-        .json({ success: false, message: "Price not found" });
+//     const tier = await prisma.subscriptionTier.update({
+//       where: { id },
+//       data: updateData,
+//       include: {
+//         prices: { where: { isActive: true } },
+//       },
+//     });
 
-    // If price changed, create NEW Stripe price (Stripe prices are immutable)
-    let newStripePriceId = existing.stripePriceId;
-    let newStripeProductId = existing.stripeProductId;
+//     // Log the update
+//     await prisma.adminAuditLog.create({
+//       data: {
+//         adminId: req.user.id,
+//         action: "UPDATED_PLAN",
+//         entityType: "SubscriptionTier",
+//         entityId: id,
+//         metadata: {
+//           tierName: tier.name,
+//           updatedFields: Object.keys(updateData),
+//           previousAccessTier: existing.accessTier,
+//           newAccessTier: tier.accessTier,
+//         },
+//       },
+//     });
 
-    if (priceCents && parseInt(priceCents) !== existing.priceCents) {
-      const newStripePrice = await stripe.prices.create({
-        product: existing.stripeProductId,
-        unit_amount: parseInt(priceCents),
-        currency: existing.currency,
-        recurring: { interval: existing.interval },
-      });
-      newStripePriceId = newStripePrice.id;
-    }
+//     res.json({ success: true, tier });
+//   } catch (err) {
+//     console.error("updateTier error:", err);
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
 
-    // Update DB
-    const updated = await prisma.subscriptionPrice.update({
-      where: { id },
-      data: {
-        priceCents: priceCents ? parseInt(priceCents) : existing.priceCents,
-        isActive: isActive !== undefined ? isActive : existing.isActive,
-        stripePriceId: newStripePriceId,
-      },
-    });
+// ///////////////////////////////////////////////////////////////
+// // DELETE/DEACTIVATE TIER (Admin only — soft delete via isActive)
+// ///////////////////////////////////////////////////////////////
 
-    res.json({ success: true, price: updated });
-  } catch (err) {
-    console.error("updatePrice error:", err);
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+// const deactivateTier = async (req, res) => {
+//   try {
+//     if (req.user.role !== "admin") {
+//       return res.status(403).json({ success: false, message: "Admin only" });
+//     }
 
-///////////////////////////////////////////////////////////////
-// DEACTIVATE PRICE (Admin only)
-///////////////////////////////////////////////////////////////
+//     const { id } = req.params;
 
-const deactivatePrice = async (req, res) => {
-  try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, message: "Admin only" });
-    }
+//     const tier = await prisma.subscriptionTier.update({
+//       where: { id },
+//       data: { isActive: false },
+//     });
 
-    const { id } = req.params;
+//     res.json({ success: true, message: "Tier deactivated", tier });
+//   } catch (err) {
+//     console.error("deactivateTier error:", err);
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
 
-    const price = await prisma.subscriptionPrice.update({
-      where: { id },
-      data: { isActive: false },
-    });
+// ///////////////////////////////////////////////////////////////
+// // CREATE PRICE (Admin only — creates in Stripe + DB)
+// ///////////////////////////////////////////////////////////////
 
-    res.json({ success: true, message: "Price deactivated", price });
-  } catch (err) {
-    console.error("deactivatePrice error:", err);
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+// const createPrice = async (req, res) => {
+//   try {
+//     if (req.user.role !== "admin") {
+//       return res.status(403).json({ success: false, message: "Admin only" });
+//     }
 
-///////////////////////////////////////////////////////////////
-// SYNC STRIPE PRICES (Admin utility)
-///////////////////////////////////////////////////////////////
+//     const { tierId, interval, priceCents, currency } = req.body;
 
-const syncStripePrices = async (req, res) => {
-  try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, message: "Admin only" });
-    }
+//     if (!tierId || !interval || !priceCents) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "tierId, interval, and priceCents required",
+//       });
+//     }
 
-    const prices = await stripe.prices.list({
-      limit: 100,
-      expand: ["data.product"],
-    });
+//     // Validate interval
+//     if (!["monthly", "yearly"].includes(interval)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "interval must be 'monthly' or 'yearly'",
+//       });
+//     }
 
-    const synced = [];
-    for (const sp of prices.data) {
-      if (!sp.product || sp.type !== "recurring") continue;
+//     // Get tier for name and details
+//     const tier = await prisma.subscriptionTier.findUnique({
+//       where: { id: tierId },
+//     });
+//     if (!tier) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Tier not found" });
+//     }
 
-      // Try to find existing by stripePriceId
-      const existing = await prisma.subscriptionPrice.findUnique({
-        where: { stripePriceId: sp.id },
-      });
+//     // 1. Create Stripe Product
+//     const product = await stripe.products.create({
+//       name: `${tier.name} — ${interval}`,
+//       description: tier.description || "",
+//       metadata: {
+//         tierId,
+//         accessTier: String(tier.accessTier),
+//         gymTierAccess: tier.gymTierAccess,
+//         monthlyVisitLimit: String(tier.monthlyVisitLimit || "unlimited"),
+//         isUnlimited: String(tier.isUnlimited),
+//       },
+//     });
 
-      if (!existing) {
-        // Need tierId — skip or create placeholder
-        console.log(`Skipping unknown Stripe price: ${sp.id}`);
-      } else {
-        synced.push(existing);
-      }
-    }
+//     // 2. Create Stripe Price
+//     const stripePrice = await stripe.prices.create({
+//       product: product.id,
+//       unit_amount: parseInt(priceCents),
+//       currency: (currency || "pkr").toLowerCase(),
+//       recurring: { interval: interval === "monthly" ? "month" : "year" },
+//     });
 
-    res.json({ success: true, count: synced.length });
-  } catch (err) {
-    console.error("syncStripePrices error:", err);
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+//     // 3. Save to DB
+//     const price = await prisma.subscriptionPrice.create({
+//       data: {
+//         tierId,
+//         stripeProductId: product.id,
+//         stripePriceId: stripePrice.id,
+//         interval,
+//         priceCents: parseInt(priceCents),
+//         currency: currency || "pkr",
+//         isActive: true,
+//       },
+//       include: {
+//         tier: {
+//           select: {
+//             name: true,
+//             slug: true,
+//             gymTierAccess: true,
+//             monthlyVisitLimit: true,
+//             isUnlimited: true,
+//           },
+//         },
+//       },
+//     });
 
-module.exports = {
-  listTiers,
-  createTier,
-  updateTier,
-  createPrice,
-  updatePrice,
-  deactivatePrice,
-  syncStripePrices,
-};
+//     res.status(201).json({
+//       success: true,
+//       message: "Price created successfully",
+//       price,
+//     });
+//   } catch (err) {
+//     console.error("createPrice error:", err);
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
+
+// ///////////////////////////////////////////////////////////////
+// // UPDATE PRICE (Admin only — deactivates old, creates new in Stripe)
+// ///////////////////////////////////////////////////////////////
+
+// const updatePrice = async (req, res) => {
+//   try {
+//     if (req.user.role !== "admin") {
+//       return res.status(403).json({ success: false, message: "Admin only" });
+//     }
+
+//     const { id } = req.params;
+//     const { priceCents, isActive, currency } = req.body;
+
+//     const existing = await prisma.subscriptionPrice.findUnique({
+//       where: { id },
+//       include: { tier: true },
+//     });
+
+//     if (!existing) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Price not found" });
+//     }
+
+//     let newStripePriceId = existing.stripePriceId;
+//     let newStripeProductId = existing.stripeProductId;
+
+//     // If price changed, create NEW Stripe price (Stripe prices are immutable)
+//     if (priceCents && parseInt(priceCents) !== existing.priceCents) {
+//       const newStripePrice = await stripe.prices.create({
+//         product: existing.stripeProductId,
+//         unit_amount: parseInt(priceCents),
+//         currency: (currency || existing.currency).toLowerCase(),
+//         recurring: {
+//           interval: existing.interval === "monthly" ? "month" : "year",
+//         },
+//       });
+//       newStripePriceId = newStripePrice.id;
+//     }
+
+//     // Update DB
+//     const updated = await prisma.subscriptionPrice.update({
+//       where: { id },
+//       data: {
+//         priceCents: priceCents ? parseInt(priceCents) : existing.priceCents,
+//         isActive: isActive !== undefined ? isActive : existing.isActive,
+//         stripePriceId: newStripePriceId,
+//         currency: currency || existing.currency,
+//       },
+//       include: {
+//         tier: {
+//           select: {
+//             name: true,
+//             slug: true,
+//             gymTierAccess: true,
+//           },
+//         },
+//       },
+//     });
+
+//     res.json({ success: true, price: updated });
+//   } catch (err) {
+//     console.error("updatePrice error:", err);
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
+
+// ///////////////////////////////////////////////////////////////
+// // DEACTIVATE PRICE (Admin only)
+// ///////////////////////////////////////////////////////////////
+
+// const deactivatePrice = async (req, res) => {
+//   try {
+//     if (req.user.role !== "admin") {
+//       return res.status(403).json({ success: false, message: "Admin only" });
+//     }
+
+//     const { id } = req.params;
+
+//     const price = await prisma.subscriptionPrice.update({
+//       where: { id },
+//       data: { isActive: false },
+//       include: {
+//         tier: {
+//           select: { name: true, slug: true },
+//         },
+//       },
+//     });
+
+//     res.json({ success: true, message: "Price deactivated", price });
+//   } catch (err) {
+//     console.error("deactivatePrice error:", err);
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
+
+// ///////////////////////////////////////////////////////////////
+// // SYNC STRIPE PRICES (Admin utility)
+// ///////////////////////////////////////////////////////////////
+
+// const syncStripePrices = async (req, res) => {
+//   try {
+//     if (req.user.role !== "admin") {
+//       return res.status(403).json({ success: false, message: "Admin only" });
+//     }
+
+//     const prices = await stripe.prices.list({
+//       limit: 100,
+//       expand: ["data.product"],
+//     });
+
+//     const synced = [];
+//     const skipped = [];
+
+//     for (const sp of prices.data) {
+//       if (!sp.product || sp.type !== "recurring") continue;
+
+//       const existing = await prisma.subscriptionPrice.findUnique({
+//         where: { stripePriceId: sp.id },
+//       });
+
+//       if (!existing) {
+//         skipped.push({
+//           stripePriceId: sp.id,
+//           reason: "Not found in database",
+//         });
+//       } else {
+//         synced.push({
+//           id: existing.id,
+//           stripePriceId: sp.id,
+//           tierId: existing.tierId,
+//           isActive: existing.isActive,
+//         });
+//       }
+//     }
+
+//     res.json({
+//       success: true,
+//       syncedCount: synced.length,
+//       skippedCount: skipped.length,
+//       synced,
+//       skipped,
+//     });
+//   } catch (err) {
+//     console.error("syncStripePrices error:", err);
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
+
+// ///////////////////////////////////////////////////////////////
+// // GET PUBLIC TIERS (For marketing/landing page — only active & featured)
+// ///////////////////////////////////////////////////////////////
+
+// const getPublicTiers = async (req, res) => {
+//   try {
+//     const tiers = await prisma.subscriptionTier.findMany({
+//       where: {
+//         isActive: true,
+//       },
+//       include: {
+//         prices: {
+//           where: { isActive: true },
+//           orderBy: { priceCents: "asc" },
+//         },
+//       },
+//       orderBy: { accessTier: "asc" },
+//     });
+
+//     // Format for public display
+//     const formatted = tiers.map((tier) => ({
+//       id: tier.id,
+//       name: tier.name,
+//       slug: tier.slug,
+//       description: tier.description,
+//       gymTierAccess: tier.gymTierAccess,
+//       monthlyVisitLimit: tier.monthlyVisitLimit,
+//       isUnlimited: tier.isUnlimited,
+//       perks: tier.perks,
+//       isFeatured: tier.isFeatured,
+//       prices: tier.prices.map((p) => ({
+//         interval: p.interval,
+//         priceCents: p.priceCents,
+//         pricePKR: p.priceCents / 100,
+//         currency: p.currency,
+//       })),
+//     }));
+
+//     res.json({ success: true, tiers: formatted });
+//   } catch (err) {
+//     console.error("getPublicTiers error:", err);
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
+
+// ///////////////////////////////////////////////////////////////
+// // GET TIERS BY GYM TIER ACCESS (For gym filtering)
+// ///////////////////////////////////////////////////////////////
+
+// const getTiersByGymAccess = async (req, res) => {
+//   try {
+//     const { gymTier } = req.params; // BASIC, ULTIMATE, ELITE
+
+//     const validGymTiers = ["BASIC", "ULTIMATE", "ELITE"];
+//     if (!validGymTiers.includes(gymTier)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: `gymTier must be one of: ${validGymTiers.join(", ")}`,
+//       });
+//     }
+
+//     const tiers = await prisma.subscriptionTier.findMany({
+//       where: {
+//         isActive: true,
+//         gymTierAccess: gymTier,
+//       },
+//       include: {
+//         prices: {
+//           where: { isActive: true },
+//           orderBy: { priceCents: "asc" },
+//         },
+//       },
+//       orderBy: { accessTier: "asc" },
+//     });
+
+//     res.json({ success: true, gymTier, count: tiers.length, tiers });
+//   } catch (err) {
+//     console.error("getTiersByGymAccess error:", err);
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
+
+// module.exports = {
+//   listTiers,
+//   getTierById,
+//   createTier,
+//   updateTier,
+//   deactivateTier,
+//   createPrice,
+//   updatePrice,
+//   deactivatePrice,
+//   syncStripePrices,
+//   getPublicTiers,
+//   getTiersByGymAccess,
+// };
+// // 

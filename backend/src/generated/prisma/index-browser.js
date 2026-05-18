@@ -134,6 +134,10 @@ exports.Prisma.SubscriptionTierScalarFieldEnum = {
   slug: 'slug',
   description: 'description',
   accessTier: 'accessTier',
+  gymTierAccess: 'gymTierAccess',
+  monthlyVisitLimit: 'monthlyVisitLimit',
+  isUnlimited: 'isUnlimited',
+  perks: 'perks',
   isActive: 'isActive',
   isFeatured: 'isFeatured',
   createdAt: 'createdAt',
@@ -160,6 +164,7 @@ exports.Prisma.SubscriptionScalarFieldEnum = {
   stripeSubscriptionId: 'stripeSubscriptionId',
   stripePriceId: 'stripePriceId',
   status: 'status',
+  remainingVisits: 'remainingVisits',
   startAt: 'startAt',
   endAt: 'endAt',
   createdAt: 'createdAt',
@@ -200,6 +205,8 @@ exports.Prisma.GymScalarFieldEnum = {
   closingTime: 'closingTime',
   is24Hours: 'is24Hours',
   tier: 'tier',
+  gymTier: 'gymTier',
+  payoutPerVisit: 'payoutPerVisit',
   coverImageUrl: 'coverImageUrl',
   status: 'status',
   submittedAt: 'submittedAt',
@@ -241,7 +248,12 @@ exports.Prisma.CheckInScalarFieldEnum = {
   userId: 'userId',
   gymId: 'gymId',
   checkedInAt: 'checkedInAt',
+  payoutAmount: 'payoutAmount',
+  isPaidToGym: 'isPaidToGym',
   qrJti: 'qrJti',
+  gymPayoutAmount: 'gymPayoutAmount',
+  platformAmount: 'platformAmount',
+  memberTierSlug: 'memberTierSlug',
   createdAt: 'createdAt'
 };
 
@@ -271,6 +283,18 @@ exports.Prisma.AdminNotificationScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.PayoutRateScalarFieldEnum = {
+  id: 'id',
+  memberTierSlug: 'memberTierSlug',
+  gymTier: 'gymTier',
+  gymGets: 'gymGets',
+  platformKeeps: 'platformKeeps',
+  multiplier: 'multiplier',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -296,7 +320,11 @@ exports.Prisma.JsonNullValueFilter = {
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
-
+exports.GymTier = {
+  BASIC: 'BASIC',
+  ULTIMATE: 'ULTIMATE',
+  ELITE: 'ELITE'
+};
 
 exports.Prisma.ModelName = {
   User: 'User',
@@ -311,7 +339,8 @@ exports.Prisma.ModelName = {
   CheckIn: 'CheckIn',
   QrJtiUsage: 'QrJtiUsage',
   AdminAuditLog: 'AdminAuditLog',
-  AdminNotification: 'AdminNotification'
+  AdminNotification: 'AdminNotification',
+  PayoutRate: 'PayoutRate'
 };
 
 /**
