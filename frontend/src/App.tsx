@@ -20,6 +20,7 @@ import MyGym from "@/pages/owner/MyGym";
 import QRPage from "@/pages/owner/QRPage";
 import Members from "@/pages/owner/Members";
 import OwnerSettings from "@/pages/owner/OwnerSettings";
+import OwnerPayouts from "@/pages/owner/OwnerPayouts";
 
 // Admin Pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
@@ -29,6 +30,7 @@ import AllMembers from "@/pages/admin/AllMembers";
 import AdminCheckins from "@/pages/admin/AdminCheckins";
 import AdminSettings from "@/pages/admin/AdminSettings";
 import AdminSubscriptionPlans from "@/pages/admin/AdminSubscriptionPlans";
+import AdminPayouts from "@/pages/admin/AdminPayouts";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +79,11 @@ const App = () => (
                 <OwnerSettings />
               </ProtectedRoute>
             } />
+            <Route path="/dashboard/owner/payouts" element={
+              <ProtectedRoute allowedRoles={['owner']}>
+                <OwnerPayouts />
+              </ProtectedRoute>
+            } />
 
             {/* Admin Routes */}
             <Route path="/dashboard/admin" element={
@@ -112,6 +119,11 @@ const App = () => (
             <Route path="/dashboard/admin/subscription-plans" element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminSubscriptionPlans />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/admin/payouts" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminPayouts />
               </ProtectedRoute>
             } />
 
