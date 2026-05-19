@@ -276,9 +276,12 @@ exports.Prisma.AdminAuditLogScalarFieldEnum = {
 
 exports.Prisma.AdminNotificationScalarFieldEnum = {
   id: 'id',
+  adminId: 'adminId',
   title: 'title',
   message: 'message',
   type: 'type',
+  actionType: 'actionType',
+  metadata: 'metadata',
   isRead: 'isRead',
   createdAt: 'createdAt'
 };
@@ -291,6 +294,22 @@ exports.Prisma.PayoutRateScalarFieldEnum = {
   platformKeeps: 'platformKeeps',
   multiplier: 'multiplier',
   isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GymPayoutAccountScalarFieldEnum = {
+  id: 'id',
+  gymId: 'gymId',
+  accountType: 'accountType',
+  bankName: 'bankName',
+  accountTitle: 'accountTitle',
+  accountNumber: 'accountNumber',
+  iban: 'iban',
+  walletProvider: 'walletProvider',
+  mobileNumber: 'mobileNumber',
+  isVerified: 'isVerified',
+  verifiedAt: 'verifiedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -340,7 +359,8 @@ exports.Prisma.ModelName = {
   QrJtiUsage: 'QrJtiUsage',
   AdminAuditLog: 'AdminAuditLog',
   AdminNotification: 'AdminNotification',
-  PayoutRate: 'PayoutRate'
+  PayoutRate: 'PayoutRate',
+  GymPayoutAccount: 'GymPayoutAccount'
 };
 
 /**

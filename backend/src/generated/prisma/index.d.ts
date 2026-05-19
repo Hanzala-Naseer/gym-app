@@ -20,6 +20,7 @@ export type UserPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultAr
     checkIns: CheckInPayload<ExtArgs>[]
     gymsOwned: GymPayload<ExtArgs>[]
     adminAuditLogs: AdminAuditLogPayload<ExtArgs>[]
+    adminNotifications: AdminNotificationPayload<ExtArgs>[]
   }
   scalars: $Extensions.GetResult<{
     id: string
@@ -183,6 +184,7 @@ export type Payment = runtime.Types.DefaultSelection<PaymentPayload>
 export type GymPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
   name: "Gym"
   objects: {
+    payoutAccount: GymPayoutAccountPayload<ExtArgs> | null
     owner: UserPayload<ExtArgs> | null
     checkIns: CheckInPayload<ExtArgs>[]
     photos: GymPhotoPayload<ExtArgs>[]
@@ -361,12 +363,17 @@ export type AdminAuditLogPayload<ExtArgs extends $Extensions.Args = $Extensions.
 export type AdminAuditLog = runtime.Types.DefaultSelection<AdminAuditLogPayload>
 export type AdminNotificationPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
   name: "AdminNotification"
-  objects: {}
+  objects: {
+    admin: UserPayload<ExtArgs> | null
+  }
   scalars: $Extensions.GetResult<{
     id: string
+    adminId: string | null
     title: string
     message: string
     type: string
+    actionType: string | null
+    metadata: Prisma.JsonValue | null
     isRead: boolean
     createdAt: Date
   }, ExtArgs["result"]["adminNotification"]>
@@ -400,6 +407,34 @@ export type PayoutRatePayload<ExtArgs extends $Extensions.Args = $Extensions.Def
  * 
  */
 export type PayoutRate = runtime.Types.DefaultSelection<PayoutRatePayload>
+export type GymPayoutAccountPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+  name: "GymPayoutAccount"
+  objects: {
+    gym: GymPayload<ExtArgs>
+  }
+  scalars: $Extensions.GetResult<{
+    id: string
+    gymId: string
+    accountType: string
+    bankName: string | null
+    accountTitle: string | null
+    accountNumber: string | null
+    iban: string | null
+    walletProvider: string | null
+    mobileNumber: string | null
+    isVerified: boolean
+    verifiedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+  }, ExtArgs["result"]["gymPayoutAccount"]>
+  composites: {}
+}
+
+/**
+ * Model GymPayoutAccount
+ * 
+ */
+export type GymPayoutAccount = runtime.Types.DefaultSelection<GymPayoutAccountPayload>
 
 /**
  * Enums
@@ -678,6 +713,16 @@ export class PrismaClient<
     * ```
     */
   get payoutRate(): Prisma.PayoutRateDelegate<GlobalReject, ExtArgs>;
+
+  /**
+   * `prisma.gymPayoutAccount`: Exposes CRUD operations for the **GymPayoutAccount** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GymPayoutAccounts
+    * const gymPayoutAccounts = await prisma.gymPayoutAccount.findMany()
+    * ```
+    */
+  get gymPayoutAccount(): Prisma.GymPayoutAccountDelegate<GlobalReject, ExtArgs>;
 }
 
 export namespace Prisma {
@@ -1174,7 +1219,8 @@ export namespace Prisma {
     QrJtiUsage: 'QrJtiUsage',
     AdminAuditLog: 'AdminAuditLog',
     AdminNotification: 'AdminNotification',
-    PayoutRate: 'PayoutRate'
+    PayoutRate: 'PayoutRate',
+    GymPayoutAccount: 'GymPayoutAccount'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1191,7 +1237,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
     meta: {
-      modelProps: 'user' | 'passwordResetToken' | 'subscriptionTier' | 'subscriptionPrice' | 'subscription' | 'payment' | 'gym' | 'gymVerificationDocument' | 'gymPhoto' | 'checkIn' | 'qrJtiUsage' | 'adminAuditLog' | 'adminNotification' | 'payoutRate'
+      modelProps: 'user' | 'passwordResetToken' | 'subscriptionTier' | 'subscriptionPrice' | 'subscription' | 'payment' | 'gym' | 'gymVerificationDocument' | 'gymPhoto' | 'checkIn' | 'qrJtiUsage' | 'adminAuditLog' | 'adminNotification' | 'payoutRate' | 'gymPayoutAccount'
       txIsolationLevel: Prisma.TransactionIsolationLevel
     },
     model: {
@@ -2105,6 +2151,71 @@ export namespace Prisma {
           }
         }
       }
+      GymPayoutAccount: {
+        payload: GymPayoutAccountPayload<ExtArgs>
+        operations: {
+          findUnique: {
+            args: Prisma.GymPayoutAccountFindUniqueArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymPayoutAccountPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GymPayoutAccountFindUniqueOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymPayoutAccountPayload>
+          }
+          findFirst: {
+            args: Prisma.GymPayoutAccountFindFirstArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymPayoutAccountPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GymPayoutAccountFindFirstOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymPayoutAccountPayload>
+          }
+          findMany: {
+            args: Prisma.GymPayoutAccountFindManyArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymPayoutAccountPayload>[]
+          }
+          create: {
+            args: Prisma.GymPayoutAccountCreateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymPayoutAccountPayload>
+          }
+          createMany: {
+            args: Prisma.GymPayoutAccountCreateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          delete: {
+            args: Prisma.GymPayoutAccountDeleteArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymPayoutAccountPayload>
+          }
+          update: {
+            args: Prisma.GymPayoutAccountUpdateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymPayoutAccountPayload>
+          }
+          deleteMany: {
+            args: Prisma.GymPayoutAccountDeleteManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GymPayoutAccountUpdateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          upsert: {
+            args: Prisma.GymPayoutAccountUpsertArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<GymPayoutAccountPayload>
+          }
+          aggregate: {
+            args: Prisma.GymPayoutAccountAggregateArgs<ExtArgs>,
+            result: $Utils.Optional<AggregateGymPayoutAccount>
+          }
+          groupBy: {
+            args: Prisma.GymPayoutAccountGroupByArgs<ExtArgs>,
+            result: $Utils.Optional<GymPayoutAccountGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.GymPayoutAccountCountArgs<ExtArgs>,
+            result: $Utils.Optional<GymPayoutAccountCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2292,6 +2403,7 @@ export namespace Prisma {
     checkIns: number
     gymsOwned: number
     adminAuditLogs: number
+    adminNotifications: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
@@ -2300,6 +2412,7 @@ export namespace Prisma {
     checkIns?: boolean | UserCountOutputTypeCountCheckInsArgs
     gymsOwned?: boolean | UserCountOutputTypeCountGymsOwnedArgs
     adminAuditLogs?: boolean | UserCountOutputTypeCountAdminAuditLogsArgs
+    adminNotifications?: boolean | UserCountOutputTypeCountAdminNotificationsArgs
   }
 
   // Custom InputTypes
@@ -2352,6 +2465,14 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountAdminAuditLogsArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
     where?: AdminAuditLogWhereInput
+  }
+
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAdminNotificationsArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    where?: AdminNotificationWhereInput
   }
 
 
@@ -2756,6 +2877,7 @@ export namespace Prisma {
     checkIns?: boolean | User$checkInsArgs<ExtArgs>
     gymsOwned?: boolean | User$gymsOwnedArgs<ExtArgs>
     adminAuditLogs?: boolean | User$adminAuditLogsArgs<ExtArgs>
+    adminNotifications?: boolean | User$adminNotificationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2780,6 +2902,7 @@ export namespace Prisma {
     checkIns?: boolean | User$checkInsArgs<ExtArgs>
     gymsOwned?: boolean | User$gymsOwnedArgs<ExtArgs>
     adminAuditLogs?: boolean | User$adminAuditLogsArgs<ExtArgs>
+    adminNotifications?: boolean | User$adminNotificationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeArgs<ExtArgs>
   }
 
@@ -3162,6 +3285,8 @@ export namespace Prisma {
     gymsOwned<T extends User$gymsOwnedArgs<ExtArgs> = {}>(args?: Subset<T, User$gymsOwnedArgs<ExtArgs>>): Prisma.PrismaPromise<$Types.GetResult<GymPayload<ExtArgs>, T, 'findMany', never>| Null>;
 
     adminAuditLogs<T extends User$adminAuditLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$adminAuditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Types.GetResult<AdminAuditLogPayload<ExtArgs>, T, 'findMany', never>| Null>;
+
+    adminNotifications<T extends User$adminNotificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$adminNotificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Types.GetResult<AdminNotificationPayload<ExtArgs>, T, 'findMany', never>| Null>;
 
     private get _document();
     /**
@@ -3620,6 +3745,27 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: Enumerable<AdminAuditLogScalarFieldEnum>
+  }
+
+
+  /**
+   * User.adminNotifications
+   */
+  export type User$adminNotificationsArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminNotification
+     */
+    select?: AdminNotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminNotificationInclude<ExtArgs> | null
+    where?: AdminNotificationWhereInput
+    orderBy?: Enumerable<AdminNotificationOrderByWithRelationInput>
+    cursor?: AdminNotificationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: Enumerable<AdminNotificationScalarFieldEnum>
   }
 
 
@@ -9116,6 +9262,7 @@ export namespace Prisma {
     ownerId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    payoutAccount?: boolean | GymPayoutAccountArgs<ExtArgs>
     owner?: boolean | UserArgs<ExtArgs>
     checkIns?: boolean | Gym$checkInsArgs<ExtArgs>
     photos?: boolean | Gym$photosArgs<ExtArgs>
@@ -9164,6 +9311,7 @@ export namespace Prisma {
   }
 
   export type GymInclude<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    payoutAccount?: boolean | GymPayoutAccountArgs<ExtArgs>
     owner?: boolean | UserArgs<ExtArgs>
     checkIns?: boolean | Gym$checkInsArgs<ExtArgs>
     photos?: boolean | Gym$photosArgs<ExtArgs>
@@ -9540,6 +9688,8 @@ export namespace Prisma {
     private _requestPromise?;
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     constructor(_dmmf: runtime.DMMFClass, _queryType: 'query' | 'mutation', _rootField: string, _clientMethod: string, _args: any, _dataPath: string[], _errorFormat: ErrorFormat, _measurePerformance?: boolean | undefined, _isList?: boolean);
+
+    payoutAccount<T extends GymPayoutAccountArgs<ExtArgs> = {}>(args?: Subset<T, GymPayoutAccountArgs<ExtArgs>>): Prisma__GymPayoutAccountClient<$Types.GetResult<GymPayoutAccountPayload<ExtArgs>, T, 'findUnique', never> | Null, never, ExtArgs>;
 
     owner<T extends UserArgs<ExtArgs> = {}>(args?: Subset<T, UserArgs<ExtArgs>>): Prisma__UserClient<$Types.GetResult<UserPayload<ExtArgs>, T, 'findUnique', never> | Null, never, ExtArgs>;
 
@@ -14702,27 +14852,34 @@ export namespace Prisma {
 
   export type AdminNotificationMinAggregateOutputType = {
     id: string | null
+    adminId: string | null
     title: string | null
     message: string | null
     type: string | null
+    actionType: string | null
     isRead: boolean | null
     createdAt: Date | null
   }
 
   export type AdminNotificationMaxAggregateOutputType = {
     id: string | null
+    adminId: string | null
     title: string | null
     message: string | null
     type: string | null
+    actionType: string | null
     isRead: boolean | null
     createdAt: Date | null
   }
 
   export type AdminNotificationCountAggregateOutputType = {
     id: number
+    adminId: number
     title: number
     message: number
     type: number
+    actionType: number
+    metadata: number
     isRead: number
     createdAt: number
     _all: number
@@ -14731,27 +14888,34 @@ export namespace Prisma {
 
   export type AdminNotificationMinAggregateInputType = {
     id?: true
+    adminId?: true
     title?: true
     message?: true
     type?: true
+    actionType?: true
     isRead?: true
     createdAt?: true
   }
 
   export type AdminNotificationMaxAggregateInputType = {
     id?: true
+    adminId?: true
     title?: true
     message?: true
     type?: true
+    actionType?: true
     isRead?: true
     createdAt?: true
   }
 
   export type AdminNotificationCountAggregateInputType = {
     id?: true
+    adminId?: true
     title?: true
     message?: true
     type?: true
+    actionType?: true
+    metadata?: true
     isRead?: true
     createdAt?: true
     _all?: true
@@ -14832,9 +14996,12 @@ export namespace Prisma {
 
   export type AdminNotificationGroupByOutputType = {
     id: string
+    adminId: string | null
     title: string
     message: string
     type: string
+    actionType: string | null
+    metadata: JsonValue | null
     isRead: boolean
     createdAt: Date
     _count: AdminNotificationCountAggregateOutputType | null
@@ -14858,20 +15025,31 @@ export namespace Prisma {
 
   export type AdminNotificationSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    adminId?: boolean
     title?: boolean
     message?: boolean
     type?: boolean
+    actionType?: boolean
+    metadata?: boolean
     isRead?: boolean
     createdAt?: boolean
+    admin?: boolean | UserArgs<ExtArgs>
   }, ExtArgs["result"]["adminNotification"]>
 
   export type AdminNotificationSelectScalar = {
     id?: boolean
+    adminId?: boolean
     title?: boolean
     message?: boolean
     type?: boolean
+    actionType?: boolean
+    metadata?: boolean
     isRead?: boolean
     createdAt?: boolean
+  }
+
+  export type AdminNotificationInclude<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    admin?: boolean | UserArgs<ExtArgs>
   }
 
 
@@ -15244,6 +15422,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
     constructor(_dmmf: runtime.DMMFClass, _queryType: 'query' | 'mutation', _rootField: string, _clientMethod: string, _args: any, _dataPath: string[], _errorFormat: ErrorFormat, _measurePerformance?: boolean | undefined, _isList?: boolean);
 
+    admin<T extends UserArgs<ExtArgs> = {}>(args?: Subset<T, UserArgs<ExtArgs>>): Prisma__UserClient<$Types.GetResult<UserPayload<ExtArgs>, T, 'findUnique', never> | Null, never, ExtArgs>;
 
     private get _document();
     /**
@@ -15281,6 +15460,10 @@ export namespace Prisma {
      */
     select?: AdminNotificationSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminNotificationInclude<ExtArgs> | null
+    /**
      * Filter, which AdminNotification to fetch.
      */
     where: AdminNotificationWhereUniqueInput
@@ -15307,6 +15490,10 @@ export namespace Prisma {
      */
     select?: AdminNotificationSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminNotificationInclude<ExtArgs> | null
+    /**
      * Filter, which AdminNotification to fetch.
      */
     where: AdminNotificationWhereUniqueInput
@@ -15321,6 +15508,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the AdminNotification
      */
     select?: AdminNotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminNotificationInclude<ExtArgs> | null
     /**
      * Filter, which AdminNotification to fetch.
      */
@@ -15378,6 +15569,10 @@ export namespace Prisma {
      */
     select?: AdminNotificationSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminNotificationInclude<ExtArgs> | null
+    /**
      * Filter, which AdminNotification to fetch.
      */
     where?: AdminNotificationWhereInput
@@ -15423,6 +15618,10 @@ export namespace Prisma {
      */
     select?: AdminNotificationSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminNotificationInclude<ExtArgs> | null
+    /**
      * Filter, which AdminNotifications to fetch.
      */
     where?: AdminNotificationWhereInput
@@ -15463,6 +15662,10 @@ export namespace Prisma {
      */
     select?: AdminNotificationSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminNotificationInclude<ExtArgs> | null
+    /**
      * The data needed to create a AdminNotification.
      */
     data: XOR<AdminNotificationCreateInput, AdminNotificationUncheckedCreateInput>
@@ -15489,6 +15692,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the AdminNotification
      */
     select?: AdminNotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminNotificationInclude<ExtArgs> | null
     /**
      * The data needed to update a AdminNotification.
      */
@@ -15524,6 +15731,10 @@ export namespace Prisma {
      */
     select?: AdminNotificationSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminNotificationInclude<ExtArgs> | null
+    /**
      * The filter to search for the AdminNotification to update in case it exists.
      */
     where: AdminNotificationWhereUniqueInput
@@ -15546,6 +15757,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the AdminNotification
      */
     select?: AdminNotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminNotificationInclude<ExtArgs> | null
     /**
      * Filter which AdminNotification to delete.
      */
@@ -15572,6 +15787,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the AdminNotification
      */
     select?: AdminNotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: AdminNotificationInclude<ExtArgs> | null
   }
 
 
@@ -16533,6 +16752,1002 @@ export namespace Prisma {
 
 
   /**
+   * Model GymPayoutAccount
+   */
+
+
+  export type AggregateGymPayoutAccount = {
+    _count: GymPayoutAccountCountAggregateOutputType | null
+    _min: GymPayoutAccountMinAggregateOutputType | null
+    _max: GymPayoutAccountMaxAggregateOutputType | null
+  }
+
+  export type GymPayoutAccountMinAggregateOutputType = {
+    id: string | null
+    gymId: string | null
+    accountType: string | null
+    bankName: string | null
+    accountTitle: string | null
+    accountNumber: string | null
+    iban: string | null
+    walletProvider: string | null
+    mobileNumber: string | null
+    isVerified: boolean | null
+    verifiedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type GymPayoutAccountMaxAggregateOutputType = {
+    id: string | null
+    gymId: string | null
+    accountType: string | null
+    bankName: string | null
+    accountTitle: string | null
+    accountNumber: string | null
+    iban: string | null
+    walletProvider: string | null
+    mobileNumber: string | null
+    isVerified: boolean | null
+    verifiedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type GymPayoutAccountCountAggregateOutputType = {
+    id: number
+    gymId: number
+    accountType: number
+    bankName: number
+    accountTitle: number
+    accountNumber: number
+    iban: number
+    walletProvider: number
+    mobileNumber: number
+    isVerified: number
+    verifiedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type GymPayoutAccountMinAggregateInputType = {
+    id?: true
+    gymId?: true
+    accountType?: true
+    bankName?: true
+    accountTitle?: true
+    accountNumber?: true
+    iban?: true
+    walletProvider?: true
+    mobileNumber?: true
+    isVerified?: true
+    verifiedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type GymPayoutAccountMaxAggregateInputType = {
+    id?: true
+    gymId?: true
+    accountType?: true
+    bankName?: true
+    accountTitle?: true
+    accountNumber?: true
+    iban?: true
+    walletProvider?: true
+    mobileNumber?: true
+    isVerified?: true
+    verifiedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type GymPayoutAccountCountAggregateInputType = {
+    id?: true
+    gymId?: true
+    accountType?: true
+    bankName?: true
+    accountTitle?: true
+    accountNumber?: true
+    iban?: true
+    walletProvider?: true
+    mobileNumber?: true
+    isVerified?: true
+    verifiedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type GymPayoutAccountAggregateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GymPayoutAccount to aggregate.
+     */
+    where?: GymPayoutAccountWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GymPayoutAccounts to fetch.
+     */
+    orderBy?: Enumerable<GymPayoutAccountOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: GymPayoutAccountWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GymPayoutAccounts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GymPayoutAccounts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned GymPayoutAccounts
+    **/
+    _count?: true | GymPayoutAccountCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GymPayoutAccountMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GymPayoutAccountMaxAggregateInputType
+  }
+
+  export type GetGymPayoutAccountAggregateType<T extends GymPayoutAccountAggregateArgs> = {
+        [P in keyof T & keyof AggregateGymPayoutAccount]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGymPayoutAccount[P]>
+      : GetScalarType<T[P], AggregateGymPayoutAccount[P]>
+  }
+
+
+
+
+  export type GymPayoutAccountGroupByArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    where?: GymPayoutAccountWhereInput
+    orderBy?: Enumerable<GymPayoutAccountOrderByWithAggregationInput>
+    by: GymPayoutAccountScalarFieldEnum[]
+    having?: GymPayoutAccountScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GymPayoutAccountCountAggregateInputType | true
+    _min?: GymPayoutAccountMinAggregateInputType
+    _max?: GymPayoutAccountMaxAggregateInputType
+  }
+
+
+  export type GymPayoutAccountGroupByOutputType = {
+    id: string
+    gymId: string
+    accountType: string
+    bankName: string | null
+    accountTitle: string | null
+    accountNumber: string | null
+    iban: string | null
+    walletProvider: string | null
+    mobileNumber: string | null
+    isVerified: boolean
+    verifiedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: GymPayoutAccountCountAggregateOutputType | null
+    _min: GymPayoutAccountMinAggregateOutputType | null
+    _max: GymPayoutAccountMaxAggregateOutputType | null
+  }
+
+  type GetGymPayoutAccountGroupByPayload<T extends GymPayoutAccountGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickArray<GymPayoutAccountGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GymPayoutAccountGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GymPayoutAccountGroupByOutputType[P]>
+            : GetScalarType<T[P], GymPayoutAccountGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GymPayoutAccountSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    gymId?: boolean
+    accountType?: boolean
+    bankName?: boolean
+    accountTitle?: boolean
+    accountNumber?: boolean
+    iban?: boolean
+    walletProvider?: boolean
+    mobileNumber?: boolean
+    isVerified?: boolean
+    verifiedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    gym?: boolean | GymArgs<ExtArgs>
+  }, ExtArgs["result"]["gymPayoutAccount"]>
+
+  export type GymPayoutAccountSelectScalar = {
+    id?: boolean
+    gymId?: boolean
+    accountType?: boolean
+    bankName?: boolean
+    accountTitle?: boolean
+    accountNumber?: boolean
+    iban?: boolean
+    walletProvider?: boolean
+    mobileNumber?: boolean
+    isVerified?: boolean
+    verifiedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type GymPayoutAccountInclude<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    gym?: boolean | GymArgs<ExtArgs>
+  }
+
+
+  type GymPayoutAccountGetPayload<S extends boolean | null | undefined | GymPayoutAccountArgs> = $Types.GetResult<GymPayoutAccountPayload, S>
+
+  type GymPayoutAccountCountArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = 
+    Omit<GymPayoutAccountFindManyArgs, 'select' | 'include'> & {
+      select?: GymPayoutAccountCountAggregateInputType | true
+    }
+
+  export interface GymPayoutAccountDelegate<GlobalRejectSettings extends Prisma.RejectOnNotFound | Prisma.RejectPerOperation | false | undefined, ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GymPayoutAccount'], meta: { name: 'GymPayoutAccount' } }
+    /**
+     * Find zero or one GymPayoutAccount that matches the filter.
+     * @param {GymPayoutAccountFindUniqueArgs} args - Arguments to find a GymPayoutAccount
+     * @example
+     * // Get one GymPayoutAccount
+     * const gymPayoutAccount = await prisma.gymPayoutAccount.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findUnique<T extends GymPayoutAccountFindUniqueArgs<ExtArgs>, LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
+      args: SelectSubset<T, GymPayoutAccountFindUniqueArgs<ExtArgs>>
+    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findUnique', 'GymPayoutAccount'> extends True ? Prisma__GymPayoutAccountClient<$Types.GetResult<GymPayoutAccountPayload<ExtArgs>, T, 'findUnique', never>, never, ExtArgs> : Prisma__GymPayoutAccountClient<$Types.GetResult<GymPayoutAccountPayload<ExtArgs>, T, 'findUnique', never> | null, null, ExtArgs>
+
+    /**
+     * Find one GymPayoutAccount that matches the filter or throw an error  with `error.code='P2025'` 
+     *     if no matches were found.
+     * @param {GymPayoutAccountFindUniqueOrThrowArgs} args - Arguments to find a GymPayoutAccount
+     * @example
+     * // Get one GymPayoutAccount
+     * const gymPayoutAccount = await prisma.gymPayoutAccount.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findUniqueOrThrow<T extends GymPayoutAccountFindUniqueOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, GymPayoutAccountFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__GymPayoutAccountClient<$Types.GetResult<GymPayoutAccountPayload<ExtArgs>, T, 'findUniqueOrThrow', never>, never, ExtArgs>
+
+    /**
+     * Find the first GymPayoutAccount that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GymPayoutAccountFindFirstArgs} args - Arguments to find a GymPayoutAccount
+     * @example
+     * // Get one GymPayoutAccount
+     * const gymPayoutAccount = await prisma.gymPayoutAccount.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findFirst<T extends GymPayoutAccountFindFirstArgs<ExtArgs>, LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
+      args?: SelectSubset<T, GymPayoutAccountFindFirstArgs<ExtArgs>>
+    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findFirst', 'GymPayoutAccount'> extends True ? Prisma__GymPayoutAccountClient<$Types.GetResult<GymPayoutAccountPayload<ExtArgs>, T, 'findFirst', never>, never, ExtArgs> : Prisma__GymPayoutAccountClient<$Types.GetResult<GymPayoutAccountPayload<ExtArgs>, T, 'findFirst', never> | null, null, ExtArgs>
+
+    /**
+     * Find the first GymPayoutAccount that matches the filter or
+     * throw `NotFoundError` if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GymPayoutAccountFindFirstOrThrowArgs} args - Arguments to find a GymPayoutAccount
+     * @example
+     * // Get one GymPayoutAccount
+     * const gymPayoutAccount = await prisma.gymPayoutAccount.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findFirstOrThrow<T extends GymPayoutAccountFindFirstOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, GymPayoutAccountFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__GymPayoutAccountClient<$Types.GetResult<GymPayoutAccountPayload<ExtArgs>, T, 'findFirstOrThrow', never>, never, ExtArgs>
+
+    /**
+     * Find zero or more GymPayoutAccounts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GymPayoutAccountFindManyArgs=} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GymPayoutAccounts
+     * const gymPayoutAccounts = await prisma.gymPayoutAccount.findMany()
+     * 
+     * // Get first 10 GymPayoutAccounts
+     * const gymPayoutAccounts = await prisma.gymPayoutAccount.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const gymPayoutAccountWithIdOnly = await prisma.gymPayoutAccount.findMany({ select: { id: true } })
+     * 
+    **/
+    findMany<T extends GymPayoutAccountFindManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, GymPayoutAccountFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<$Types.GetResult<GymPayoutAccountPayload<ExtArgs>, T, 'findMany', never>>
+
+    /**
+     * Create a GymPayoutAccount.
+     * @param {GymPayoutAccountCreateArgs} args - Arguments to create a GymPayoutAccount.
+     * @example
+     * // Create one GymPayoutAccount
+     * const GymPayoutAccount = await prisma.gymPayoutAccount.create({
+     *   data: {
+     *     // ... data to create a GymPayoutAccount
+     *   }
+     * })
+     * 
+    **/
+    create<T extends GymPayoutAccountCreateArgs<ExtArgs>>(
+      args: SelectSubset<T, GymPayoutAccountCreateArgs<ExtArgs>>
+    ): Prisma__GymPayoutAccountClient<$Types.GetResult<GymPayoutAccountPayload<ExtArgs>, T, 'create', never>, never, ExtArgs>
+
+    /**
+     * Create many GymPayoutAccounts.
+     *     @param {GymPayoutAccountCreateManyArgs} args - Arguments to create many GymPayoutAccounts.
+     *     @example
+     *     // Create many GymPayoutAccounts
+     *     const gymPayoutAccount = await prisma.gymPayoutAccount.createMany({
+     *       data: {
+     *         // ... provide data here
+     *       }
+     *     })
+     *     
+    **/
+    createMany<T extends GymPayoutAccountCreateManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, GymPayoutAccountCreateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a GymPayoutAccount.
+     * @param {GymPayoutAccountDeleteArgs} args - Arguments to delete one GymPayoutAccount.
+     * @example
+     * // Delete one GymPayoutAccount
+     * const GymPayoutAccount = await prisma.gymPayoutAccount.delete({
+     *   where: {
+     *     // ... filter to delete one GymPayoutAccount
+     *   }
+     * })
+     * 
+    **/
+    delete<T extends GymPayoutAccountDeleteArgs<ExtArgs>>(
+      args: SelectSubset<T, GymPayoutAccountDeleteArgs<ExtArgs>>
+    ): Prisma__GymPayoutAccountClient<$Types.GetResult<GymPayoutAccountPayload<ExtArgs>, T, 'delete', never>, never, ExtArgs>
+
+    /**
+     * Update one GymPayoutAccount.
+     * @param {GymPayoutAccountUpdateArgs} args - Arguments to update one GymPayoutAccount.
+     * @example
+     * // Update one GymPayoutAccount
+     * const gymPayoutAccount = await prisma.gymPayoutAccount.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+    **/
+    update<T extends GymPayoutAccountUpdateArgs<ExtArgs>>(
+      args: SelectSubset<T, GymPayoutAccountUpdateArgs<ExtArgs>>
+    ): Prisma__GymPayoutAccountClient<$Types.GetResult<GymPayoutAccountPayload<ExtArgs>, T, 'update', never>, never, ExtArgs>
+
+    /**
+     * Delete zero or more GymPayoutAccounts.
+     * @param {GymPayoutAccountDeleteManyArgs} args - Arguments to filter GymPayoutAccounts to delete.
+     * @example
+     * // Delete a few GymPayoutAccounts
+     * const { count } = await prisma.gymPayoutAccount.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+    **/
+    deleteMany<T extends GymPayoutAccountDeleteManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, GymPayoutAccountDeleteManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GymPayoutAccounts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GymPayoutAccountUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GymPayoutAccounts
+     * const gymPayoutAccount = await prisma.gymPayoutAccount.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+    **/
+    updateMany<T extends GymPayoutAccountUpdateManyArgs<ExtArgs>>(
+      args: SelectSubset<T, GymPayoutAccountUpdateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one GymPayoutAccount.
+     * @param {GymPayoutAccountUpsertArgs} args - Arguments to update or create a GymPayoutAccount.
+     * @example
+     * // Update or create a GymPayoutAccount
+     * const gymPayoutAccount = await prisma.gymPayoutAccount.upsert({
+     *   create: {
+     *     // ... data to create a GymPayoutAccount
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GymPayoutAccount we want to update
+     *   }
+     * })
+    **/
+    upsert<T extends GymPayoutAccountUpsertArgs<ExtArgs>>(
+      args: SelectSubset<T, GymPayoutAccountUpsertArgs<ExtArgs>>
+    ): Prisma__GymPayoutAccountClient<$Types.GetResult<GymPayoutAccountPayload<ExtArgs>, T, 'upsert', never>, never, ExtArgs>
+
+    /**
+     * Count the number of GymPayoutAccounts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GymPayoutAccountCountArgs} args - Arguments to filter GymPayoutAccounts to count.
+     * @example
+     * // Count the number of GymPayoutAccounts
+     * const count = await prisma.gymPayoutAccount.count({
+     *   where: {
+     *     // ... the filter for the GymPayoutAccounts we want to count
+     *   }
+     * })
+    **/
+    count<T extends GymPayoutAccountCountArgs>(
+      args?: Subset<T, GymPayoutAccountCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GymPayoutAccountCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a GymPayoutAccount.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GymPayoutAccountAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GymPayoutAccountAggregateArgs>(args: Subset<T, GymPayoutAccountAggregateArgs>): Prisma.PrismaPromise<GetGymPayoutAccountAggregateType<T>>
+
+    /**
+     * Group by GymPayoutAccount.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GymPayoutAccountGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends GymPayoutAccountGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GymPayoutAccountGroupByArgs['orderBy'] }
+        : { orderBy?: GymPayoutAccountGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends TupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GymPayoutAccountGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGymPayoutAccountGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GymPayoutAccount.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export class Prisma__GymPayoutAccountClient<T, Null = never, ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> implements Prisma.PrismaPromise<T> {
+    private readonly _dmmf;
+    private readonly _queryType;
+    private readonly _rootField;
+    private readonly _clientMethod;
+    private readonly _args;
+    private readonly _dataPath;
+    private readonly _errorFormat;
+    private readonly _measurePerformance?;
+    private _isList;
+    private _callsite;
+    private _requestPromise?;
+    readonly [Symbol.toStringTag]: 'PrismaPromise';
+    constructor(_dmmf: runtime.DMMFClass, _queryType: 'query' | 'mutation', _rootField: string, _clientMethod: string, _args: any, _dataPath: string[], _errorFormat: ErrorFormat, _measurePerformance?: boolean | undefined, _isList?: boolean);
+
+    gym<T extends GymArgs<ExtArgs> = {}>(args?: Subset<T, GymArgs<ExtArgs>>): Prisma__GymClient<$Types.GetResult<GymPayload<ExtArgs>, T, 'findUnique', never> | Null, never, ExtArgs>;
+
+    private get _document();
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): Promise<T>;
+  }
+
+
+
+  // Custom InputTypes
+
+  /**
+   * GymPayoutAccount base type for findUnique actions
+   */
+  export type GymPayoutAccountFindUniqueArgsBase<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymPayoutAccount
+     */
+    select?: GymPayoutAccountSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymPayoutAccountInclude<ExtArgs> | null
+    /**
+     * Filter, which GymPayoutAccount to fetch.
+     */
+    where: GymPayoutAccountWhereUniqueInput
+  }
+
+  /**
+   * GymPayoutAccount findUnique
+   */
+  export interface GymPayoutAccountFindUniqueArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> extends GymPayoutAccountFindUniqueArgsBase<ExtArgs> {
+   /**
+    * Throw an Error if query returns no results
+    * @deprecated since 4.0.0: use `findUniqueOrThrow` method instead
+    */
+    rejectOnNotFound?: RejectOnNotFound
+  }
+      
+
+  /**
+   * GymPayoutAccount findUniqueOrThrow
+   */
+  export type GymPayoutAccountFindUniqueOrThrowArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymPayoutAccount
+     */
+    select?: GymPayoutAccountSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymPayoutAccountInclude<ExtArgs> | null
+    /**
+     * Filter, which GymPayoutAccount to fetch.
+     */
+    where: GymPayoutAccountWhereUniqueInput
+  }
+
+
+  /**
+   * GymPayoutAccount base type for findFirst actions
+   */
+  export type GymPayoutAccountFindFirstArgsBase<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymPayoutAccount
+     */
+    select?: GymPayoutAccountSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymPayoutAccountInclude<ExtArgs> | null
+    /**
+     * Filter, which GymPayoutAccount to fetch.
+     */
+    where?: GymPayoutAccountWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GymPayoutAccounts to fetch.
+     */
+    orderBy?: Enumerable<GymPayoutAccountOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GymPayoutAccounts.
+     */
+    cursor?: GymPayoutAccountWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GymPayoutAccounts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GymPayoutAccounts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GymPayoutAccounts.
+     */
+    distinct?: Enumerable<GymPayoutAccountScalarFieldEnum>
+  }
+
+  /**
+   * GymPayoutAccount findFirst
+   */
+  export interface GymPayoutAccountFindFirstArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> extends GymPayoutAccountFindFirstArgsBase<ExtArgs> {
+   /**
+    * Throw an Error if query returns no results
+    * @deprecated since 4.0.0: use `findFirstOrThrow` method instead
+    */
+    rejectOnNotFound?: RejectOnNotFound
+  }
+      
+
+  /**
+   * GymPayoutAccount findFirstOrThrow
+   */
+  export type GymPayoutAccountFindFirstOrThrowArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymPayoutAccount
+     */
+    select?: GymPayoutAccountSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymPayoutAccountInclude<ExtArgs> | null
+    /**
+     * Filter, which GymPayoutAccount to fetch.
+     */
+    where?: GymPayoutAccountWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GymPayoutAccounts to fetch.
+     */
+    orderBy?: Enumerable<GymPayoutAccountOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GymPayoutAccounts.
+     */
+    cursor?: GymPayoutAccountWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GymPayoutAccounts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GymPayoutAccounts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GymPayoutAccounts.
+     */
+    distinct?: Enumerable<GymPayoutAccountScalarFieldEnum>
+  }
+
+
+  /**
+   * GymPayoutAccount findMany
+   */
+  export type GymPayoutAccountFindManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymPayoutAccount
+     */
+    select?: GymPayoutAccountSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymPayoutAccountInclude<ExtArgs> | null
+    /**
+     * Filter, which GymPayoutAccounts to fetch.
+     */
+    where?: GymPayoutAccountWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GymPayoutAccounts to fetch.
+     */
+    orderBy?: Enumerable<GymPayoutAccountOrderByWithRelationInput>
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing GymPayoutAccounts.
+     */
+    cursor?: GymPayoutAccountWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GymPayoutAccounts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GymPayoutAccounts.
+     */
+    skip?: number
+    distinct?: Enumerable<GymPayoutAccountScalarFieldEnum>
+  }
+
+
+  /**
+   * GymPayoutAccount create
+   */
+  export type GymPayoutAccountCreateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymPayoutAccount
+     */
+    select?: GymPayoutAccountSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymPayoutAccountInclude<ExtArgs> | null
+    /**
+     * The data needed to create a GymPayoutAccount.
+     */
+    data: XOR<GymPayoutAccountCreateInput, GymPayoutAccountUncheckedCreateInput>
+  }
+
+
+  /**
+   * GymPayoutAccount createMany
+   */
+  export type GymPayoutAccountCreateManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many GymPayoutAccounts.
+     */
+    data: Enumerable<GymPayoutAccountCreateManyInput>
+    skipDuplicates?: boolean
+  }
+
+
+  /**
+   * GymPayoutAccount update
+   */
+  export type GymPayoutAccountUpdateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymPayoutAccount
+     */
+    select?: GymPayoutAccountSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymPayoutAccountInclude<ExtArgs> | null
+    /**
+     * The data needed to update a GymPayoutAccount.
+     */
+    data: XOR<GymPayoutAccountUpdateInput, GymPayoutAccountUncheckedUpdateInput>
+    /**
+     * Choose, which GymPayoutAccount to update.
+     */
+    where: GymPayoutAccountWhereUniqueInput
+  }
+
+
+  /**
+   * GymPayoutAccount updateMany
+   */
+  export type GymPayoutAccountUpdateManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update GymPayoutAccounts.
+     */
+    data: XOR<GymPayoutAccountUpdateManyMutationInput, GymPayoutAccountUncheckedUpdateManyInput>
+    /**
+     * Filter which GymPayoutAccounts to update
+     */
+    where?: GymPayoutAccountWhereInput
+  }
+
+
+  /**
+   * GymPayoutAccount upsert
+   */
+  export type GymPayoutAccountUpsertArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymPayoutAccount
+     */
+    select?: GymPayoutAccountSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymPayoutAccountInclude<ExtArgs> | null
+    /**
+     * The filter to search for the GymPayoutAccount to update in case it exists.
+     */
+    where: GymPayoutAccountWhereUniqueInput
+    /**
+     * In case the GymPayoutAccount found by the `where` argument doesn't exist, create a new GymPayoutAccount with this data.
+     */
+    create: XOR<GymPayoutAccountCreateInput, GymPayoutAccountUncheckedCreateInput>
+    /**
+     * In case the GymPayoutAccount was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GymPayoutAccountUpdateInput, GymPayoutAccountUncheckedUpdateInput>
+  }
+
+
+  /**
+   * GymPayoutAccount delete
+   */
+  export type GymPayoutAccountDeleteArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymPayoutAccount
+     */
+    select?: GymPayoutAccountSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymPayoutAccountInclude<ExtArgs> | null
+    /**
+     * Filter which GymPayoutAccount to delete.
+     */
+    where: GymPayoutAccountWhereUniqueInput
+  }
+
+
+  /**
+   * GymPayoutAccount deleteMany
+   */
+  export type GymPayoutAccountDeleteManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GymPayoutAccounts to delete
+     */
+    where?: GymPayoutAccountWhereInput
+  }
+
+
+  /**
+   * GymPayoutAccount without action
+   */
+  export type GymPayoutAccountArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GymPayoutAccount
+     */
+    select?: GymPayoutAccountSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: GymPayoutAccountInclude<ExtArgs> | null
+  }
+
+
+
+  /**
    * Enums
    */
 
@@ -16753,9 +17968,12 @@ export namespace Prisma {
 
   export const AdminNotificationScalarFieldEnum: {
     id: 'id',
+    adminId: 'adminId',
     title: 'title',
     message: 'message',
     type: 'type',
+    actionType: 'actionType',
+    metadata: 'metadata',
     isRead: 'isRead',
     createdAt: 'createdAt'
   };
@@ -16776,6 +17994,25 @@ export namespace Prisma {
   };
 
   export type PayoutRateScalarFieldEnum = (typeof PayoutRateScalarFieldEnum)[keyof typeof PayoutRateScalarFieldEnum]
+
+
+  export const GymPayoutAccountScalarFieldEnum: {
+    id: 'id',
+    gymId: 'gymId',
+    accountType: 'accountType',
+    bankName: 'bankName',
+    accountTitle: 'accountTitle',
+    accountNumber: 'accountNumber',
+    iban: 'iban',
+    walletProvider: 'walletProvider',
+    mobileNumber: 'mobileNumber',
+    isVerified: 'isVerified',
+    verifiedAt: 'verifiedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type GymPayoutAccountScalarFieldEnum = (typeof GymPayoutAccountScalarFieldEnum)[keyof typeof GymPayoutAccountScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -16845,6 +18082,7 @@ export namespace Prisma {
     checkIns?: CheckInListRelationFilter
     gymsOwned?: GymListRelationFilter
     adminAuditLogs?: AdminAuditLogListRelationFilter
+    adminNotifications?: AdminNotificationListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -16865,6 +18103,7 @@ export namespace Prisma {
     checkIns?: CheckInOrderByRelationAggregateInput
     gymsOwned?: GymOrderByRelationAggregateInput
     adminAuditLogs?: AdminAuditLogOrderByRelationAggregateInput
+    adminNotifications?: AdminNotificationOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = {
@@ -17299,6 +18538,7 @@ export namespace Prisma {
     ownerId?: StringNullableFilter | string | null
     createdAt?: DateTimeFilter | Date | string
     updatedAt?: DateTimeFilter | Date | string
+    payoutAccount?: XOR<GymPayoutAccountRelationFilter, GymPayoutAccountWhereInput> | null
     owner?: XOR<UserRelationFilter, UserWhereInput> | null
     checkIns?: CheckInListRelationFilter
     photos?: GymPhotoListRelationFilter
@@ -17343,6 +18583,7 @@ export namespace Prisma {
     ownerId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    payoutAccount?: GymPayoutAccountOrderByWithRelationInput
     owner?: UserOrderByWithRelationInput
     checkIns?: CheckInOrderByRelationAggregateInput
     photos?: GymPhotoOrderByRelationAggregateInput
@@ -17724,20 +18965,28 @@ export namespace Prisma {
     OR?: Enumerable<AdminNotificationWhereInput>
     NOT?: Enumerable<AdminNotificationWhereInput>
     id?: StringFilter | string
+    adminId?: StringNullableFilter | string | null
     title?: StringFilter | string
     message?: StringFilter | string
     type?: StringFilter | string
+    actionType?: StringNullableFilter | string | null
+    metadata?: JsonNullableFilter
     isRead?: BoolFilter | boolean
     createdAt?: DateTimeFilter | Date | string
+    admin?: XOR<UserRelationFilter, UserWhereInput> | null
   }
 
   export type AdminNotificationOrderByWithRelationInput = {
     id?: SortOrder
+    adminId?: SortOrderInput | SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
+    actionType?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
+    admin?: UserOrderByWithRelationInput
   }
 
   export type AdminNotificationWhereUniqueInput = {
@@ -17746,9 +18995,12 @@ export namespace Prisma {
 
   export type AdminNotificationOrderByWithAggregationInput = {
     id?: SortOrder
+    adminId?: SortOrderInput | SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
+    actionType?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
     _count?: AdminNotificationCountOrderByAggregateInput
@@ -17761,9 +19013,12 @@ export namespace Prisma {
     OR?: Enumerable<AdminNotificationScalarWhereWithAggregatesInput>
     NOT?: Enumerable<AdminNotificationScalarWhereWithAggregatesInput>
     id?: StringWithAggregatesFilter | string
+    adminId?: StringNullableWithAggregatesFilter | string | null
     title?: StringWithAggregatesFilter | string
     message?: StringWithAggregatesFilter | string
     type?: StringWithAggregatesFilter | string
+    actionType?: StringNullableWithAggregatesFilter | string | null
+    metadata?: JsonNullableWithAggregatesFilter
     isRead?: BoolWithAggregatesFilter | boolean
     createdAt?: DateTimeWithAggregatesFilter | Date | string
   }
@@ -17832,6 +19087,86 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter | Date | string
   }
 
+  export type GymPayoutAccountWhereInput = {
+    AND?: Enumerable<GymPayoutAccountWhereInput>
+    OR?: Enumerable<GymPayoutAccountWhereInput>
+    NOT?: Enumerable<GymPayoutAccountWhereInput>
+    id?: StringFilter | string
+    gymId?: StringFilter | string
+    accountType?: StringFilter | string
+    bankName?: StringNullableFilter | string | null
+    accountTitle?: StringNullableFilter | string | null
+    accountNumber?: StringNullableFilter | string | null
+    iban?: StringNullableFilter | string | null
+    walletProvider?: StringNullableFilter | string | null
+    mobileNumber?: StringNullableFilter | string | null
+    isVerified?: BoolFilter | boolean
+    verifiedAt?: DateTimeNullableFilter | Date | string | null
+    createdAt?: DateTimeFilter | Date | string
+    updatedAt?: DateTimeFilter | Date | string
+    gym?: XOR<GymRelationFilter, GymWhereInput>
+  }
+
+  export type GymPayoutAccountOrderByWithRelationInput = {
+    id?: SortOrder
+    gymId?: SortOrder
+    accountType?: SortOrder
+    bankName?: SortOrderInput | SortOrder
+    accountTitle?: SortOrderInput | SortOrder
+    accountNumber?: SortOrderInput | SortOrder
+    iban?: SortOrderInput | SortOrder
+    walletProvider?: SortOrderInput | SortOrder
+    mobileNumber?: SortOrderInput | SortOrder
+    isVerified?: SortOrder
+    verifiedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    gym?: GymOrderByWithRelationInput
+  }
+
+  export type GymPayoutAccountWhereUniqueInput = {
+    id?: string
+    gymId?: string
+  }
+
+  export type GymPayoutAccountOrderByWithAggregationInput = {
+    id?: SortOrder
+    gymId?: SortOrder
+    accountType?: SortOrder
+    bankName?: SortOrderInput | SortOrder
+    accountTitle?: SortOrderInput | SortOrder
+    accountNumber?: SortOrderInput | SortOrder
+    iban?: SortOrderInput | SortOrder
+    walletProvider?: SortOrderInput | SortOrder
+    mobileNumber?: SortOrderInput | SortOrder
+    isVerified?: SortOrder
+    verifiedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: GymPayoutAccountCountOrderByAggregateInput
+    _max?: GymPayoutAccountMaxOrderByAggregateInput
+    _min?: GymPayoutAccountMinOrderByAggregateInput
+  }
+
+  export type GymPayoutAccountScalarWhereWithAggregatesInput = {
+    AND?: Enumerable<GymPayoutAccountScalarWhereWithAggregatesInput>
+    OR?: Enumerable<GymPayoutAccountScalarWhereWithAggregatesInput>
+    NOT?: Enumerable<GymPayoutAccountScalarWhereWithAggregatesInput>
+    id?: StringWithAggregatesFilter | string
+    gymId?: StringWithAggregatesFilter | string
+    accountType?: StringWithAggregatesFilter | string
+    bankName?: StringNullableWithAggregatesFilter | string | null
+    accountTitle?: StringNullableWithAggregatesFilter | string | null
+    accountNumber?: StringNullableWithAggregatesFilter | string | null
+    iban?: StringNullableWithAggregatesFilter | string | null
+    walletProvider?: StringNullableWithAggregatesFilter | string | null
+    mobileNumber?: StringNullableWithAggregatesFilter | string | null
+    isVerified?: BoolWithAggregatesFilter | boolean
+    verifiedAt?: DateTimeNullableWithAggregatesFilter | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     name: string
@@ -17850,6 +19185,7 @@ export namespace Prisma {
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     gymsOwned?: GymCreateNestedManyWithoutOwnerInput
     adminAuditLogs?: AdminAuditLogCreateNestedManyWithoutAdminInput
+    adminNotifications?: AdminNotificationCreateNestedManyWithoutAdminInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -17870,6 +19206,7 @@ export namespace Prisma {
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     gymsOwned?: GymUncheckedCreateNestedManyWithoutOwnerInput
     adminAuditLogs?: AdminAuditLogUncheckedCreateNestedManyWithoutAdminInput
+    adminNotifications?: AdminNotificationUncheckedCreateNestedManyWithoutAdminInput
   }
 
   export type UserUpdateInput = {
@@ -17890,6 +19227,7 @@ export namespace Prisma {
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUpdateManyWithoutOwnerNestedInput
     adminAuditLogs?: AdminAuditLogUpdateManyWithoutAdminNestedInput
+    adminNotifications?: AdminNotificationUpdateManyWithoutAdminNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -17910,6 +19248,7 @@ export namespace Prisma {
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUncheckedUpdateManyWithoutOwnerNestedInput
     adminAuditLogs?: AdminAuditLogUncheckedUpdateManyWithoutAdminNestedInput
+    adminNotifications?: AdminNotificationUncheckedUpdateManyWithoutAdminNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -18449,6 +19788,7 @@ export namespace Prisma {
     blockedReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    payoutAccount?: GymPayoutAccountCreateNestedOneWithoutGymInput
     owner?: UserCreateNestedOneWithoutGymsOwnedInput
     checkIns?: CheckInCreateNestedManyWithoutGymInput
     photos?: GymPhotoCreateNestedManyWithoutGymInput
@@ -18493,6 +19833,7 @@ export namespace Prisma {
     ownerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    payoutAccount?: GymPayoutAccountUncheckedCreateNestedOneWithoutGymInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutGymInput
     photos?: GymPhotoUncheckedCreateNestedManyWithoutGymInput
     verificationDocuments?: GymVerificationDocumentUncheckedCreateNestedManyWithoutGymInput
@@ -18535,6 +19876,7 @@ export namespace Prisma {
     blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAccount?: GymPayoutAccountUpdateOneWithoutGymNestedInput
     owner?: UserUpdateOneWithoutGymsOwnedNestedInput
     checkIns?: CheckInUpdateManyWithoutGymNestedInput
     photos?: GymPhotoUpdateManyWithoutGymNestedInput
@@ -18579,6 +19921,7 @@ export namespace Prisma {
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAccount?: GymPayoutAccountUncheckedUpdateOneWithoutGymNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutGymNestedInput
     photos?: GymPhotoUncheckedUpdateManyWithoutGymNestedInput
     verificationDocuments?: GymVerificationDocumentUncheckedUpdateManyWithoutGymNestedInput
@@ -19053,15 +20396,21 @@ export namespace Prisma {
     title: string
     message: string
     type: string
+    actionType?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     isRead?: boolean
     createdAt?: Date | string
+    admin?: UserCreateNestedOneWithoutAdminNotificationsInput
   }
 
   export type AdminNotificationUncheckedCreateInput = {
     id?: string
+    adminId?: string | null
     title: string
     message: string
     type: string
+    actionType?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     isRead?: boolean
     createdAt?: Date | string
   }
@@ -19071,24 +20420,33 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
+    actionType?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    admin?: UserUpdateOneWithoutAdminNotificationsNestedInput
   }
 
   export type AdminNotificationUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    adminId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
+    actionType?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AdminNotificationCreateManyInput = {
     id?: string
+    adminId?: string | null
     title: string
     message: string
     type: string
+    actionType?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     isRead?: boolean
     createdAt?: Date | string
   }
@@ -19098,15 +20456,20 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
+    actionType?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AdminNotificationUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    adminId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
+    actionType?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -19191,6 +20554,117 @@ export namespace Prisma {
     platformKeeps?: IntFieldUpdateOperationsInput | number
     multiplier?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GymPayoutAccountCreateInput = {
+    id?: string
+    accountType: string
+    bankName?: string | null
+    accountTitle?: string | null
+    accountNumber?: string | null
+    iban?: string | null
+    walletProvider?: string | null
+    mobileNumber?: string | null
+    isVerified?: boolean
+    verifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    gym: GymCreateNestedOneWithoutPayoutAccountInput
+  }
+
+  export type GymPayoutAccountUncheckedCreateInput = {
+    id?: string
+    gymId: string
+    accountType: string
+    bankName?: string | null
+    accountTitle?: string | null
+    accountNumber?: string | null
+    iban?: string | null
+    walletProvider?: string | null
+    mobileNumber?: string | null
+    isVerified?: boolean
+    verifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type GymPayoutAccountUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    accountType?: StringFieldUpdateOperationsInput | string
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    iban?: NullableStringFieldUpdateOperationsInput | string | null
+    walletProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    mobileNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    gym?: GymUpdateOneRequiredWithoutPayoutAccountNestedInput
+  }
+
+  export type GymPayoutAccountUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    gymId?: StringFieldUpdateOperationsInput | string
+    accountType?: StringFieldUpdateOperationsInput | string
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    iban?: NullableStringFieldUpdateOperationsInput | string | null
+    walletProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    mobileNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GymPayoutAccountCreateManyInput = {
+    id?: string
+    gymId: string
+    accountType: string
+    bankName?: string | null
+    accountTitle?: string | null
+    accountNumber?: string | null
+    iban?: string | null
+    walletProvider?: string | null
+    mobileNumber?: string | null
+    isVerified?: boolean
+    verifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type GymPayoutAccountUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    accountType?: StringFieldUpdateOperationsInput | string
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    iban?: NullableStringFieldUpdateOperationsInput | string | null
+    walletProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    mobileNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GymPayoutAccountUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    gymId?: StringFieldUpdateOperationsInput | string
+    accountType?: StringFieldUpdateOperationsInput | string
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    iban?: NullableStringFieldUpdateOperationsInput | string | null
+    walletProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    mobileNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -19293,6 +20767,12 @@ export namespace Prisma {
     none?: AdminAuditLogWhereInput
   }
 
+  export type AdminNotificationListRelationFilter = {
+    every?: AdminNotificationWhereInput
+    some?: AdminNotificationWhereInput
+    none?: AdminNotificationWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -19315,6 +20795,10 @@ export namespace Prisma {
   }
 
   export type AdminAuditLogOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AdminNotificationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -19808,6 +21292,11 @@ export namespace Prisma {
     not?: NestedFloatFilter | number
   }
 
+  export type GymPayoutAccountRelationFilter = {
+    is?: GymPayoutAccountWhereInput | null
+    isNot?: GymPayoutAccountWhereInput | null
+  }
+
   export type GymPhotoListRelationFilter = {
     every?: GymPhotoWhereInput
     some?: GymPhotoWhereInput
@@ -20147,27 +21636,34 @@ export namespace Prisma {
 
   export type AdminNotificationCountOrderByAggregateInput = {
     id?: SortOrder
+    adminId?: SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
+    actionType?: SortOrder
+    metadata?: SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
   }
 
   export type AdminNotificationMaxOrderByAggregateInput = {
     id?: SortOrder
+    adminId?: SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
+    actionType?: SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
   }
 
   export type AdminNotificationMinOrderByAggregateInput = {
     id?: SortOrder
+    adminId?: SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
+    actionType?: SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
   }
@@ -20225,6 +21721,54 @@ export namespace Prisma {
     multiplier?: SortOrder
   }
 
+  export type GymPayoutAccountCountOrderByAggregateInput = {
+    id?: SortOrder
+    gymId?: SortOrder
+    accountType?: SortOrder
+    bankName?: SortOrder
+    accountTitle?: SortOrder
+    accountNumber?: SortOrder
+    iban?: SortOrder
+    walletProvider?: SortOrder
+    mobileNumber?: SortOrder
+    isVerified?: SortOrder
+    verifiedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type GymPayoutAccountMaxOrderByAggregateInput = {
+    id?: SortOrder
+    gymId?: SortOrder
+    accountType?: SortOrder
+    bankName?: SortOrder
+    accountTitle?: SortOrder
+    accountNumber?: SortOrder
+    iban?: SortOrder
+    walletProvider?: SortOrder
+    mobileNumber?: SortOrder
+    isVerified?: SortOrder
+    verifiedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type GymPayoutAccountMinOrderByAggregateInput = {
+    id?: SortOrder
+    gymId?: SortOrder
+    accountType?: SortOrder
+    bankName?: SortOrder
+    accountTitle?: SortOrder
+    accountNumber?: SortOrder
+    iban?: SortOrder
+    walletProvider?: SortOrder
+    mobileNumber?: SortOrder
+    isVerified?: SortOrder
+    verifiedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type SubscriptionCreateNestedManyWithoutUserInput = {
     create?: XOR<Enumerable<SubscriptionCreateWithoutUserInput>, Enumerable<SubscriptionUncheckedCreateWithoutUserInput>>
     connectOrCreate?: Enumerable<SubscriptionCreateOrConnectWithoutUserInput>
@@ -20260,6 +21804,13 @@ export namespace Prisma {
     connect?: Enumerable<AdminAuditLogWhereUniqueInput>
   }
 
+  export type AdminNotificationCreateNestedManyWithoutAdminInput = {
+    create?: XOR<Enumerable<AdminNotificationCreateWithoutAdminInput>, Enumerable<AdminNotificationUncheckedCreateWithoutAdminInput>>
+    connectOrCreate?: Enumerable<AdminNotificationCreateOrConnectWithoutAdminInput>
+    createMany?: AdminNotificationCreateManyAdminInputEnvelope
+    connect?: Enumerable<AdminNotificationWhereUniqueInput>
+  }
+
   export type SubscriptionUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<Enumerable<SubscriptionCreateWithoutUserInput>, Enumerable<SubscriptionUncheckedCreateWithoutUserInput>>
     connectOrCreate?: Enumerable<SubscriptionCreateOrConnectWithoutUserInput>
@@ -20293,6 +21844,13 @@ export namespace Prisma {
     connectOrCreate?: Enumerable<AdminAuditLogCreateOrConnectWithoutAdminInput>
     createMany?: AdminAuditLogCreateManyAdminInputEnvelope
     connect?: Enumerable<AdminAuditLogWhereUniqueInput>
+  }
+
+  export type AdminNotificationUncheckedCreateNestedManyWithoutAdminInput = {
+    create?: XOR<Enumerable<AdminNotificationCreateWithoutAdminInput>, Enumerable<AdminNotificationUncheckedCreateWithoutAdminInput>>
+    connectOrCreate?: Enumerable<AdminNotificationCreateOrConnectWithoutAdminInput>
+    createMany?: AdminNotificationCreateManyAdminInputEnvelope
+    connect?: Enumerable<AdminNotificationWhereUniqueInput>
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -20393,6 +21951,20 @@ export namespace Prisma {
     deleteMany?: Enumerable<AdminAuditLogScalarWhereInput>
   }
 
+  export type AdminNotificationUpdateManyWithoutAdminNestedInput = {
+    create?: XOR<Enumerable<AdminNotificationCreateWithoutAdminInput>, Enumerable<AdminNotificationUncheckedCreateWithoutAdminInput>>
+    connectOrCreate?: Enumerable<AdminNotificationCreateOrConnectWithoutAdminInput>
+    upsert?: Enumerable<AdminNotificationUpsertWithWhereUniqueWithoutAdminInput>
+    createMany?: AdminNotificationCreateManyAdminInputEnvelope
+    set?: Enumerable<AdminNotificationWhereUniqueInput>
+    disconnect?: Enumerable<AdminNotificationWhereUniqueInput>
+    delete?: Enumerable<AdminNotificationWhereUniqueInput>
+    connect?: Enumerable<AdminNotificationWhereUniqueInput>
+    update?: Enumerable<AdminNotificationUpdateWithWhereUniqueWithoutAdminInput>
+    updateMany?: Enumerable<AdminNotificationUpdateManyWithWhereWithoutAdminInput>
+    deleteMany?: Enumerable<AdminNotificationScalarWhereInput>
+  }
+
   export type SubscriptionUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<Enumerable<SubscriptionCreateWithoutUserInput>, Enumerable<SubscriptionUncheckedCreateWithoutUserInput>>
     connectOrCreate?: Enumerable<SubscriptionCreateOrConnectWithoutUserInput>
@@ -20461,6 +22033,20 @@ export namespace Prisma {
     update?: Enumerable<AdminAuditLogUpdateWithWhereUniqueWithoutAdminInput>
     updateMany?: Enumerable<AdminAuditLogUpdateManyWithWhereWithoutAdminInput>
     deleteMany?: Enumerable<AdminAuditLogScalarWhereInput>
+  }
+
+  export type AdminNotificationUncheckedUpdateManyWithoutAdminNestedInput = {
+    create?: XOR<Enumerable<AdminNotificationCreateWithoutAdminInput>, Enumerable<AdminNotificationUncheckedCreateWithoutAdminInput>>
+    connectOrCreate?: Enumerable<AdminNotificationCreateOrConnectWithoutAdminInput>
+    upsert?: Enumerable<AdminNotificationUpsertWithWhereUniqueWithoutAdminInput>
+    createMany?: AdminNotificationCreateManyAdminInputEnvelope
+    set?: Enumerable<AdminNotificationWhereUniqueInput>
+    disconnect?: Enumerable<AdminNotificationWhereUniqueInput>
+    delete?: Enumerable<AdminNotificationWhereUniqueInput>
+    connect?: Enumerable<AdminNotificationWhereUniqueInput>
+    update?: Enumerable<AdminNotificationUpdateWithWhereUniqueWithoutAdminInput>
+    updateMany?: Enumerable<AdminNotificationUpdateManyWithWhereWithoutAdminInput>
+    deleteMany?: Enumerable<AdminNotificationScalarWhereInput>
   }
 
   export type SubscriptionPriceCreateNestedManyWithoutTierInput = {
@@ -20673,6 +22259,12 @@ export namespace Prisma {
     update?: XOR<SubscriptionUpdateWithoutPaymentsInput, SubscriptionUncheckedUpdateWithoutPaymentsInput>
   }
 
+  export type GymPayoutAccountCreateNestedOneWithoutGymInput = {
+    create?: XOR<GymPayoutAccountCreateWithoutGymInput, GymPayoutAccountUncheckedCreateWithoutGymInput>
+    connectOrCreate?: GymPayoutAccountCreateOrConnectWithoutGymInput
+    connect?: GymPayoutAccountWhereUniqueInput
+  }
+
   export type UserCreateNestedOneWithoutGymsOwnedInput = {
     create?: XOR<UserCreateWithoutGymsOwnedInput, UserUncheckedCreateWithoutGymsOwnedInput>
     connectOrCreate?: UserCreateOrConnectWithoutGymsOwnedInput
@@ -20698,6 +22290,12 @@ export namespace Prisma {
     connectOrCreate?: Enumerable<GymVerificationDocumentCreateOrConnectWithoutGymInput>
     createMany?: GymVerificationDocumentCreateManyGymInputEnvelope
     connect?: Enumerable<GymVerificationDocumentWhereUniqueInput>
+  }
+
+  export type GymPayoutAccountUncheckedCreateNestedOneWithoutGymInput = {
+    create?: XOR<GymPayoutAccountCreateWithoutGymInput, GymPayoutAccountUncheckedCreateWithoutGymInput>
+    connectOrCreate?: GymPayoutAccountCreateOrConnectWithoutGymInput
+    connect?: GymPayoutAccountWhereUniqueInput
   }
 
   export type CheckInUncheckedCreateNestedManyWithoutGymInput = {
@@ -20727,6 +22325,16 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type GymPayoutAccountUpdateOneWithoutGymNestedInput = {
+    create?: XOR<GymPayoutAccountCreateWithoutGymInput, GymPayoutAccountUncheckedCreateWithoutGymInput>
+    connectOrCreate?: GymPayoutAccountCreateOrConnectWithoutGymInput
+    upsert?: GymPayoutAccountUpsertWithoutGymInput
+    disconnect?: boolean
+    delete?: boolean
+    connect?: GymPayoutAccountWhereUniqueInput
+    update?: XOR<GymPayoutAccountUpdateWithoutGymInput, GymPayoutAccountUncheckedUpdateWithoutGymInput>
   }
 
   export type UserUpdateOneWithoutGymsOwnedNestedInput = {
@@ -20779,6 +22387,16 @@ export namespace Prisma {
     update?: Enumerable<GymVerificationDocumentUpdateWithWhereUniqueWithoutGymInput>
     updateMany?: Enumerable<GymVerificationDocumentUpdateManyWithWhereWithoutGymInput>
     deleteMany?: Enumerable<GymVerificationDocumentScalarWhereInput>
+  }
+
+  export type GymPayoutAccountUncheckedUpdateOneWithoutGymNestedInput = {
+    create?: XOR<GymPayoutAccountCreateWithoutGymInput, GymPayoutAccountUncheckedCreateWithoutGymInput>
+    connectOrCreate?: GymPayoutAccountCreateOrConnectWithoutGymInput
+    upsert?: GymPayoutAccountUpsertWithoutGymInput
+    disconnect?: boolean
+    delete?: boolean
+    connect?: GymPayoutAccountWhereUniqueInput
+    update?: XOR<GymPayoutAccountUpdateWithoutGymInput, GymPayoutAccountUncheckedUpdateWithoutGymInput>
   }
 
   export type CheckInUncheckedUpdateManyWithoutGymNestedInput = {
@@ -20891,6 +22509,36 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutAdminAuditLogsInput
     connect?: UserWhereUniqueInput
     update?: XOR<UserUpdateWithoutAdminAuditLogsInput, UserUncheckedUpdateWithoutAdminAuditLogsInput>
+  }
+
+  export type UserCreateNestedOneWithoutAdminNotificationsInput = {
+    create?: XOR<UserCreateWithoutAdminNotificationsInput, UserUncheckedCreateWithoutAdminNotificationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAdminNotificationsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneWithoutAdminNotificationsNestedInput = {
+    create?: XOR<UserCreateWithoutAdminNotificationsInput, UserUncheckedCreateWithoutAdminNotificationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAdminNotificationsInput
+    upsert?: UserUpsertWithoutAdminNotificationsInput
+    disconnect?: boolean
+    delete?: boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<UserUpdateWithoutAdminNotificationsInput, UserUncheckedUpdateWithoutAdminNotificationsInput>
+  }
+
+  export type GymCreateNestedOneWithoutPayoutAccountInput = {
+    create?: XOR<GymCreateWithoutPayoutAccountInput, GymUncheckedCreateWithoutPayoutAccountInput>
+    connectOrCreate?: GymCreateOrConnectWithoutPayoutAccountInput
+    connect?: GymWhereUniqueInput
+  }
+
+  export type GymUpdateOneRequiredWithoutPayoutAccountNestedInput = {
+    create?: XOR<GymCreateWithoutPayoutAccountInput, GymUncheckedCreateWithoutPayoutAccountInput>
+    connectOrCreate?: GymCreateOrConnectWithoutPayoutAccountInput
+    upsert?: GymUpsertWithoutPayoutAccountInput
+    connect?: GymWhereUniqueInput
+    update?: XOR<GymUpdateWithoutPayoutAccountInput, GymUncheckedUpdateWithoutPayoutAccountInput>
   }
 
   export type NestedStringFilter = {
@@ -21294,6 +22942,7 @@ export namespace Prisma {
     blockedReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    payoutAccount?: GymPayoutAccountCreateNestedOneWithoutGymInput
     checkIns?: CheckInCreateNestedManyWithoutGymInput
     photos?: GymPhotoCreateNestedManyWithoutGymInput
     verificationDocuments?: GymVerificationDocumentCreateNestedManyWithoutGymInput
@@ -21336,6 +22985,7 @@ export namespace Prisma {
     blockedReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    payoutAccount?: GymPayoutAccountUncheckedCreateNestedOneWithoutGymInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutGymInput
     photos?: GymPhotoUncheckedCreateNestedManyWithoutGymInput
     verificationDocuments?: GymVerificationDocumentUncheckedCreateNestedManyWithoutGymInput
@@ -21376,6 +23026,38 @@ export namespace Prisma {
 
   export type AdminAuditLogCreateManyAdminInputEnvelope = {
     data: Enumerable<AdminAuditLogCreateManyAdminInput>
+    skipDuplicates?: boolean
+  }
+
+  export type AdminNotificationCreateWithoutAdminInput = {
+    id?: string
+    title: string
+    message: string
+    type: string
+    actionType?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: boolean
+    createdAt?: Date | string
+  }
+
+  export type AdminNotificationUncheckedCreateWithoutAdminInput = {
+    id?: string
+    title: string
+    message: string
+    type: string
+    actionType?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: boolean
+    createdAt?: Date | string
+  }
+
+  export type AdminNotificationCreateOrConnectWithoutAdminInput = {
+    where: AdminNotificationWhereUniqueInput
+    create: XOR<AdminNotificationCreateWithoutAdminInput, AdminNotificationUncheckedCreateWithoutAdminInput>
+  }
+
+  export type AdminNotificationCreateManyAdminInputEnvelope = {
+    data: Enumerable<AdminNotificationCreateManyAdminInput>
     skipDuplicates?: boolean
   }
 
@@ -21562,6 +23244,37 @@ export namespace Prisma {
     entityType?: StringFilter | string
     entityId?: StringNullableFilter | string | null
     metadata?: JsonNullableFilter
+    createdAt?: DateTimeFilter | Date | string
+  }
+
+  export type AdminNotificationUpsertWithWhereUniqueWithoutAdminInput = {
+    where: AdminNotificationWhereUniqueInput
+    update: XOR<AdminNotificationUpdateWithoutAdminInput, AdminNotificationUncheckedUpdateWithoutAdminInput>
+    create: XOR<AdminNotificationCreateWithoutAdminInput, AdminNotificationUncheckedCreateWithoutAdminInput>
+  }
+
+  export type AdminNotificationUpdateWithWhereUniqueWithoutAdminInput = {
+    where: AdminNotificationWhereUniqueInput
+    data: XOR<AdminNotificationUpdateWithoutAdminInput, AdminNotificationUncheckedUpdateWithoutAdminInput>
+  }
+
+  export type AdminNotificationUpdateManyWithWhereWithoutAdminInput = {
+    where: AdminNotificationScalarWhereInput
+    data: XOR<AdminNotificationUpdateManyMutationInput, AdminNotificationUncheckedUpdateManyWithoutAdminNotificationsInput>
+  }
+
+  export type AdminNotificationScalarWhereInput = {
+    AND?: Enumerable<AdminNotificationScalarWhereInput>
+    OR?: Enumerable<AdminNotificationScalarWhereInput>
+    NOT?: Enumerable<AdminNotificationScalarWhereInput>
+    id?: StringFilter | string
+    adminId?: StringNullableFilter | string | null
+    title?: StringFilter | string
+    message?: StringFilter | string
+    type?: StringFilter | string
+    actionType?: StringNullableFilter | string | null
+    metadata?: JsonNullableFilter
+    isRead?: BoolFilter | boolean
     createdAt?: DateTimeFilter | Date | string
   }
 
@@ -21780,6 +23493,7 @@ export namespace Prisma {
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     gymsOwned?: GymCreateNestedManyWithoutOwnerInput
     adminAuditLogs?: AdminAuditLogCreateNestedManyWithoutAdminInput
+    adminNotifications?: AdminNotificationCreateNestedManyWithoutAdminInput
   }
 
   export type UserUncheckedCreateWithoutSubscriptionsInput = {
@@ -21799,6 +23513,7 @@ export namespace Prisma {
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     gymsOwned?: GymUncheckedCreateNestedManyWithoutOwnerInput
     adminAuditLogs?: AdminAuditLogUncheckedCreateNestedManyWithoutAdminInput
+    adminNotifications?: AdminNotificationUncheckedCreateNestedManyWithoutAdminInput
   }
 
   export type UserCreateOrConnectWithoutSubscriptionsInput = {
@@ -21901,6 +23616,7 @@ export namespace Prisma {
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUpdateManyWithoutOwnerNestedInput
     adminAuditLogs?: AdminAuditLogUpdateManyWithoutAdminNestedInput
+    adminNotifications?: AdminNotificationUpdateManyWithoutAdminNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSubscriptionsInput = {
@@ -21920,6 +23636,7 @@ export namespace Prisma {
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUncheckedUpdateManyWithoutOwnerNestedInput
     adminAuditLogs?: AdminAuditLogUncheckedUpdateManyWithoutAdminNestedInput
+    adminNotifications?: AdminNotificationUncheckedUpdateManyWithoutAdminNestedInput
   }
 
   export type SubscriptionTierUpsertWithoutSubscriptionsInput = {
@@ -21994,6 +23711,7 @@ export namespace Prisma {
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     gymsOwned?: GymCreateNestedManyWithoutOwnerInput
     adminAuditLogs?: AdminAuditLogCreateNestedManyWithoutAdminInput
+    adminNotifications?: AdminNotificationCreateNestedManyWithoutAdminInput
   }
 
   export type UserUncheckedCreateWithoutPaymentsInput = {
@@ -22013,6 +23731,7 @@ export namespace Prisma {
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     gymsOwned?: GymUncheckedCreateNestedManyWithoutOwnerInput
     adminAuditLogs?: AdminAuditLogUncheckedCreateNestedManyWithoutAdminInput
+    adminNotifications?: AdminNotificationUncheckedCreateNestedManyWithoutAdminInput
   }
 
   export type UserCreateOrConnectWithoutPaymentsInput = {
@@ -22075,6 +23794,7 @@ export namespace Prisma {
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUpdateManyWithoutOwnerNestedInput
     adminAuditLogs?: AdminAuditLogUpdateManyWithoutAdminNestedInput
+    adminNotifications?: AdminNotificationUpdateManyWithoutAdminNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPaymentsInput = {
@@ -22094,6 +23814,7 @@ export namespace Prisma {
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUncheckedUpdateManyWithoutOwnerNestedInput
     adminAuditLogs?: AdminAuditLogUncheckedUpdateManyWithoutAdminNestedInput
+    adminNotifications?: AdminNotificationUncheckedUpdateManyWithoutAdminNestedInput
   }
 
   export type SubscriptionUpsertWithoutPaymentsInput = {
@@ -22129,6 +23850,41 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type GymPayoutAccountCreateWithoutGymInput = {
+    id?: string
+    accountType: string
+    bankName?: string | null
+    accountTitle?: string | null
+    accountNumber?: string | null
+    iban?: string | null
+    walletProvider?: string | null
+    mobileNumber?: string | null
+    isVerified?: boolean
+    verifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type GymPayoutAccountUncheckedCreateWithoutGymInput = {
+    id?: string
+    accountType: string
+    bankName?: string | null
+    accountTitle?: string | null
+    accountNumber?: string | null
+    iban?: string | null
+    walletProvider?: string | null
+    mobileNumber?: string | null
+    isVerified?: boolean
+    verifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type GymPayoutAccountCreateOrConnectWithoutGymInput = {
+    where: GymPayoutAccountWhereUniqueInput
+    create: XOR<GymPayoutAccountCreateWithoutGymInput, GymPayoutAccountUncheckedCreateWithoutGymInput>
+  }
+
   export type UserCreateWithoutGymsOwnedInput = {
     id?: string
     name: string
@@ -22146,6 +23902,7 @@ export namespace Prisma {
     payments?: PaymentCreateNestedManyWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     adminAuditLogs?: AdminAuditLogCreateNestedManyWithoutAdminInput
+    adminNotifications?: AdminNotificationCreateNestedManyWithoutAdminInput
   }
 
   export type UserUncheckedCreateWithoutGymsOwnedInput = {
@@ -22165,6 +23922,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     adminAuditLogs?: AdminAuditLogUncheckedCreateNestedManyWithoutAdminInput
+    adminNotifications?: AdminNotificationUncheckedCreateNestedManyWithoutAdminInput
   }
 
   export type UserCreateOrConnectWithoutGymsOwnedInput = {
@@ -22262,6 +24020,41 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type GymPayoutAccountUpsertWithoutGymInput = {
+    update: XOR<GymPayoutAccountUpdateWithoutGymInput, GymPayoutAccountUncheckedUpdateWithoutGymInput>
+    create: XOR<GymPayoutAccountCreateWithoutGymInput, GymPayoutAccountUncheckedCreateWithoutGymInput>
+  }
+
+  export type GymPayoutAccountUpdateWithoutGymInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    accountType?: StringFieldUpdateOperationsInput | string
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    iban?: NullableStringFieldUpdateOperationsInput | string | null
+    walletProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    mobileNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GymPayoutAccountUncheckedUpdateWithoutGymInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    accountType?: StringFieldUpdateOperationsInput | string
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    iban?: NullableStringFieldUpdateOperationsInput | string | null
+    walletProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    mobileNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserUpsertWithoutGymsOwnedInput = {
     update: XOR<UserUpdateWithoutGymsOwnedInput, UserUncheckedUpdateWithoutGymsOwnedInput>
     create: XOR<UserCreateWithoutGymsOwnedInput, UserUncheckedCreateWithoutGymsOwnedInput>
@@ -22284,6 +24077,7 @@ export namespace Prisma {
     payments?: PaymentUpdateManyWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     adminAuditLogs?: AdminAuditLogUpdateManyWithoutAdminNestedInput
+    adminNotifications?: AdminNotificationUpdateManyWithoutAdminNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGymsOwnedInput = {
@@ -22303,6 +24097,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     adminAuditLogs?: AdminAuditLogUncheckedUpdateManyWithoutAdminNestedInput
+    adminNotifications?: AdminNotificationUncheckedUpdateManyWithoutAdminNestedInput
   }
 
   export type CheckInUpsertWithWhereUniqueWithoutGymInput = {
@@ -22415,6 +24210,7 @@ export namespace Prisma {
     blockedReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    payoutAccount?: GymPayoutAccountCreateNestedOneWithoutGymInput
     owner?: UserCreateNestedOneWithoutGymsOwnedInput
     checkIns?: CheckInCreateNestedManyWithoutGymInput
     photos?: GymPhotoCreateNestedManyWithoutGymInput
@@ -22458,6 +24254,7 @@ export namespace Prisma {
     ownerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    payoutAccount?: GymPayoutAccountUncheckedCreateNestedOneWithoutGymInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutGymInput
     photos?: GymPhotoUncheckedCreateNestedManyWithoutGymInput
   }
@@ -22509,6 +24306,7 @@ export namespace Prisma {
     blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAccount?: GymPayoutAccountUpdateOneWithoutGymNestedInput
     owner?: UserUpdateOneWithoutGymsOwnedNestedInput
     checkIns?: CheckInUpdateManyWithoutGymNestedInput
     photos?: GymPhotoUpdateManyWithoutGymNestedInput
@@ -22552,6 +24350,7 @@ export namespace Prisma {
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAccount?: GymPayoutAccountUncheckedUpdateOneWithoutGymNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutGymNestedInput
     photos?: GymPhotoUncheckedUpdateManyWithoutGymNestedInput
   }
@@ -22593,6 +24392,7 @@ export namespace Prisma {
     blockedReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    payoutAccount?: GymPayoutAccountCreateNestedOneWithoutGymInput
     owner?: UserCreateNestedOneWithoutGymsOwnedInput
     checkIns?: CheckInCreateNestedManyWithoutGymInput
     verificationDocuments?: GymVerificationDocumentCreateNestedManyWithoutGymInput
@@ -22636,6 +24436,7 @@ export namespace Prisma {
     ownerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    payoutAccount?: GymPayoutAccountUncheckedCreateNestedOneWithoutGymInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutGymInput
     verificationDocuments?: GymVerificationDocumentUncheckedCreateNestedManyWithoutGymInput
   }
@@ -22687,6 +24488,7 @@ export namespace Prisma {
     blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAccount?: GymPayoutAccountUpdateOneWithoutGymNestedInput
     owner?: UserUpdateOneWithoutGymsOwnedNestedInput
     checkIns?: CheckInUpdateManyWithoutGymNestedInput
     verificationDocuments?: GymVerificationDocumentUpdateManyWithoutGymNestedInput
@@ -22730,6 +24532,7 @@ export namespace Prisma {
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAccount?: GymPayoutAccountUncheckedUpdateOneWithoutGymNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutGymNestedInput
     verificationDocuments?: GymVerificationDocumentUncheckedUpdateManyWithoutGymNestedInput
   }
@@ -22751,6 +24554,7 @@ export namespace Prisma {
     payments?: PaymentCreateNestedManyWithoutUserInput
     gymsOwned?: GymCreateNestedManyWithoutOwnerInput
     adminAuditLogs?: AdminAuditLogCreateNestedManyWithoutAdminInput
+    adminNotifications?: AdminNotificationCreateNestedManyWithoutAdminInput
   }
 
   export type UserUncheckedCreateWithoutCheckInsInput = {
@@ -22770,6 +24574,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     gymsOwned?: GymUncheckedCreateNestedManyWithoutOwnerInput
     adminAuditLogs?: AdminAuditLogUncheckedCreateNestedManyWithoutAdminInput
+    adminNotifications?: AdminNotificationUncheckedCreateNestedManyWithoutAdminInput
   }
 
   export type UserCreateOrConnectWithoutCheckInsInput = {
@@ -22814,6 +24619,7 @@ export namespace Prisma {
     blockedReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    payoutAccount?: GymPayoutAccountCreateNestedOneWithoutGymInput
     owner?: UserCreateNestedOneWithoutGymsOwnedInput
     photos?: GymPhotoCreateNestedManyWithoutGymInput
     verificationDocuments?: GymVerificationDocumentCreateNestedManyWithoutGymInput
@@ -22857,6 +24663,7 @@ export namespace Prisma {
     ownerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    payoutAccount?: GymPayoutAccountUncheckedCreateNestedOneWithoutGymInput
     photos?: GymPhotoUncheckedCreateNestedManyWithoutGymInput
     verificationDocuments?: GymVerificationDocumentUncheckedCreateNestedManyWithoutGymInput
   }
@@ -22888,6 +24695,7 @@ export namespace Prisma {
     payments?: PaymentUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUpdateManyWithoutOwnerNestedInput
     adminAuditLogs?: AdminAuditLogUpdateManyWithoutAdminNestedInput
+    adminNotifications?: AdminNotificationUpdateManyWithoutAdminNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCheckInsInput = {
@@ -22907,6 +24715,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUncheckedUpdateManyWithoutOwnerNestedInput
     adminAuditLogs?: AdminAuditLogUncheckedUpdateManyWithoutAdminNestedInput
+    adminNotifications?: AdminNotificationUncheckedUpdateManyWithoutAdminNestedInput
   }
 
   export type GymUpsertWithoutCheckInsInput = {
@@ -22951,6 +24760,7 @@ export namespace Prisma {
     blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAccount?: GymPayoutAccountUpdateOneWithoutGymNestedInput
     owner?: UserUpdateOneWithoutGymsOwnedNestedInput
     photos?: GymPhotoUpdateManyWithoutGymNestedInput
     verificationDocuments?: GymVerificationDocumentUpdateManyWithoutGymNestedInput
@@ -22994,6 +24804,7 @@ export namespace Prisma {
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAccount?: GymPayoutAccountUncheckedUpdateOneWithoutGymNestedInput
     photos?: GymPhotoUncheckedUpdateManyWithoutGymNestedInput
     verificationDocuments?: GymVerificationDocumentUncheckedUpdateManyWithoutGymNestedInput
   }
@@ -23015,6 +24826,7 @@ export namespace Prisma {
     payments?: PaymentCreateNestedManyWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     gymsOwned?: GymCreateNestedManyWithoutOwnerInput
+    adminNotifications?: AdminNotificationCreateNestedManyWithoutAdminInput
   }
 
   export type UserUncheckedCreateWithoutAdminAuditLogsInput = {
@@ -23034,6 +24846,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     gymsOwned?: GymUncheckedCreateNestedManyWithoutOwnerInput
+    adminNotifications?: AdminNotificationUncheckedCreateNestedManyWithoutAdminInput
   }
 
   export type UserCreateOrConnectWithoutAdminAuditLogsInput = {
@@ -23063,6 +24876,7 @@ export namespace Prisma {
     payments?: PaymentUpdateManyWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUpdateManyWithoutOwnerNestedInput
+    adminNotifications?: AdminNotificationUpdateManyWithoutAdminNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAdminAuditLogsInput = {
@@ -23082,6 +24896,279 @@ export namespace Prisma {
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     gymsOwned?: GymUncheckedUpdateManyWithoutOwnerNestedInput
+    adminNotifications?: AdminNotificationUncheckedUpdateManyWithoutAdminNestedInput
+  }
+
+  export type UserCreateWithoutAdminNotificationsInput = {
+    id?: string
+    name: string
+    email: string
+    passwordHash: string
+    role?: string
+    isSuspended?: boolean
+    suspendedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    otpHash?: string | null
+    otpExpiresAt?: Date | string | null
+    otpAttempts?: number | null
+    subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
+    checkIns?: CheckInCreateNestedManyWithoutUserInput
+    gymsOwned?: GymCreateNestedManyWithoutOwnerInput
+    adminAuditLogs?: AdminAuditLogCreateNestedManyWithoutAdminInput
+  }
+
+  export type UserUncheckedCreateWithoutAdminNotificationsInput = {
+    id?: string
+    name: string
+    email: string
+    passwordHash: string
+    role?: string
+    isSuspended?: boolean
+    suspendedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    otpHash?: string | null
+    otpExpiresAt?: Date | string | null
+    otpAttempts?: number | null
+    subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
+    checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
+    gymsOwned?: GymUncheckedCreateNestedManyWithoutOwnerInput
+    adminAuditLogs?: AdminAuditLogUncheckedCreateNestedManyWithoutAdminInput
+  }
+
+  export type UserCreateOrConnectWithoutAdminNotificationsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAdminNotificationsInput, UserUncheckedCreateWithoutAdminNotificationsInput>
+  }
+
+  export type UserUpsertWithoutAdminNotificationsInput = {
+    update: XOR<UserUpdateWithoutAdminNotificationsInput, UserUncheckedUpdateWithoutAdminNotificationsInput>
+    create: XOR<UserCreateWithoutAdminNotificationsInput, UserUncheckedCreateWithoutAdminNotificationsInput>
+  }
+
+  export type UserUpdateWithoutAdminNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    otpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
+    checkIns?: CheckInUpdateManyWithoutUserNestedInput
+    gymsOwned?: GymUpdateManyWithoutOwnerNestedInput
+    adminAuditLogs?: AdminAuditLogUpdateManyWithoutAdminNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAdminNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    otpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    otpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    otpAttempts?: NullableIntFieldUpdateOperationsInput | number | null
+    subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
+    checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
+    gymsOwned?: GymUncheckedUpdateManyWithoutOwnerNestedInput
+    adminAuditLogs?: AdminAuditLogUncheckedUpdateManyWithoutAdminNestedInput
+  }
+
+  export type GymCreateWithoutPayoutAccountInput = {
+    id?: string
+    name: string
+    description?: string | null
+    addressLine: string
+    city: string
+    province?: string | null
+    postalCode?: string | null
+    latitude: number
+    longitude: number
+    phoneNumber?: string | null
+    whatsappNumber?: string | null
+    instagramHandle?: string | null
+    websiteUrl?: string | null
+    googleMapsLink?: string | null
+    cnicNumber?: string | null
+    businessName?: string | null
+    openingTime?: string | null
+    closingTime?: string | null
+    is24Hours?: boolean
+    tier?: number | null
+    gymTier?: GymTier
+    payoutPerVisit?: number
+    coverImageUrl?: string | null
+    status?: string
+    submittedAt?: Date | string | null
+    reviewedAt?: Date | string | null
+    reviewedByAdminId?: string | null
+    rejectionReason?: string | null
+    approvalNotes?: string | null
+    resubmissionCount?: number
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner?: UserCreateNestedOneWithoutGymsOwnedInput
+    checkIns?: CheckInCreateNestedManyWithoutGymInput
+    photos?: GymPhotoCreateNestedManyWithoutGymInput
+    verificationDocuments?: GymVerificationDocumentCreateNestedManyWithoutGymInput
+  }
+
+  export type GymUncheckedCreateWithoutPayoutAccountInput = {
+    id?: string
+    name: string
+    description?: string | null
+    addressLine: string
+    city: string
+    province?: string | null
+    postalCode?: string | null
+    latitude: number
+    longitude: number
+    phoneNumber?: string | null
+    whatsappNumber?: string | null
+    instagramHandle?: string | null
+    websiteUrl?: string | null
+    googleMapsLink?: string | null
+    cnicNumber?: string | null
+    businessName?: string | null
+    openingTime?: string | null
+    closingTime?: string | null
+    is24Hours?: boolean
+    tier?: number | null
+    gymTier?: GymTier
+    payoutPerVisit?: number
+    coverImageUrl?: string | null
+    status?: string
+    submittedAt?: Date | string | null
+    reviewedAt?: Date | string | null
+    reviewedByAdminId?: string | null
+    rejectionReason?: string | null
+    approvalNotes?: string | null
+    resubmissionCount?: number
+    isFeatured?: boolean
+    isArchived?: boolean
+    isBlocked?: boolean
+    blockedReason?: string | null
+    ownerId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    checkIns?: CheckInUncheckedCreateNestedManyWithoutGymInput
+    photos?: GymPhotoUncheckedCreateNestedManyWithoutGymInput
+    verificationDocuments?: GymVerificationDocumentUncheckedCreateNestedManyWithoutGymInput
+  }
+
+  export type GymCreateOrConnectWithoutPayoutAccountInput = {
+    where: GymWhereUniqueInput
+    create: XOR<GymCreateWithoutPayoutAccountInput, GymUncheckedCreateWithoutPayoutAccountInput>
+  }
+
+  export type GymUpsertWithoutPayoutAccountInput = {
+    update: XOR<GymUpdateWithoutPayoutAccountInput, GymUncheckedUpdateWithoutPayoutAccountInput>
+    create: XOR<GymCreateWithoutPayoutAccountInput, GymUncheckedCreateWithoutPayoutAccountInput>
+  }
+
+  export type GymUpdateWithoutPayoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    addressLine?: StringFieldUpdateOperationsInput | string
+    city?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsLink?: NullableStringFieldUpdateOperationsInput | string | null
+    cnicNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    businessName?: NullableStringFieldUpdateOperationsInput | string | null
+    openingTime?: NullableStringFieldUpdateOperationsInput | string | null
+    closingTime?: NullableStringFieldUpdateOperationsInput | string | null
+    is24Hours?: BoolFieldUpdateOperationsInput | boolean
+    tier?: NullableIntFieldUpdateOperationsInput | number | null
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    payoutPerVisit?: IntFieldUpdateOperationsInput | number
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedByAdminId?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    approvalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resubmissionCount?: IntFieldUpdateOperationsInput | number
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneWithoutGymsOwnedNestedInput
+    checkIns?: CheckInUpdateManyWithoutGymNestedInput
+    photos?: GymPhotoUpdateManyWithoutGymNestedInput
+    verificationDocuments?: GymVerificationDocumentUpdateManyWithoutGymNestedInput
+  }
+
+  export type GymUncheckedUpdateWithoutPayoutAccountInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    addressLine?: StringFieldUpdateOperationsInput | string
+    city?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramHandle?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsLink?: NullableStringFieldUpdateOperationsInput | string | null
+    cnicNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    businessName?: NullableStringFieldUpdateOperationsInput | string | null
+    openingTime?: NullableStringFieldUpdateOperationsInput | string | null
+    closingTime?: NullableStringFieldUpdateOperationsInput | string | null
+    is24Hours?: BoolFieldUpdateOperationsInput | boolean
+    tier?: NullableIntFieldUpdateOperationsInput | number | null
+    gymTier?: EnumGymTierFieldUpdateOperationsInput | GymTier
+    payoutPerVisit?: IntFieldUpdateOperationsInput | number
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedByAdminId?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    approvalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    resubmissionCount?: IntFieldUpdateOperationsInput | number
+    isFeatured?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    checkIns?: CheckInUncheckedUpdateManyWithoutGymNestedInput
+    photos?: GymPhotoUncheckedUpdateManyWithoutGymNestedInput
+    verificationDocuments?: GymVerificationDocumentUncheckedUpdateManyWithoutGymNestedInput
   }
 
   export type SubscriptionCreateManyUserInput = {
@@ -23167,6 +25254,17 @@ export namespace Prisma {
     entityType: string
     entityId?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type AdminNotificationCreateManyAdminInput = {
+    id?: string
+    title: string
+    message: string
+    type: string
+    actionType?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: boolean
     createdAt?: Date | string
   }
 
@@ -23323,6 +25421,7 @@ export namespace Prisma {
     blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAccount?: GymPayoutAccountUpdateOneWithoutGymNestedInput
     checkIns?: CheckInUpdateManyWithoutGymNestedInput
     photos?: GymPhotoUpdateManyWithoutGymNestedInput
     verificationDocuments?: GymVerificationDocumentUpdateManyWithoutGymNestedInput
@@ -23365,6 +25464,7 @@ export namespace Prisma {
     blockedReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payoutAccount?: GymPayoutAccountUncheckedUpdateOneWithoutGymNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutGymNestedInput
     photos?: GymPhotoUncheckedUpdateManyWithoutGymNestedInput
     verificationDocuments?: GymVerificationDocumentUncheckedUpdateManyWithoutGymNestedInput
@@ -23433,6 +25533,39 @@ export namespace Prisma {
     entityType?: StringFieldUpdateOperationsInput | string
     entityId?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminNotificationUpdateWithoutAdminInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    actionType?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminNotificationUncheckedUpdateWithoutAdminInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    actionType?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminNotificationUncheckedUpdateManyWithoutAdminNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    actionType?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

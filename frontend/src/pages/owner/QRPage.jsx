@@ -25,7 +25,7 @@ export default function QRPage() {
   const [secondsLeft, setSecondsLeft] = useState(60);
   const [attendance, setAttendance] = useState([]);
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
   const [loading, setLoading] = useState(true);
 
@@ -47,7 +47,7 @@ export default function QRPage() {
         const myGym = data.gyms?.[0] || null;
 
         setGym(
-          myGym ? { ...myGym, status: myGym.status?.toLowerCase() } : null
+          myGym ? { ...myGym, status: myGym.status?.toLowerCase() } : null,
         );
 
         if (myGym?.status === "approved" && pollerRef.current) {
@@ -152,7 +152,7 @@ export default function QRPage() {
   }, [gymId, token, API_URL]);
 
   const filteredAttendance = attendance.filter((a) =>
-    a.checkedInAt.startsWith(selectedDate)
+    a.checkedInAt.startsWith(selectedDate),
   );
   const todayCheckins = filteredAttendance.length;
 

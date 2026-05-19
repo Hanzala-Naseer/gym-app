@@ -19,7 +19,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-
 async function sendOtpEmail(to, otp) {
   const from = process.env.SMTP_FROM || process.env.SMTP_USER;
   const expiry = process.env.OTP_EXP_MINUTES || 5;
@@ -442,6 +441,7 @@ async function login(req, res) {
         id: user.id,
         name: user.name,
         email: user.email,
+        role: user.role,
       },
     });
   } catch (err) {

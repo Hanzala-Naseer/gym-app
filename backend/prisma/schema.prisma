@@ -28,17 +28,14 @@ model User {
   email        String @unique
   passwordHash String
 
-  // user | admin | owner
   role String @default("user")
 
-  // moderation
   isSuspended Boolean   @default(false)
   suspendedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  // OTP fields
   otpHash      String?
   otpExpiresAt DateTime?
   otpAttempts  Int?      @default(0)
@@ -48,7 +45,10 @@ model User {
   checkIns      CheckIn[]
   gymsOwned     Gym[] @relation("GymOwner")
 
-  adminAuditLogs AdminAuditLog[]
+  adminAuditLogs     AdminAuditLog[]
+  adminNotifications AdminNotification[]  // ← ADD THIS LINE
+
+  @@map("users")  // optional: keeps table name consistent
 }
 
 ///////////////////////////////////////////////////////
@@ -277,6 +277,9 @@ model Gym {
 
   ownerId String?
 
+  payoutAccount GymPayoutAccount?
+
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
@@ -422,20 +425,34 @@ model AdminAuditLog {
 // ADMIN NOTIFICATIONS
 ///////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////
+// ADMIN NOTIFICATIONS
+///////////////////////////////////////////////////////
+
 model AdminNotification {
   id String @id @default(uuid())
 
+  adminId String?  // ← ADD: Link to admin user
+  
   title   String
   message String
 
-  // payment / gym / security / system
+  // payment / gym / security / system / payout
   type String
+
+  // payout_processed / account_verified / gym_registered / rate_updated
+  actionType String?
+
+  metadata Json?
 
   isRead Boolean @default(false)
 
   createdAt DateTime @default(now())
 
-  @@index([isRead])
+  admin User? @relation(fields: [adminId], references: [id])
+
+  @@index([adminId, isRead])
+  @@index([createdAt])
 }
 
 
@@ -456,3 +473,31 @@ model PayoutRate {
   @@unique([memberTierSlug, gymTier])
   @@index([memberTierSlug])
 }
+
+
+model GymPayoutAccount {
+  id            String   @id @default(cuid())
+  gymId         String   @unique
+  gym           Gym      @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  
+  // Account Type
+  accountType   String   // "bank" | "easypaisa" | "jazzcash" | "sadapay" | "nayapay"
+  
+  // Bank Details (for bank transfers)
+  bankName      String?
+  accountTitle  String?
+  accountNumber String?
+  iban          String?  // PKxxXXXX...
+  
+  // Mobile Wallet Details
+  walletProvider String? // "easypaisa" | "jazzcash" | "sadapay" | "nayapay"
+  mobileNumber  String?  // 03xxXXXXXXX
+  
+  // Verification
+  isVerified    Boolean  @default(false)
+  verifiedAt    DateTime?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+

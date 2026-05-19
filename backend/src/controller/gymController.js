@@ -763,19 +763,34 @@ const reviewGym = async (req, res) => {
     });
 
     // Audit log
-    await prisma.adminAuditLog.create({
-      data: {
-        adminId: req.user.id,
-        action: `REVIEWED_GYM_${status.toUpperCase()}`,
-        entityType: "GYM",
-        entityId: gym.id,
-        metadata: {
-          gymName: gym.name,
-          tier: updateData.tier || gym.tier,
-          rejectionReason: rejectionReason || null,
-        },
+    // Audit log
+    const adminExists = await prisma.user.findFirst({
+      where: {
+        id: req.user.id,
+        role: "admin",
       },
     });
+
+    console.log("REQ USER:", req.user);
+    console.log("ADMIN EXISTS:", adminExists);
+
+    if (adminExists) {
+      await prisma.adminAuditLog.create({
+        data: {
+          adminId: adminExists.id,
+          action: `REVIEWED_GYM_${status.toUpperCase()}`,
+          entityType: "GYM",
+          entityId: gym.id,
+          metadata: {
+            gymName: gym.name,
+            tier: updateData.tier || gym.tier,
+            rejectionReason: rejectionReason || null,
+          },
+        },
+      });
+    } else {
+      console.warn("Audit log skipped because admin does not exist");
+    }
 
     return res.json({
       success: true,

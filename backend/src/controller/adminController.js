@@ -925,6 +925,37 @@ const generateQr = async (req, res) => {
 
 const getDashboardAnalytics = async (req, res) => {
   try {
+    const now = new Date();
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      0,
+      0,
+      0,
+      0,
+    );
+    const todayEnd = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      23,
+      59,
+      59,
+      999,
+    );
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
+
     const [
       totalGyms,
       pendingGyms,
@@ -936,6 +967,11 @@ const getDashboardAnalytics = async (req, res) => {
       activeSubscriptions,
       totalRevenue,
       totalCheckins,
+      todayCheckins,
+      thisMonthRevenue,
+      lastMonthRevenue,
+      platformEarningsAgg,
+      subscriptionBreakdown,
     ] = await Promise.all([
       prisma.gym.count(),
       prisma.gym.count({ where: { status: "pending" } }),
@@ -950,7 +986,49 @@ const getDashboardAnalytics = async (req, res) => {
         where: { status: "succeeded" },
       }),
       prisma.checkIn.count(),
+      prisma.checkIn.count({
+        where: {
+          checkedInAt: {
+            gte: todayStart,
+            lt: todayEnd,
+          },
+        },
+      }),
+      prisma.payment.aggregate({
+        _sum: { amountCents: true },
+        where: {
+          status: "succeeded",
+          createdAt: { gte: thisMonthStart },
+        },
+      }),
+      prisma.payment.aggregate({
+        _sum: { amountCents: true },
+        where: {
+          status: "succeeded",
+          createdAt: { gte: lastMonthStart, lt: lastMonthEnd },
+        },
+      }),
+      prisma.checkIn.aggregate({
+        _sum: { platformAmount: true },
+        where: { isPaidToGym: true },
+      }),
+      prisma.$queryRaw`
+        SELECT st.slug as name, COUNT(s.id)::int as value
+        FROM "Subscription" s
+        JOIN "SubscriptionTier" st ON s."tierId" = st.id
+        WHERE s.status = 'active'
+        GROUP BY st.slug
+      `,
     ]);
+
+    const monthlyGrowth = lastMonthRevenue._sum.amountCents
+      ? (
+          (((thisMonthRevenue._sum.amountCents || 0) -
+            lastMonthRevenue._sum.amountCents) /
+            lastMonthRevenue._sum.amountCents) *
+          100
+        ).toFixed(1)
+      : 0;
 
     res.json({
       success: true,
@@ -968,12 +1046,16 @@ const getDashboardAnalytics = async (req, res) => {
         },
         subscriptions: {
           active: activeSubscriptions,
+          breakdown: subscriptionBreakdown,
         },
         revenue: {
-          totalPkr: (totalRevenue._sum.amountCents || 0) / 100,
+          totalPkr: (totalRevenue._sum.amountCents || 0) / 100, // ✓ payment stays in cents
+          monthlyGrowth: Number(monthlyGrowth),
+          platformEarnings: platformEarningsAgg._sum.platformAmount || 0, // ✓ platformAmount is PKR, no division
         },
         checkins: {
           total: totalCheckins,
+          today: todayCheckins,
         },
       },
     });
@@ -985,7 +1067,6 @@ const getDashboardAnalytics = async (req, res) => {
     });
   }
 };
-
 ///////////////////////////////////////////////////////
 // LIST ALL GYMS
 ///////////////////////////////////////////////////////
@@ -1153,15 +1234,20 @@ const rejectGym = async (req, res) => {
       include: { owner: true },
     });
 
-    await prisma.adminAuditLog.create({
-      data: {
-        adminId: req.user.id,
-        action: "CHANGES_REQUESTED",
-        entityType: "GYM",
-        entityId: gym.id,
-        metadata: { reason: rejectionReason },
-      },
+    const adminExists = await prisma.user.findUnique({
+      where: { id: req.user.id },
     });
+
+    if (adminExists) {
+      await prisma.adminAuditLog.create({
+        data: {
+          adminId: req.user.id,
+          action: "APPROVED_GYM",
+          entityType: "GYM",
+          entityId: gym.id,
+        },
+      });
+    }
 
     if (gym.owner?.email) {
       try {

@@ -1,4 +1,3 @@
-
 import { Users, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -21,7 +20,7 @@ export default function Members() {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         if (!res.ok) throw new Error("Failed to fetch members");
@@ -41,7 +40,7 @@ export default function Members() {
   const filteredMembers = members.filter(
     (m) =>
       m.user.name.toLowerCase().includes(search.toLowerCase()) ||
-      m.user.email.toLowerCase().includes(search.toLowerCase())
+      m.user.email.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (

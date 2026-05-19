@@ -17,6 +17,7 @@
 //   Eye,
 //   Phone,
 //   MessageCircle,
+//   Star,
 // } from "lucide-react";
 
 // import { Button } from "@/components/ui/button";
@@ -34,7 +35,7 @@
 //     name: "Iron Forge Fitness",
 //     city: "Lahore",
 //     addressLine: "DHA Phase 6",
-//     tier: 3,
+//     tier: null, // ⬅️ Changed: admin assigns tier, not owner
 //     status: "pending",
 
 //     owner: {
@@ -114,7 +115,45 @@
 // }
 
 // // ─────────────────────────────────────────────────────────────────────────────
-// // REJECT MODAL
+// // TIER SELECTOR COMPONENT
+// // ─────────────────────────────────────────────────────────────────────────────
+
+// function TierSelector({ value, onChange, disabled }) {
+//   const tiers = [
+//     { value: 1, label: "Tier 1 — Basic", color: "bg-slate-500" },
+//     { value: 2, label: "Tier 2 — Standard", color: "bg-blue-500" },
+//     { value: 3, label: "Tier 3 — Premium", color: "bg-amber-500" },
+//   ];
+
+//   return (
+//     <div className="flex items-center gap-2">
+//       <Star className="h-4 w-4 text-amber-400" />
+//       <select
+//         value={value || ""}
+//         onChange={(e) =>
+//           onChange(e.target.value ? parseInt(e.target.value) : null)
+//         }
+//         disabled={disabled}
+//         className="rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-white outline-none focus:border-amber-400"
+//       >
+//         <option value="">Assign Tier...</option>
+//         {tiers.map((t) => (
+//           <option key={t.value} value={t.value}>
+//             {t.label}
+//           </option>
+//         ))}
+//       </select>
+//       {value && (
+//         <span
+//           className={`h-2.5 w-2.5 rounded-full ${tiers.find((t) => t.value === value)?.color}`}
+//         />
+//       )}
+//     </div>
+//   );
+// }
+
+// // ─────────────────────────────────────────────────────────────────────────────
+// // REJECT / CHANGES REQUESTED MODAL
 // // ─────────────────────────────────────────────────────────────────────────────
 
 // function RejectModal({ gym, loading, onClose, onConfirm }) {
@@ -126,8 +165,8 @@
 //     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-5 backdrop-blur-sm">
 //       <div className="w-full max-w-xl rounded-[32px] border border-[#3B2417] bg-[#24160F] p-7 text-white shadow-2xl">
 //         <div className="flex items-start gap-4">
-//           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-500/10">
-//             <AlertTriangle className="h-6 w-6 text-red-400" />
+//           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500/10">
+//             <AlertTriangle className="h-6 w-6 text-orange-400" />
 //           </div>
 
 //           <div>
@@ -146,7 +185,7 @@
 
 //         <div className="mt-6">
 //           <label className="mb-2 block text-sm font-medium">
-//             Feedback / Rejection Reason
+//             Feedback / Change Request Reason
 //           </label>
 
 //           <textarea
@@ -177,9 +216,9 @@
 //           <Button
 //             disabled={tooShort || loading}
 //             onClick={() => onConfirm(reason.trim())}
-//             className="bg-red-600 hover:bg-red-700"
+//             className="bg-orange-600 hover:bg-orange-700"
 //           >
-//             {loading ? "Sending..." : "Send Feedback"}
+//             {loading ? "Sending..." : "Request Changes"}
 //           </Button>
 //         </div>
 //       </div>
@@ -191,8 +230,9 @@
 // // ENTERPRISE GYM CARD
 // // ─────────────────────────────────────────────────────────────────────────────
 
-// function GymCard({ gym, loadingId, onApprove, onReject }) {
+// function GymCard({ gym, loadingId, onApprove, onRequestChanges }) {
 //   const [expanded, setExpanded] = useState(false);
+//   const [selectedTier, setSelectedTier] = useState(gym.tier);
 
 //   const busy = loadingId === gym.id;
 
@@ -240,9 +280,12 @@
 //                   ).toLocaleDateString()}
 //                 </div>
 
-//                 <div className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold">
-//                   Tier {gym.tier}
-//                 </div>
+//                 {/* ⬇️ TIER SELECTOR — admin assigns before approval */}
+//                 <TierSelector
+//                   value={selectedTier}
+//                   onChange={setSelectedTier}
+//                   disabled={busy}
+//                 />
 
 //                 {gym.is24Hours && (
 //                   <div className="rounded-full bg-purple-500/20 px-3 py-1 text-xs font-semibold text-purple-200">
@@ -298,17 +341,18 @@
 //             <Button
 //               variant="outline"
 //               disabled={busy}
-//               onClick={() => onReject(gym)}
-//               className="rounded-2xl border-red-500/20 bg-red-500/10 text-red-600 hover:bg-red-500 hover:text-white"
+//               onClick={() => onRequestChanges(gym)}
+//               className="rounded-2xl border-orange-500/20 bg-orange-500/10 text-orange-600 hover:bg-orange-500 hover:text-white"
 //             >
-//               <XCircle className="mr-2 h-4 w-4" />
+//               <AlertTriangle className="mr-2 h-4 w-4" />
 //               Request Changes
 //             </Button>
 
 //             <Button
-//               disabled={busy}
-//               onClick={() => onApprove(gym.id)}
-//               className="rounded-2xl bg-emerald-600 hover:bg-emerald-700"
+//               disabled={busy || !selectedTier}
+//               onClick={() => onApprove(gym.id, selectedTier)}
+//               className="rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50"
+//               title={!selectedTier ? "Select a tier first" : ""}
 //             >
 //               <CheckCircle2 className="mr-2 h-4 w-4" />
 
@@ -502,18 +546,34 @@
 //   }, []);
 
 //   // ───────────────────────────────────────────────────────────────────────────
+//   // APPROVE — now sends tier with approval
+//   // ───────────────────────────────────────────────────────────────────────────
 
-//   async function handleApprove(gymId) {
+//   async function handleApprove(gymId, tier) {
+//     if (!tier) {
+//       toast({
+//         title: "Tier Required",
+//         description: "Please assign a tier before approving.",
+//         variant: "destructive",
+//       });
+//       return;
+//     }
+
 //     try {
 //       setLoadingId(gymId);
 
-//       await adminService.approveGym(gymId);
+//       // Use the new reviewGym endpoint
+//       await adminService.reviewGym(gymId, {
+//         status: "approved",
+//         tier,
+//         approvalNotes: "Approved after facility assessment.",
+//       });
 
 //       setGyms((prev) => prev.filter((g) => g.id !== gymId));
 
 //       toast({
 //         title: "Gym Approved",
-//         description: "Gym owner has been notified successfully.",
+//         description: `Gym assigned Tier ${tier} and owner has been notified.`,
 //       });
 //     } catch (err) {
 //       toast({
@@ -527,19 +587,24 @@
 //   }
 
 //   // ───────────────────────────────────────────────────────────────────────────
+//   // REQUEST CHANGES — uses reviewGym with changes_requested status
+//   // ───────────────────────────────────────────────────────────────────────────
 
-//   async function handleRejectConfirm(reason) {
+//   async function handleRequestChangesConfirm(reason) {
 //     if (!rejectTarget) return;
 
 //     try {
 //       setRejectLoading(true);
 
-//       await adminService.rejectGym(rejectTarget.id, reason);
+//       await adminService.reviewGym(rejectTarget.id, {
+//         status: "changes_requested",
+//         rejectionReason: reason,
+//       });
 
 //       setGyms((prev) => prev.filter((g) => g.id !== rejectTarget.id));
 
 //       toast({
-//         title: "Feedback Sent",
+//         title: "Changes Requested",
 //         description: "Gym owner can now revise and resubmit.",
 //       });
 
@@ -563,7 +628,7 @@
 
 //       resubmitted: gyms.filter((g) => g.resubmissionCount > 0).length,
 
-//       tier3: gyms.filter((g) => g.tier === 3).length,
+//       tierUnassigned: gyms.filter((g) => !g.tier).length,
 //     };
 //   }, [gyms]);
 
@@ -582,7 +647,7 @@
 //               </h1>
 
 //               <p className="mt-2 text-[#7A6A5D]">
-//                 Enterprise onboarding verification workflow
+//                 Review facilities and assign tiers before approval
 //               </p>
 //             </div>
 
@@ -615,10 +680,10 @@
 //             </div>
 
 //             <div className="rounded-[28px] bg-white p-6">
-//               <p className="text-sm text-[#8A7B70]">Enterprise Tier Gyms</p>
+//               <p className="text-sm text-[#8A7B70]">Awaiting Tier Assignment</p>
 
 //               <h3 className="mt-3 text-4xl font-bold text-[#2B160B]">
-//                 {loading ? "—" : stats.tier3}
+//                 {loading ? "—" : stats.tierUnassigned}
 //               </h3>
 //             </div>
 //           </div>
@@ -664,7 +729,7 @@
 //                   gym={gym}
 //                   loadingId={loadingId}
 //                   onApprove={handleApprove}
-//                   onReject={(g) => setRejectTarget(g)}
+//                   onRequestChanges={(g) => setRejectTarget(g)}
 //                 />
 //               ))}
 //             </div>
@@ -679,12 +744,13 @@
 //           gym={rejectTarget}
 //           loading={rejectLoading}
 //           onClose={() => setRejectTarget(null)}
-//           onConfirm={handleRejectConfirm}
+//           onConfirm={handleRequestChangesConfirm}
 //         />
 //       )}
 //     </AdminLayout>
 //   );
 // }
+
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -705,6 +771,7 @@ import {
   Phone,
   MessageCircle,
   Star,
+  User, // ← ADD THIS
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -773,6 +840,45 @@ const mockGyms = [
     ],
   },
 ];
+
+function InfoRow({ label, value, fullWidth, isLink }) {
+  if (!value || value === "—") {
+    return (
+      <div
+        className={`rounded-xl bg-white p-3 ${fullWidth ? "sm:col-span-2" : ""}`}
+      >
+        <p className="text-[10px] uppercase tracking-[0.15em] text-[#8A7B70]">
+          {label}
+        </p>
+        <p className="mt-1 text-sm text-[#B0A49A] italic">Not provided</p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`rounded-xl bg-white p-3 ${fullWidth ? "sm:col-span-2" : ""}`}
+    >
+      <p className="text-[10px] uppercase tracking-[0.15em] text-[#8A7B70]">
+        {label}
+      </p>
+      {isLink ? (
+        <a
+          href={value}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1 text-sm font-medium text-[#2B160B] break-all hover:text-[#9A5A17] hover:underline"
+        >
+          {value}
+        </a>
+      ) : (
+        <p className="mt-1 text-sm font-medium text-[#2B160B] break-words">
+          {value}
+        </p>
+      )}
+    </div>
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STATUS BADGE
@@ -1053,57 +1159,68 @@ function GymCard({ gym, loadingId, onApprove, onRequestChanges }) {
 
       {expanded && (
         <div className="grid gap-6 p-6 lg:grid-cols-2">
-          {/* DESCRIPTION */}
-
+          {/* ── BASIC INFO ── */}
           <div className="rounded-3xl border border-[#EFE6DE] bg-[#FCFAF8] p-5">
             <div className="mb-4 flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-[#8B5E46]" />
-
-              <h3 className="font-semibold text-[#2B160B]">Gym Overview</h3>
+              <Building2 className="h-5 w-5 text-[#8B5E46]" />
+              <h3 className="font-semibold text-[#2B160B]">
+                Basic Information
+              </h3>
             </div>
-
-            <p className="text-sm leading-relaxed text-[#6C5E54]">
-              {gym.description || "No description provided"}
-            </p>
-
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl bg-white p-4">
-                <p className="text-xs text-[#8A7B70]">Phone Number</p>
-
-                <div className="mt-1 flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-[#8B5E46]" />
-
-                  <p className="text-sm font-medium text-[#2B160B]">
-                    {gym.phoneNumber || "—"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-2xl bg-white p-4">
-                <p className="text-xs text-[#8A7B70]">WhatsApp</p>
-
-                <div className="mt-1 flex items-center gap-2">
-                  <MessageCircle className="h-4 w-4 text-[#8B5E46]" />
-
-                  <p className="text-sm font-medium text-[#2B160B]">
-                    {gym.whatsappNumber || "—"}
-                  </p>
-                </div>
-              </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <InfoRow label="Gym Name" value={gym.name} />
+              <InfoRow label="Business Name" value={gym.businessName} />
+              <InfoRow label="Description" value={gym.description} fullWidth />
+              <InfoRow label="Phone" value={gym.phoneNumber} />
+              <InfoRow label="WhatsApp" value={gym.whatsappNumber} />
+              <InfoRow label="CNIC" value={gym.cnicNumber} />
+              <InfoRow label="Instagram" value={gym.instagramHandle} />
+              <InfoRow label="Website" value={gym.websiteUrl} />
+              <InfoRow label="Google Maps" value={gym.googleMapsLink} isLink />
             </div>
           </div>
 
-          {/* VERIFICATION */}
+          {/* ── LOCATION & OPERATIONS ── */}
+          <div className="rounded-3xl border border-[#EFE6DE] bg-[#FCFAF8] p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-[#8B5E46]" />
+              <h3 className="font-semibold text-[#2B160B]">
+                Location & Operations
+              </h3>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <InfoRow label="Address" value={gym.addressLine} fullWidth />
+              <InfoRow label="City" value={gym.city} />
+              <InfoRow label="Province" value={gym.province} />
+              <InfoRow label="Postal Code" value={gym.postalCode} />
+              <InfoRow label="Latitude" value={gym.latitude} />
+              <InfoRow label="Longitude" value={gym.longitude} />
+              <InfoRow label="Opening Time" value={gym.openingTime} />
+              <InfoRow label="Closing Time" value={gym.closingTime} />
+              <InfoRow label="24 Hours" value={gym.is24Hours ? "Yes" : "No"} />
+            </div>
+          </div>
 
+          {/* ── OWNER INFO ── */}
+          <div className="rounded-3xl border border-[#EFE6DE] bg-[#FCFAF8] p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <User className="h-5 w-5 text-[#8B5E46]" />
+              <h3 className="font-semibold text-[#2B160B]">Owner Details</h3>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <InfoRow label="Owner Name" value={gym.owner?.name} />
+              <InfoRow label="Owner Email" value={gym.owner?.email} />
+            </div>
+          </div>
+
+          {/* ── VERIFICATION DOCUMENTS ── */}
           <div className="rounded-3xl border border-[#EFE6DE] bg-[#FCFAF8] p-5">
             <div className="mb-4 flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-[#8B5E46]" />
-
               <h3 className="font-semibold text-[#2B160B]">
                 Verification Documents
               </h3>
             </div>
-
             <div className="space-y-3">
               {(gym.verificationDocuments || []).map((doc) => (
                 <a
@@ -1117,30 +1234,31 @@ function GymCard({ gym, loadingId, onApprove, onRequestChanges }) {
                     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#F5EEE7]">
                       <FileText className="h-5 w-5 text-[#8B5E46]" />
                     </div>
-
                     <div>
                       <p className="text-sm font-medium text-[#2B160B]">
                         {doc.type.replace(/_/g, " ")}
                       </p>
-
                       <p className="text-xs text-[#8A7B70]">
                         Verification document
                       </p>
                     </div>
                   </div>
-
                   <div className="flex items-center gap-3">
                     <StatusBadge status={doc.status} />
-
                     <ExternalLink className="h-4 w-4 text-[#8A7B70]" />
                   </div>
                 </a>
               ))}
+              {(!gym.verificationDocuments ||
+                gym.verificationDocuments.length === 0) && (
+                <p className="text-sm text-[#8A7B70] italic">
+                  No documents uploaded
+                </p>
+              )}
             </div>
           </div>
 
-          {/* PHOTOS */}
-
+          {/* ── PHOTOS ── */}
           {(gym.photos || []).length > 0 && (
             <div className="lg:col-span-2">
               <div className="rounded-3xl border border-[#EFE6DE] bg-[#FCFAF8] p-5">
@@ -1149,17 +1267,14 @@ function GymCard({ gym, loadingId, onApprove, onRequestChanges }) {
                     <h3 className="font-semibold text-[#2B160B]">
                       Facility Gallery
                     </h3>
-
                     <p className="mt-1 text-sm text-[#8A7B70]">
                       Uploaded gym verification photos
                     </p>
                   </div>
-
                   <div className="rounded-full bg-[#EFE2D6] px-3 py-1 text-xs font-semibold text-[#7A5039]">
                     {gym.photos.length} Photos
                   </div>
                 </div>
-
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   {gym.photos.map((photo) => (
                     <div
@@ -1177,6 +1292,46 @@ function GymCard({ gym, loadingId, onApprove, onRequestChanges }) {
               </div>
             </div>
           )}
+
+          {/* ── COVER IMAGE ── */}
+          {gym.coverImageUrl && (
+            <div className="lg:col-span-2">
+              <div className="rounded-3xl border border-[#EFE6DE] bg-[#FCFAF8] p-5">
+                <h3 className="font-semibold text-[#2B160B] mb-3">
+                  Cover Image
+                </h3>
+                <img
+                  src={gym.coverImageUrl}
+                  alt={gym.name}
+                  className="w-full h-64 object-cover rounded-2xl"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* ── META INFO ── */}
+          <div className="lg:col-span-2 rounded-3xl border border-[#EFE6DE] bg-[#FCFAF8] p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <Clock3 className="h-5 w-5 text-[#8B5E46]" />
+              <h3 className="font-semibold text-[#2B160B]">
+                Submission Metadata
+              </h3>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-4">
+              <InfoRow
+                label="Submitted"
+                value={new Date(
+                  gym.submittedAt || gym.createdAt,
+                ).toLocaleString()}
+              />
+              <InfoRow
+                label="Resubmissions"
+                value={gym.resubmissionCount?.toString()}
+              />
+              <InfoRow label="Status" value={gym.status} />
+              <InfoRow label="Gym ID" value={gym.id} />
+            </div>
+          </div>
         </div>
       )}
     </div>

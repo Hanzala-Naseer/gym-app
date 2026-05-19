@@ -6423,9 +6423,9 @@ Color planTierColor(int tier) {
 
 class AppConfig {
   // Change to your deployed Railway URL in production
-  static const String baseUrl = 'http://192.168.1.15:5001/api';
+  static const String baseUrl = 'http://10.120.12.86:5001/api';
   static const String stripeSuccessBase =
-      'https://192.168.1.15:5001/api/subscription/success';
+      'https://10.120.12.86:5001/api/subscription/success';
 }
 
 class AppRoutes {
@@ -6673,9 +6673,12 @@ class SubscriptionPlanModel {
           tierData?['description']?.toString() ??
           j['description']?.toString() ??
           '',
+      // priceCents: (j['priceCents'] is int)
+      //     ? j['priceCents'] as int
+      //     : ((j['price'] is int) ? (j['price'] as int) * 100 : 0),
       priceCents: (j['priceCents'] is int)
           ? j['priceCents'] as int
-          : ((j['price'] is int) ? (j['price'] as int) * 100 : 0),
+          : ((j['price'] is int) ? (j['price'] as int) : 0),
       interval: j['interval']?.toString() ?? 'month',
       accessTier: (tierData?['accessTier'] is int)
           ? tierData!['accessTier'] as int
